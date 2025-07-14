@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import WelcomePage from './WelcomePage';
 import ProjectsGuide from './ProjectsGuide';
@@ -17,12 +18,13 @@ import RecreationFrameworkGuide from './RecreationFrameworkGuide';
 import InterestCompatibilityGuide from './InterestCompatibilityGuide';
 import AcknowledgementsGuide from './AcknowledgementsGuide';
 import EmpoweringTheArtsGuide from './EmpoweringTheArtsGuide';
+import SetupGuide from './SetupGuide';
 
 
 import './guide.css';
 
 type GuideTopic = 
-  | 'welcome' | 'acknowledgements' | 'empowering' | 'projects' | 'members' | 'tasks' | 'events' | 'sales' | 'media' 
+  | 'welcome' | 'setup' | 'acknowledgements' | 'empowering' | 'projects' | 'members' | 'tasks' | 'events' | 'sales' | 'media' 
   | 'reports' | 'communityImpact' | 'supplementalReports' | 'tools' | 'settings'
   | 'ecoStar' | 'sdg' | 'recreation' | 'interest';
 
@@ -31,6 +33,7 @@ const UserGuide: React.FC = () => {
 
     const menuItems: { id: GuideTopic; label: string; icon: string; indent?: boolean }[] = [
         { id: 'welcome', label: 'Welcome', icon: 'fa-solid fa-hand-sparkles' },
+        { id: 'setup', label: 'Initial Setup', icon: 'fa-solid fa-cogs' },
         { id: 'acknowledgements', label: 'Acknowledgements', icon: 'fa-solid fa-award' },
         { id: 'empowering', label: 'Empowering the Arts', icon: 'fa-solid fa-rocket' },
         { id: 'projects', label: 'Projects & Proposals', icon: 'fa-solid fa-briefcase' },
@@ -53,6 +56,7 @@ const UserGuide: React.FC = () => {
     const renderContent = () => {
         switch(activeTopic) {
             case 'welcome': return <WelcomePage />;
+            case 'setup': return <SetupGuide />;
             case 'acknowledgements': return <AcknowledgementsGuide />;
             case 'empowering': return <EmpoweringTheArtsGuide />;
             case 'projects': return <ProjectsGuide />;
