@@ -2,76 +2,91 @@
 import React from 'react';
 import InfoBox from './InfoBox';
 
-const SettingsGuide: React.FC = () => {
+const EnvVar: React.FC<{name: string}> = ({ name }) => (
+    <code className="bg-slate-200 text-slate-800 font-mono py-0.5 px-1.5 rounded-md text-sm">{name}</code>
+)
+
+const SetupGuide: React.FC = () => {
   return (
     <div>
-      <h2>Settings</h2>
+      <h2>Initial Setup: Getting Your Workspace Ready</h2>
       <p>
-        The <code>Settings</code> section allows you to customize the application to better fit your collective's workflow and terminology. Changes made here will affect dropdown menus and default values throughout the app.
+        Welcome to The Arts Incubator! Before you can start managing your projects, the application needs to be connected to its backend services. This involves setting three critical "environment variables" in the platform where you are hosting the application.
       </p>
-       <InfoBox type="warning">
-        <p>Remember to click the <strong>"Save Changes"</strong> button at the bottom of each settings page for your changes to take effect.</p>
+      
+      <h3>The Setup Wizard</h3>
+      <p>
+        If you launch the application and are greeted by a "Configuration Required" screen (the Setup Wizard), it means one or more of these environment variables are missing. This is expected behavior for a first-time setup. Once you have correctly configured the variables and redeployed your application, this screen will disappear, and you'll see the normal login page.
+      </p>
+
+      <h3>Required Environment Variables</h3>
+      <p>
+        The application requires three keys to connect to its database and AI services. You must add these to your hosting provider's settings (e.g., Vercel, Netlify, Docker).
+      </p>
+
+      <h4>1. Supabase Credentials (Database)</h4>
+      <p>
+        Supabase is used as the backend database to securely store all of your project data. You will need two keys from your Supabase project. If you don't have one, you can create a free project at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer">supabase.com</a>.
+      </p>
+      <ol>
+        <li>Go to your Supabase project dashboard.</li>
+        <li>In the left sidebar, find and click the <strong>Settings</strong> icon (a gear).</li>
+        <li>In the settings menu, click on <strong>API</strong>.</li>
+        <li>
+          You will see a section called <strong>Project API Keys</strong>. You need two pieces of information from this page:
+          <ul>
+            <li>The <strong>Project URL</strong>. Copy this value.</li>
+            <li>The <strong>public `anon` key</strong>. It's important to use this specific key. Copy this value.</li>
+          </ul>
+        </li>
+        <li>
+          Now, set the following environment variables in your hosting platform:
+          <ul>
+            <li><EnvVar name="SUPABASE_URL" />: Paste the Project URL you copied.</li>
+            <li><EnvVar name="SUPABASE_ANON_KEY" />: Paste the `anon` public key you copied.</li>
+          </ul>
+        </li>
+      </ol>
+      <InfoBox type="warning">
+        <p><strong>Use the 'anon' key only.</strong> Never expose your 'service_role' key or any other private key in a frontend application's environment variables, as this would be a major security risk.</p>
       </InfoBox>
 
-      <h3>Settings Categories</h3>
-      
-      <h4>General</h4>
-      <p>Configure application-wide settings.</p>
-      <ul>
-        <li><strong>Collective Name:</strong> This name will appear in the application header.</li>
-        <li><strong>Default Currency & Date Format:</strong> Set the primary currency and date display format for the application.</li>
-      </ul>
-
-       <h4>Users (Admin Only)</h4>
-        <InfoBox type="warning">
-            <p>The <strong>Users</strong> settings page is a critical, administrator-only section for managing who can log into the application. Be careful when making changes here.</p>
-        </InfoBox>
+      <h4>2. Google Gemini API Key (AI Features)</h4>
       <p>
-        It provides the tools to create, manage, and delete user accounts.
+        The platform's powerful AI features are powered by Google's Gemini models. To enable these, you need an API key.
       </p>
-      <ul>
-        <li><strong>Create New User:</strong> Admins can create a new user account by providing a username and password.</li>
-        <li><strong>Link to Member:</strong> Each user account can (and should) be linked to a member profile from your <code>Members</code> list.</li>
-        <li><strong>Assign Roles:</strong> You can assign a role of either 'User' or 'Admin' to an account. Admins have access to sensitive areas like the Users page itself.</li>
-        <li><strong>Security:</strong> For security, passwords are not stored in plaintext. They are immediately and irreversibly hashed. This means that even if the application data were compromised, the actual passwords would remain secure.</li>
-        <li><strong>Delete Users:</strong> Admins can delete user accounts. This does not delete the linked member profile, it only removes the user's ability to log in.</li>
-      </ul>
-
-      <h4>Projects</h4>
-      <p>Create your own custom project statuses (e.g., "In Development", "Awaiting Report") that will appear in the status dropdowns on the Projects page.</p>
-
-      <h4>Proposals</h4>
-      <p>Administratively update a proposal snapshot with the latest live data from its source project. This is useful if you want to refresh an old snapshot before sending it out again.</p>
+      <ol>
+        <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.</li>
+        <li>Log in with your Google account.</li>
+        <li>Click the "Create API key" button to generate a new key.</li>
+        <li>Copy the generated API key.</li>
+        <li>
+          Set the following environment variable in your hosting platform:
+          <ul>
+            <li><EnvVar name="API_KEY" />: Your generated Google API key.</li>
+          </ul>
+        </li>
+      </ol>
       
-      <h4>Sales & Inventory</h4>
-      <p>Configure tax rates (PST/GST) for your sales transactions and manage your master list of inventory categories.</p>
-
-      <h4>Budget</h4>
-      <p>Customize the labels for revenue and expense line items in the project budget editor to match your accounting terminology.</p>
-      
-      <h4>Events & Venues</h4>
-      <p>Define custom statuses for your venues (e.g., "On Hold", "Scouting") that will appear in the venue editor.</p>
-
-      <h4>Highlights</h4>
-      <p>Configure the three images that can appear randomly on the application's splash screen when you first log in.</p>
-
-      <h4>Media & Comms</h4>
-      <p>Customize your default boilerplate text for news releases, create custom categories for your contacts (e.g., "Media", "Funder", "Board Member"), and manage AI templates for generating communications.</p>
-
-      <h4>AI Settings Explained</h4>
+      <h3>How to Set Environment Variables</h3>
       <p>
-        This is a powerful section where you can configure the personality and behavior of the various AI assistants used throughout the application.
+          The method for setting these variables depends entirely on your hosting provider. Here are some common examples:
       </p>
-      <ul>
-          <li><strong>Master AI Switch:</strong> Turn all AI features on or off globally.</li>
-          <li><strong>Personas:</strong> Each tab (Main, Projects, Budget, etc.) has its own "persona". A persona consists of a set of instructions, a creativity level (temperature), and a specific AI model.</li>
-          <li><strong>Instructions:</strong> This is the most important part. It's a text box where you tell the AI *how* to behave for that section. For example, the 'Budget' persona is told to be a "meticulous, friendly bookkeeper," while the 'Projects' persona is told to be a "creative grant writer's assistant."</li>
-          <li><strong>Templates:</strong> For each persona, you can save and load multiple instruction sets as templates. This allows you to quickly switch the AI's behavior (e.g., from a "Formal" tone to a "Casual" tone) without copy-pasting.</li>
-          <li><strong>Test Persona:</strong> Use the "Test Persona" button to open a chat window and see how your current instructions affect the AI's responses in real time.</li>
-      </ul>
-      
+       <ul>
+          <li><strong>Vercel:</strong> Go to your Project dashboard &gt; Settings &gt; Environment Variables.</li>
+          <li><strong>Netlify:</strong> Go to your Site dashboard &gt; Site configuration &gt; Environment variables.</li>
+          <li><strong>Docker:</strong> Use a <code className="text-sm">.env</code> file or pass variables via the command line when running the container.</li>
+       </ul>
+       <p>
+          <strong>Crucially, after setting the variables, you must redeploy your application</strong> for the changes to take effect.
+       </p>
+
+      <h3>Completing Setup</h3>
+      <p>
+        Once all three environment variables are correctly set and your application has been redeployed, refresh the application page. The Setup Wizard will disappear, and you will be presented with the login screen.
+      </p>
     </div>
   );
 };
 
-export default SettingsGuide;
+export default SetupGuide;
