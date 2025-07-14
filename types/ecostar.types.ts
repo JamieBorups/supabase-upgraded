@@ -11,6 +11,13 @@ export interface EcoStarField {
     description: string;
 }
 
+export interface EcoStarFieldConfig {
+    prompt: string;
+    schema: any; // Ideally, this would be a more specific JSON schema type
+}
+
+export type EcoStarFieldSettings = Record<string, EcoStarFieldConfig>;
+
 export interface EcoStarReport {
     id: string;
     projectId: string;

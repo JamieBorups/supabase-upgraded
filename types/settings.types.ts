@@ -1,7 +1,6 @@
 
-
-
 import { SalesSettings } from './sales.types';
+import { EcoStarFieldSettings } from './ecostar.types';
 
 export type SettingsCategory = 'general' | 'database' | 'projects' | 'members' | 'tasks' | 'ai' | 'budget' | 'highlights' | 'media' | 'events' | 'proposals' | 'users' | 'sales';
 export interface CustomStatus { id: string; label: string; color: string; }
@@ -21,6 +20,11 @@ export interface CommunicationTemplate {
   id: string;
   name: string;
   instructions: string;
+}
+
+export interface InterestCompatibilitySectionSettings {
+    prompt: string;
+    schema: any;
 }
 
 export interface AppSettings {
@@ -62,6 +66,8 @@ export interface AppSettings {
     personas: Record<AiPersonaName, AiPersonaSettings>;
     personaTemplates: Record<AiPersonaName, CommunicationTemplate[]>;
     projectGeneratorFieldInstructions: Record<string, string>;
+    ecostarFieldSettings: EcoStarFieldSettings;
+    interestCompatibilitySectionSettings: Record<keyof Omit<import('../interestCompatibility.types').InterestCompatibilityReport, 'id' | 'projectId' | 'createdAt' | 'notes' | 'fullReportText'>, InterestCompatibilitySectionSettings>;
   };
   media: {
     boilerplate: string;

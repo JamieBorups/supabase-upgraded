@@ -33,8 +33,8 @@ export interface EventMemberAssignment {
 
 export interface Event {
   id: string;
-  projectId: string;
-  venueId: string;
+  projectId: string | null;
+  venueId: string | null;
   title: string;
   description: string;
   status: 'Pending' | 'Confirmed' | 'Completed' | 'Postponed' | 'Cancelled';

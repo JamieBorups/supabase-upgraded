@@ -29,3 +29,21 @@ export interface InterestCompatibilityReport {
   actionableRecommendations?: string[];
   fullReportText: string;
 }
+
+export interface ProjectContextForAI {
+    projectTitle: string;
+    projectDescription: string;
+    background: string;
+    schedule: string;
+    audience: string;
+    collaborators: {
+        name: string;
+        role: string;
+        bio: string;
+    }[];
+    budgetSummary: {
+        totalRevenue: number;
+        totalExpenses: number;
+        expenseBreakdown: Record<string, number>;
+    };
+}

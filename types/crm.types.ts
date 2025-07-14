@@ -2,7 +2,7 @@ export interface NewsRelease {
     id: string;
     projectId: string;
     type: string;
-    contactMemberId: string;
+    contactMemberId: string | null;
     headline: string;
     subhead: string;
     publishDate: string;

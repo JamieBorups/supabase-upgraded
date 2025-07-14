@@ -1,3 +1,4 @@
+
 import { supabase } from '../../supabase.ts';
 import { InterestCompatibilityReport } from '../../types.ts';
 import { mapObjectToSnakeCase, mapObjectToCamelCase, handleResponse } from './utils';
