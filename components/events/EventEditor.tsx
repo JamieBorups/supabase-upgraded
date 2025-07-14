@@ -86,7 +86,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ event, onSave, onCancel }) =>
         }
     };
 
-    const handleVenueChange = (venueId: string) => {
+    const handleVenueChange = (venueId: string | null) => {
         handleChange('venueId', venueId);
         // If cost was overridden, reset it when venue changes, as the default is now different
         if(isCostOverridden) {
@@ -240,10 +240,10 @@ const EventEditor: React.FC<EventEditorProps> = ({ event, onSave, onCancel }) =>
                         <Input id="eventName" value={formData.title} onChange={e => handleChange('title', e.target.value)} />
                     </FormField>
                     <FormField label="Project" htmlFor="project">
-                        <Select id="project" value={formData.projectId} onChange={e => handleChange('projectId', e.target.value)} options={[{value: '', label: 'Select Project... (Optional)'}, ...projects.map(p => ({value: p.id, label: p.projectTitle}))]} />
+                        <Select id="project" value={formData.projectId || ''} onChange={e => handleChange('projectId', e.target.value || null)} options={[{value: '', label: 'Select Project... (Optional)'}, ...projects.map(p => ({value: p.id, label: p.projectTitle}))]} />
                     </FormField>
                     <FormField label="Venue" htmlFor="venue">
-                        <Select id="venue" value={formData.venueId} onChange={e => handleVenueChange(e.target.value)} options={[{value: '', label: 'Select Venue... (Optional)'}, ...venues.map(v => ({value: v.id, label: v.name}))]} />
+                        <Select id="venue" value={formData.venueId || ''} onChange={e => handleVenueChange(e.target.value || null)} options={[{value: '', label: 'Select Venue... (Optional)'}, ...venues.map(v => ({value: v.id, label: v.name}))]} />
                     </FormField>
                     <FormField label="Public Description" htmlFor="eventDescription" instructions="This will be displayed on public-facing materials.">
                         <TextareaWithCounter id="eventDescription" rows={5} value={formData.description} onChange={e => handleChange('description', e.target.value)} wordLimit={250} />
@@ -326,7 +326,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ event, onSave, onCancel }) =>
                         <ToggleSwitch id="overrideCost" checked={isCostOverridden} onChange={setIsCostOverridden} label="Override default cost for this event" />
                         {isCostOverridden && (
                             <div className="space-y-3 pl-4 border-l-2 border-slate-300">
-                                <RadioGroup name="costType" options={COST_TYPE_OPTIONS} selectedValue={formData.venueCostOverride?.costType || 'free'} onChange={val => handleCostOverrideChange('costType', val as any)} />
+                                <RadioGroup name="costType" selectedValue={formData.venueCostOverride?.costType || 'free'} onChange={val => handleCostOverrideChange('costType', val as any)} options={COST_TYPE_OPTIONS} />
                                 {formData.venueCostOverride?.costType !== 'free' && (
                                     <div className="grid grid-cols-2 gap-4 pt-2">
                                         <FormField label="Cost" htmlFor="cost"><Input type="number" id="cost" value={formData.venueCostOverride?.cost || ''} onChange={e => handleCostOverrideChange('cost', parseFloat(e.target.value) || 0)} /></FormField>

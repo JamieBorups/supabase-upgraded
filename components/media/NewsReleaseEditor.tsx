@@ -33,7 +33,7 @@ const NewsReleaseEditor: React.FC<NewsReleaseEditorProps> = ({ projectId, releas
             id: `nr_${Date.now()}`,
             projectId,
             type: settings.media.types[0]?.label || 'News Release',
-            contactMemberId: '',
+            contactMemberId: null,
             headline: '',
             subhead: '',
             publishDate: now.split('T')[0],
@@ -134,8 +134,8 @@ const NewsReleaseEditor: React.FC<NewsReleaseEditorProps> = ({ projectId, releas
             location: formData.location,
             project: { title: project.projectTitle, description: project.projectDescription, background: project.background, schedule: project.schedule },
             keyPeople: projectCollaborators.map(c => ({ name: `${c.firstName} ${c.lastName}`, role: c.role })),
-            recentTasks: projectTasks.filter(t => t.status === 'Done').sort((a,b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()).slice(0, 5).map(t => ({ title: t.title, description: t.description, dueDate: t.dueDate })),
-            upcomingTasks: projectTasks.filter(t => t.status !== 'Done').sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).slice(0, 5).map(t => ({ title: t.title, description: t.description, dueDate: t.dueDate })),
+            recentTasks: projectTasks.filter(t => t.status === 'Done').sort((a,b) => new Date(b.dueDate || 0).getTime() - new Date(a.dueDate || 0).getTime()).slice(0, 5).map(t => ({ title: t.title, description: t.description, dueDate: t.dueDate })),
+            upcomingTasks: projectTasks.filter(t => t.status !== 'Done').sort((a,b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime()).slice(0, 5).map(t => ({ title: t.title, description: t.description, dueDate: t.dueDate })),
             supportingLinks: projectHighlights.map(h => ({ title: h.title, url: h.url })),
             approvedFunders: allApprovedFunders,
             quoteSourceMaterial: `Project Description: ${project.projectDescription}\n\nProject Background: ${project.background}`,
@@ -243,7 +243,7 @@ You MUST attribute each quote to a relevant individual from the 'keyPeople' list
                             <FormField label="Status" htmlFor="status"><Select id="status" value={formData.status} onChange={e => handleChange('status', e.target.value as 'Draft' | 'For Review' | 'Approved')} options={[{value: 'Draft', label: 'Draft'}, {value: 'For Review', label: 'For Review'}, {value: 'Approved', label: 'Approved'}]} /></FormField>
                             <FormField label="Communication Type" htmlFor="type"><Select id="type" value={formData.type} onChange={e => handleChange('type', e.target.value)} options={settings.media.types.map(t => ({value: t.label, label: t.label}))} /></FormField>
                             <FormField label="Published URL" htmlFor="publishedUrl" instructions="Link to the final article/post."><Input type="url" id="publishedUrl" value={formData.publishedUrl} onChange={e => handleChange('publishedUrl', e.target.value)} /></FormField>
-                            <FormField label="Contact Person" htmlFor="contactMemberId"><Select id="contactMemberId" value={formData.contactMemberId} onChange={e => handleChange('contactMemberId', e.target.value)} options={[{value: '', label: 'Use Default Contact'}, ...projectCollaborators.map(c => ({value: c.id, label: `${c.firstName} ${c.lastName}`}))]}/></FormField>
+                            <FormField label="Contact Person" htmlFor="contactMemberId"><Select id="contactMemberId" value={formData.contactMemberId || ''} onChange={e => handleChange('contactMemberId', e.target.value || null)} options={[{value: '', label: 'Use Default Contact'}, ...projectCollaborators.map(c => ({value: c.id, label: `${c.firstName} ${c.lastName}`}))]}/></FormField>
                             <FormField label="Publish Date" htmlFor="publishDate"><Input type="date" id="publishDate" value={formData.publishDate} onChange={e => handleChange('publishDate', e.target.value)} /></FormField>
                             <FormField label="Location" htmlFor="location" instructions="e.g., Brandon, MB"><Input id="location" value={formData.location} onChange={e => handleChange('location', e.target.value)}/></FormField>
                             <div>
