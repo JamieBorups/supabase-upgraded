@@ -1,14 +1,17 @@
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { produce } from 'immer';
-import { Content, GoogleGenAI, Type } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
 import { Select } from '../ui/Select';
-import { InterestCompatibilityReport, BudgetItem, FormData as ProjectData } from '../../types';
+import { InterestCompatibilityReport, FormData as ProjectData, AppSettings } from '../../types';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import { Input } from '../ui/Input';
 import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
+import { getInterestCompatibilityContext } from '../../services/interestCompatibilityService';
+import { generateInterestCompatibilitySection } from '../../services/ai/interestCompatibilityGenerator';
+import { REPORT_SECTIONS } from '../../constants';
+
 
 const formatAiTextToHtml = (text: string = ''): string => {
     if (!text) return '';
@@ -19,99 +22,6 @@ const formatAiTextToHtml = (text: string = ''): string => {
         .map(p => `<p>${p.trim().replace(/\n/g, '<br />')}</p>`)
         .join('');
 };
-
-const REPORT_SECTIONS: { 
-    key: keyof Omit<InterestCompatibilityReport, 'id'|'projectId'|'createdAt'|'notes'|'fullReportText'>, 
-    label: string, 
-    chatPrompt: string, 
-    reportPrompt: string,
-    schema: any
-}[] = [
-    { 
-        key: 'executiveSummary', 
-        label: 'Executive Summary', 
-        chatPrompt: 'Help me brainstorm an executive summary for this compatibility assessment.', 
-        reportPrompt: 'Generate a detailed, multi-paragraph executive summary (minimum 250 words). This summary must serve as a strategic overview. It must begin by synthesizing the project\'s core mission from its description and background. Then, it must introduce the key stakeholder groups (e.g., collaborators, funders), referencing their roles. Following that, it must provide a high-level preview of the major areas of interest alignment and potential friction that will be detailed later in the report. Conclude with a forward-looking statement about the project\'s potential if these dynamics are managed effectively. The tone should be professional and insightful. Your entire response must be a single block of text with paragraphs separated by double newlines (\\n\\n).',
-        schema: { type: Type.OBJECT, properties: { executiveSummary: { type: Type.STRING, description: "A detailed, multi-paragraph executive summary (minimum 250 words) that provides a strategic overview of the project's stakeholder dynamics, including key alignments, potential frictions, and a concluding statement. The text must use double newlines (\\n\\n) to separate paragraphs." } } }
-    },
-    { 
-        key: 'stakeholderAnalysis', 
-        label: 'Stakeholder Analysis', 
-        chatPrompt: 'Help me identify the key stakeholders and their interests, considering their bios and roles.', 
-        reportPrompt: 'Generate the "stakeholderAnalysis" section. For each key stakeholder, you must deduce a comprehensive list of their likely interests based on their provided bio, assigned tasks, and the project budget. Do not just list generic interests. For each stakeholder, provide at least 3-5 specific, detailed interests. For instance, instead of just "Financial accountability" for a funder, it could be "Ensuring grant funds are spent according to the proposed expense categories" or "Seeing measurable community engagement metrics". For an artist, instead of "artistic expression," it could be "Exploring themes of environmental justice through their specific medium" or "Receiving public recognition for their creative contribution". Be thorough and draw direct connections to the provided project context.',
-        schema: {
-          type: Type.OBJECT, properties: {
-            stakeholderAnalysis: {
-              type: Type.ARRAY,
-              description: 'List of all key stakeholders and their inferred interests.',
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING, description: "The stakeholder's name or group." },
-                  role: { type: Type.STRING, description: "The stakeholder's role in the project." },
-                  interests: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of at least 3-5 specific, detailed interests for the stakeholder, justified by the project context." }
-                },
-                required: ['name', 'role', 'interests']
-              }
-            }
-          }
-        }
-    },
-    { 
-        key: 'highCompatibilityAreas', 
-        label: 'High Compatibility Areas', 
-        chatPrompt: 'Help me brainstorm areas where stakeholder interests align.', 
-        reportPrompt: 'Generate the "highCompatibilityAreas" section. For each identified area of strong synergy, you must provide a deeply detailed analysis. The "insight" field for each area must be a comprehensive, multi-paragraph explanation (at least 3-4 paragraphs), with paragraphs separated by double newlines (\\n\\n). It should explicitly state which stakeholders are involved, what specific interests of theirs are aligned, and how this alignment creates a powerful advantage for the project. Use the project context (description, budget, collaborator bios) to support your analysis with concrete examples.',
-        schema: {
-            type: Type.OBJECT, properties: {
-                highCompatibilityAreas: {
-                    type: Type.ARRAY, items: {
-                        type: Type.OBJECT, properties: {
-                            area: { type: Type.STRING, description: 'The area of synergy.' },
-                            stakeholders: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Stakeholders involved in this synergy.' },
-                            insight: { type: Type.STRING, description: 'A comprehensive, multi-paragraph (3-4 paragraphs minimum) explanation of the synergy, supported by concrete examples from the project context. Use double newlines (\\n\\n) to separate paragraphs.' },
-                            followUpQuestions: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'A list of 2-3 strategic, thought-provoking questions for team reflection.' },
-                            guidance: { type: Type.STRING, description: 'A concrete suggestion for how to use the AI to act on this insight.' }
-                        }, required: ['area', 'stakeholders', 'insight', 'followUpQuestions', 'guidance']
-                    }
-                }
-            }
-        }
-    },
-    { 
-        key: 'potentialConflicts', 
-        label: 'Potential Conflicts', 
-        chatPrompt: 'Help me think about potential conflicts or misalignments.', 
-        reportPrompt: 'Generate the "potentialConflicts" section as a critical risk analysis. For each potential conflict, provide a very detailed breakdown. The "insight" and "mitigation" fields must be multi-paragraph explorations (at least 3-4 paragraphs each), with paragraphs separated by double newlines (\\n\\n). The insight should detail the conflict\'s root cause, and the mitigation must offer a step-by-step strategy to address it. The "followUpQuestions" and "guidance" should be equally thoughtful and specific.',
-        schema: {
-            type: Type.OBJECT, properties: {
-                potentialConflicts: {
-                    type: Type.ARRAY, items: {
-                        type: Type.OBJECT, properties: {
-                            area: { type: Type.STRING, description: 'The area of potential conflict.' },
-                            stakeholders: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Stakeholders involved in this conflict.' },
-                            insight: { type: Type.STRING, description: 'A multi-paragraph (3-4 paragraphs minimum) exploration of the conflict\'s root cause. Use double newlines (\\n\\n) to separate paragraphs.' },
-                            mitigation: { type: Type.STRING, description: 'A detailed, multi-paragraph strategy with step-by-step guidance for mitigating the conflict. Use double newlines (\\n\\n) to separate paragraphs.' },
-                            followUpQuestions: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'A list of 2-3 specific, difficult questions for team conversation.' },
-                            guidance: { type: Type.STRING, description: 'A concrete suggestion for how the AI can help mediate or create alternatives.' }
-                        }, required: ['area', 'stakeholders', 'insight', 'mitigation', 'followUpQuestions', 'guidance']
-                    }
-                }
-            }
-        }
-    },
-    { 
-        key: 'actionableRecommendations', 
-        label: 'Actionable Recommendations', 
-        chatPrompt: 'Help me brainstorm some concrete next steps based on this analysis.', 
-        reportPrompt: 'Generate "actionableRecommendations". Each recommendation in the array must be a full, detailed paragraph. Do not provide a simple to-do list. Each recommendation should be a strategic initiative that synthesizes findings from the entire analysis. For example, a recommendation shouldn\'t be "Hold a meeting," but rather, "Convene a project kick-off meeting focused on establishing shared goals. The agenda should include a review of the high-compatibility areas to build early momentum and an open discussion of the potential conflicts, using the mitigation strategies as a starting point for dialogue." Provide at least 3-5 such detailed, paragraph-length recommendations.',
-        schema: {
-            type: Type.OBJECT, properties: {
-                actionableRecommendations: { type: Type.ARRAY, description: "A list of at least 3-5 strategic, high-level action items, where each item is a full, detailed paragraph.", items: { type: Type.STRING } }
-            }
-        }
-    },
-];
 
 interface Message {
     id: string;
@@ -245,7 +155,7 @@ const InterestCompatibilityPage: React.FC = () => {
     const [isClearModalOpen, setIsClearModalOpen] = useState(false);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     
-    // Chat state
+    // Chat state is currently unused in this version but kept for potential future re-integration
     const [messages, setMessages] = useState<Message[]>([]);
     const [chatIsLoading, setChatIsLoading] = useState(false);
     const [userInput, setUserInput] = useState('');
@@ -256,7 +166,7 @@ const InterestCompatibilityPage: React.FC = () => {
 
     useEffect(() => {
         if (!hasInitialized.current) {
-            setMessages([{ id: `sys_${Date.now()}`, sender: 'system', text: 'Select a project and a topic to begin your assessment.' }]);
+            setMessages([{ id: `sys_${Date.now()}`, sender: 'system', text: 'Select a project to begin your assessment.' }]);
             hasInitialized.current = true;
         }
     }, []);
@@ -274,117 +184,17 @@ const InterestCompatibilityPage: React.FC = () => {
         setMessages([{ id: `sys_${Date.now()}`, sender: 'system', text: 'Select a topic to begin your assessment.' }]);
         setActiveChatTopic(null);
     };
-
-    const constructContextPrompt = useCallback((basePrompt: string) => {
-        if (!selectedProject) return basePrompt;
-        const project = selectedProject;
-        
-        const collaboratorDetails = project.collaboratorDetails.map(c => {
-            const member = members.find(m => m.id === c.memberId);
-            return member ? { name: `${member.firstName} ${member.lastName}`, role: c.role, bio: member.shortBio } : { name: `Unknown Member`, role: c.role, bio: 'N/A' };
-        });
-        
-        const projectTasks = tasks.filter(t => t.projectId === selectedProjectId);
-        const taskSummary = projectTasks.reduce((acc, task) => {
-            const status = task.status || 'Backlog';
-            acc[status] = (acc[status] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        let budgetSummary = { totalRevenue: 0, totalExpenses: 0, expenseBreakdown: {} as Record<string, number> };
-        if (project.budget) {
-            const sumItems = (items: BudgetItem[] = []) => items.reduce((sum, item) => sum + (item.amount || 0), 0);
-            budgetSummary.totalRevenue = Object.values(project.budget.revenues).reduce((sum, category) => Array.isArray(category) ? sum + sumItems(category) : sum, 0);
-            budgetSummary.totalExpenses = Object.values(project.budget.expenses).reduce((sum, category) => sum + sumItems(category), 0);
-            Object.entries(project.budget.expenses).forEach(([categoryKey, items]) => {
-                budgetSummary.expenseBreakdown[categoryKey] = sumItems(items);
-            });
-        }
-
-        const context = {
-            project: { title: project.projectTitle, description: project.projectDescription, background: project.background, schedule: project.schedule, audience: project.audience },
-            collaborators: collaboratorDetails,
-            tasks: { summary: taskSummary, totalTasks: projectTasks.length },
-            budget: budgetSummary,
-        };
-        return `${basePrompt}\n\n### PROJECT CONTEXT ###\n${JSON.stringify(context, null, 2)}`;
-    }, [selectedProject, members, tasks]);
     
-    // --- CHAT LOGIC ---
-    useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-    const handleChatRequest = async (prompt: string, userMessageText: string) => {
-        setChatIsLoading(true);
-        const updatedConversation = produce(messages, draft => {
-            draft.push({ id: `user_${Date.now()}`, sender: 'user', text: userMessageText });
-        });
-        setMessages(updatedConversation);
-
-        const history = updatedConversation.filter(m => m.sender !== 'system').map(m => ({
-            role: m.sender === 'user' ? 'user' : 'model', parts: [{ text: m.text }]
-        })) as Content[];
-        
-        try {
-            const finalPrompt = constructContextPrompt(prompt);
-            const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
-            const response = await ai.models.generateContent({
-                model: state.settings.ai.personas.interestCompatibility.model,
-                contents: [{ role: 'user', parts: [{text: finalPrompt}] }],
-                config: {
-                    systemInstruction: state.settings.ai.personas.interestCompatibility.instructions,
-                    temperature: state.settings.ai.personas.interestCompatibility.temperature,
-                }
-            });
-
-            setMessages(prev => [...prev, { id: `ai_${Date.now()}`, sender: 'ai', text: response.text }]);
-        } catch (error: any) {
-            setMessages(prev => [...prev, { id: `err_${Date.now()}`, sender: 'ai', text: `Error: ${error.message}` }]);
-        } finally {
-            setChatIsLoading(false);
-        }
-    };
-    
-    const handleChatTopic = (topic: typeof REPORT_SECTIONS[0]) => {
-        if (loadingSection || isGeneratingFullReport) return;
-        setActiveChatTopic(topic.label);
-        const userMessage = `Let's discuss the "${topic.label}" section of my project.`;
-        setMessages([{ id: `sys_topic_${Date.now()}`, sender: 'system', text: `Now chatting about: ${topic.label}` }]);
-        handleChatRequest(topic.chatPrompt, userMessage);
-    };
-
-    const handleUserInputSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!userInput.trim() || chatIsLoading || !activeChatTopic) return;
-        handleChatRequest(userInput, userInput);
-        setUserInput('');
-    };
-
     // --- REPORT GENERATION LOGIC ---
     const handleGenerateSection = async (section: typeof REPORT_SECTIONS[0], isFullReportMode = false) => {
         if (!selectedProject || loadingSection || isGeneratingFullReport) return;
         if(!isFullReportMode) setLoadingSection(section.key);
 
         try {
-            const finalPrompt = constructContextPrompt(section.reportPrompt);
-            const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
-            const response = await ai.models.generateContent({
-                model: state.settings.ai.personas.interestCompatibility.model,
-                contents: [{role: 'user', parts: [{text: finalPrompt}]}],
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: section.schema,
-                    temperature: state.settings.ai.personas.interestCompatibility.temperature,
-                    systemInstruction: state.settings.ai.personas.interestCompatibility.instructions,
-                }
-            });
+            const context = getInterestCompatibilityContext(selectedProject, members);
+            const sectionData = await generateInterestCompatibilitySection(context, state.settings.ai, section.key as keyof AppSettings['ai']['interestCompatibilitySectionSettings']);
             
-            const parsedResult = JSON.parse(response.text);
-
-            if (!parsedResult || typeof parsedResult !== 'object' || !(section.key in parsedResult)) {
-                throw new Error(`AI response did not contain the expected '${section.key}' field.`);
-            }
-
-            setReportData(prev => ({ ...prev, ...parsedResult }));
+            setReportData(prev => ({ ...prev, ...sectionData }));
             if(!isFullReportMode) notify(`${section.label} generated successfully.`, 'success');
 
         } catch (error: any) {
@@ -494,7 +304,7 @@ const InterestCompatibilityPage: React.FC = () => {
                                 <div key={section.key} className="p-3 border rounded-lg bg-white border-slate-300">
                                     <p className="font-semibold text-slate-800">{section.label}</p>
                                     <div className="flex gap-2 mt-2">
-                                        <button onClick={() => handleChatTopic(section)} disabled={!!loadingSection || isGeneratingFullReport} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-60 flex items-center justify-center gap-2">
+                                        <button disabled={true} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                             <i className="fa-solid fa-comments"></i>Chat
                                         </button>
                                         <button onClick={() => handleGenerateSection(section)} disabled={!!loadingSection || isGeneratingFullReport} className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 border rounded-md hover:bg-blue-700 disabled:bg-slate-400 flex items-center justify-center gap-2">
@@ -505,23 +315,21 @@ const InterestCompatibilityPage: React.FC = () => {
                             ))}
                         </div>
                     </div>
-                     {/* Right Column: Chat */}
-                    <div className="lg:col-span-2 lg:h-[75vh] flex flex-col bg-slate-100 p-2 rounded-lg border border-slate-200">
-                         <h3 className="text-sm font-bold text-slate-800 mb-2 px-2 flex-shrink-0">{activeChatTopic ? `Chatting about: ${activeChatTopic}` : 'AI Chat'}</h3>
-                         <div ref={chatEndRef} className="flex-grow bg-white rounded-md p-3 text-sm text-slate-700 space-y-4 overflow-y-auto min-h-96">
-                            {messages.map(msg => (
-                                <div key={msg.id}>
-                                    {msg.sender === 'system' && <p className="text-xs text-center italic text-slate-500 p-2">{msg.text}</p>}
-                                    {msg.sender === 'user' && <div className="flex justify-end"><p className="bg-blue-200 rounded-lg px-3 py-2 inline-block max-w-xl text-blue-900">{msg.text}</p></div>}
-                                    {msg.sender === 'ai' && <div className="flex justify-start"><div className="bg-slate-200 text-slate-800 rounded-lg px-3 py-2 inline-block max-w-xl whitespace-pre-wrap font-sans">{msg.text}</div></div>}
-                                </div>
-                            ))}
-                            {chatIsLoading && <div className="flex items-center gap-2 text-slate-500 p-2"><i className="fa-solid fa-spinner fa-spin"></i><span>AI is thinking...</span></div>}
-                         </div>
-                         <form onSubmit={handleUserInputSubmit} className="mt-2 pt-2 border-t border-slate-300 flex gap-2 flex-shrink-0">
-                            <Input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="Type a follow-up message..." className="flex-grow" disabled={chatIsLoading || !activeChatTopic} />
-                            <button type="submit" disabled={chatIsLoading || !userInput.trim() || !activeChatTopic} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 disabled:bg-slate-400">Send</button>
-                        </form>
+                     {/* Right Column: Placeholder */}
+                    <div className="lg:col-span-2 lg:h-[75vh] flex flex-col bg-slate-100 p-4 rounded-lg border border-slate-200">
+                         <h3 className="font-bold text-lg text-slate-800 mb-4 flex-shrink-0 border-b border-slate-300 pb-3">
+                           Instructions
+                        </h3>
+                        <div className="prose prose-sm max-w-none text-slate-600">
+                            <p>This tool is designed for automated report generation.</p>
+                            <ol>
+                                <li>Select a project from the dropdown menu.</li>
+                                <li>Use the controls on the left to generate individual sections of the report or the full report at once.</li>
+                                <li>The AI will analyze your project's data—including its description, collaborators' bios, and budget—to assess how different stakeholder interests align.</li>
+                                <li>Once generated, you can review the report below, save it for your records, or copy its contents.</li>
+                            </ol>
+                            <p className="p-2 bg-slate-200 border-l-4 border-slate-400">The chat functionality for this tool is currently disabled pending future updates.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -533,7 +341,7 @@ const InterestCompatibilityPage: React.FC = () => {
                         <div className="flex gap-2">
                              <button onClick={() => setIsSaveModalOpen(true)} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"><i className="fa-solid fa-save mr-2"></i>Save Report</button>
                              <button onClick={handleCopyToClipboard} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300"><i className="fa-solid fa-copy mr-2"></i>Copy to Clipboard</button>
-                             <button onClick={() => setIsClearModalOpen(true)} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"><i className="fa-solid fa-trash-alt mr-2"></i>Clear Report</button>
+                             <button onClick={handleClearReport} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"><i className="fa-solid fa-trash-alt mr-2"></i>Clear Report</button>
                         </div>
                     </div>
                     <div className="space-y-4 p-6 border rounded-lg bg-white shadow-md">

@@ -122,10 +122,10 @@ const SaleSessionEditorModal: React.FC<SaleSessionEditorModalProps> = ({ session
                         </FormField>
                     )}
                     {formData.organizerType === 'internal' && formData.associationType === 'event' && (
-                        <FormField label="Select an Event" htmlFor="event_select"><Select id="event_select" value={formData.eventId || ''} onChange={e => setFormData(p => ({...p, eventId: e.target.value}))} options={[{value: '', label: 'Select event...'}, ...events.filter(e => !e.isTemplate).map(e => ({value: e.id, label: e.title}))]} /></FormField>
+                        <FormField label="Select an Event" htmlFor="event_select"><Select id="event_select" value={formData.eventId || ''} onChange={e => setFormData(p => ({...p, eventId: e.target.value || null, projectId: null}))} options={[{value: '', label: 'Select event...'}, ...events.filter(e => !e.isTemplate).map(e => ({value: e.id, label: e.title}))]} /></FormField>
                     )}
                     {formData.organizerType === 'internal' && formData.associationType === 'project' && (
-                        <FormField label="Select a Project" htmlFor="project_select"><Select id="project_select" value={formData.projectId || ''} onChange={e => setFormData(p => ({...p, projectId: e.target.value}))} options={[{value: '', label: 'Select project...'}, ...projects.map(p => ({value: p.id, label: p.projectTitle}))]} /></FormField>
+                        <FormField label="Select a Project" htmlFor="project_select"><Select id="project_select" value={formData.projectId || ''} onChange={e => setFormData(p => ({...p, projectId: e.target.value || null, eventId: null}))} options={[{value: '', label: 'Select project...'}, ...projects.map(p => ({value: p.id, label: p.projectTitle}))]} /></FormField>
                     )}
                     {formData.organizerType === 'partner' && (
                         <FormField label="Partner Information" htmlFor="partner_name">

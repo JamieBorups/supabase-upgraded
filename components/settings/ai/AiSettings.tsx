@@ -1,16 +1,21 @@
 
 
 
+
+
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
-import { AppSettings, AiPersonaName, AiPersonaSettings, CommunicationTemplate } from '../../../types';
+import { AppSettings, AiPersonaName, AiPersonaSettings, CommunicationTemplate, InterestCompatibilitySectionSettings } from '../../../types';
 import { initialSettings } from '../../../constants';
 import MainAiTab from './MainAiTab';
 import ModuleAiTab from './ModuleAiTab';
 import PersonaTestModal from './PersonaTestModal';
 import ConfirmationModal from '../../ui/ConfirmationModal';
 import * as api from '../../../services/api';
+import EcoStarSettingsEditor from './EcoStarSettingsEditor';
+import InterestCompatibilitySettingsEditor from './InterestCompatibilitySettingsEditor';
 
 const AiSettings: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
@@ -26,6 +31,10 @@ const AiSettings: React.FC = () => {
 
     const tabs: { id: AiPersonaName, label: string }[] = [
         { id: 'main', label: 'Main' },
+        { id: 'ecostar', label: 'ECO-STAR' },
+        { id: 'interestCompatibility', label: 'Interest Compatibility' },
+        { id: 'sdgAlignment', label: 'SDG Alignment' },
+        { id: 'recreation', label: 'Recreation Framework' },
         { id: 'projectGenerator', label: 'Project Generator' },
         { id: 'projects', label: 'Projects' },
         { id: 'tasks', label: 'Workplan Generator' },
@@ -34,10 +43,6 @@ const AiSettings: React.FC = () => {
         { id: 'members', label: 'Members' },
         { id: 'reports', label: 'Reports' },
         { id: 'media', label: 'Media' },
-        { id: 'ecostar', label: 'ECO-STAR' },
-        { id: 'interestCompatibility', label: 'Interest Compatibility' },
-        { id: 'sdgAlignment', label: 'SDG Alignment' },
-        { id: 'recreation', label: 'Recreation Framework' },
     ];
     
     const checkArrows = useCallback(() => {
@@ -115,6 +120,20 @@ const AiSettings: React.FC = () => {
         setIsDirty(true);
         notify('Template loaded. Click "Save Changes" to apply.', 'info');
     };
+    
+    const handleEcoStarFieldSettingsChange = (newFieldSettings: any) => {
+         setSettings(prev => produce(prev, draft => {
+            draft.ecostarFieldSettings = newFieldSettings;
+        }));
+        setIsDirty(true);
+    }
+    
+    const handleInterestCompatibilitySectionSettingsChange = (newSectionSettings: Record<string, InterestCompatibilitySectionSettings>) => {
+        setSettings(prev => produce(prev, draft => {
+            draft.interestCompatibilitySectionSettings = newSectionSettings;
+        }));
+        setIsDirty(true);
+    };
 
     const handleSave = async () => {
         const newSettings = produce(state.settings, draft => {
@@ -166,6 +185,30 @@ const AiSettings: React.FC = () => {
                     onTestPersona={() => setTestModalContext('main')}
                 />
             );
+        }
+        
+        if (activeTab === 'ecostar') {
+            return (
+                <EcoStarSettingsEditor
+                    persona={persona}
+                    onPersonaChange={(field, value) => handlePersonaChange(activeTab, field, value)}
+                    fieldSettings={settings.ecostarFieldSettings}
+                    onFieldSettingsChange={handleEcoStarFieldSettingsChange}
+                    onTestPersona={() => setTestModalContext(activeTab)}
+                />
+            )
+        }
+        
+        if (activeTab === 'interestCompatibility') {
+            return (
+                 <InterestCompatibilitySettingsEditor
+                    persona={persona}
+                    onPersonaChange={(field, value) => handlePersonaChange(activeTab, field, value)}
+                    sectionSettings={settings.interestCompatibilitySectionSettings}
+                    onSectionSettingsChange={handleInterestCompatibilitySectionSettingsChange}
+                    onTestPersona={() => setTestModalContext(activeTab)}
+                />
+            )
         }
         
         return (

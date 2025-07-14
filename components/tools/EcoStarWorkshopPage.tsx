@@ -1,12 +1,14 @@
 
+
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { produce } from 'immer';
-import { Content, Type } from '@google/genai';
+import { Content } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
 import { Page, FormData as Project, EcoStarReport, ReportSectionContent, EcoStarField } from '../../types';
 import { Select } from '../ui/Select';
 import { Input } from '../ui/Input';
 import { getAiResponse } from '../../services/aiService';
+import { generateEcoStarSection } from '../../services/ecoStarService';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
@@ -187,48 +189,12 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
         const historyForTopic = chatHistories[topic.key] || [];
         const chatHistoryText = historyForTopic.map(m => `${m.sender}: ${m.text}`).join('\n');
         
-        const reportPrompt = `Generate a JSON report for the "${topic.label}" section, strictly adhering to the provided schema. ${chatHistoryText ? `Use the following chat history as your primary source for generating the report content: \n\n${chatHistoryText}` : 'Use the general project context provided for your analysis.'}`;
-
-        const ecoStarSectionSchema = {
-            type: Type.OBJECT,
-            properties: {
-                summary: { type: Type.STRING, description: "A concise, well-written narrative of 2-3 paragraphs suitable for a grant application, focusing on the project's relationship with this section. You MUST use the provided chat history as the primary source for this summary." },
-                keyConsiderations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 important factors, potential challenges, or strengths related to this section, derived from the chat history. Each item must be a complete sentence." },
-                followUpQuestions: { 
-                    type: Type.ARRAY, 
-                    description: "A list of 3-5 probing questions to help the user think more deeply about this aspect of their project. For each question, you MUST also provide a brief, insightful sample answer based on the project context.",
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            question: { type: Type.STRING, description: "A thought-provoking follow-up question." },
-                            sampleAnswer: { type: Type.STRING, description: "A concise, helpful sample answer to the question, based on the project's context."}
-                        },
-                        required: ['question', 'sampleAnswer']
-                    }
-                }
-            },
-            required: ['summary', 'keyConsiderations', 'followUpQuestions']
-        };
-
         try {
-            const finalPrompt = constructContextPrompt(reportPrompt);
-            const ecoStarSettings = produce(state.settings.ai, draft => {
-                draft.personas.ecostar.instructions = ECOSTAR_PERSONA_INSTRUCTIONS;
-                draft.personas.main.instructions = '';
-            });
-
-            const result = await getAiResponse('ecostar', finalPrompt, ecoStarSettings, [], { responseSchema: ecoStarSectionSchema });
-            
-            const parsedResult = JSON.parse(result.text);
-            
-            if (typeof parsedResult !== 'object' || parsedResult === null || !('summary' in parsedResult) || !Array.isArray(parsedResult.keyConsiderations) || !Array.isArray(parsedResult.followUpQuestions)) {
-                throw new Error("AI response did not match the expected report structure.");
-            }
+            const parsedResult = await generateEcoStarSection(topic, selectedProject, members, state.settings.ai, chatHistoryText);
             
             setReportSections(prev => ({...prev, [topic.key]: parsedResult}));
             
             const nextTopic = getNextTopic(topic.key);
-            
             const systemMessage = nextTopic 
                 ? `Generated content for ${topic.label}. Would you like to proceed to the next section?`
                 : `Generated content for ${topic.label}. All sections are complete.`;
@@ -247,7 +213,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, isGeneratingReport, selectedProject, chatHistories, state.settings.ai, constructContextPrompt, getNextTopic, notify]);
+    }, [isLoading, isGeneratingReport, selectedProject, members, state.settings.ai, chatHistories, getNextTopic, notify]);
     
     const handleAiRequest = useCallback(async (topic: EcoStarField, prompt: string, userMessageText: string) => {
         setIsLoading(true);
@@ -371,32 +337,6 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
         setCurrentTopic(null);
         setChatHistories(prev => ({...prev, _global: [{ id: `sys_report_${Date.now()}`, sender: 'system', text: 'Generating full ECO-STAR report. This may take a moment...' }]}));
     
-        const ecoStarSectionSchema = {
-            type: Type.OBJECT,
-            properties: {
-                summary: { type: Type.STRING, description: "A concise, well-written narrative of 2-3 paragraphs suitable for a grant application, focusing on the project's relationship with this section. You MUST use the provided project context as the primary source for this summary." },
-                keyConsiderations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 important factors, potential challenges, or strengths related to this section, derived from the project context. Each item must be a complete sentence." },
-                followUpQuestions: { 
-                    type: Type.ARRAY, 
-                    description: "A list of 3-5 probing questions to help the user think more deeply about this aspect of their project. For each question, you MUST also provide a brief, insightful sample answer based on the project context.",
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            question: { type: Type.STRING, description: "A thought-provoking follow-up question." },
-                            sampleAnswer: { type: Type.STRING, description: "A concise, helpful sample answer to the question, based on the project's context."}
-                        },
-                        required: ['question', 'sampleAnswer']
-                    }
-                }
-            },
-            required: ['summary', 'keyConsiderations', 'followUpQuestions']
-        };
-
-        const ecoStarSettings = produce(state.settings.ai, draft => {
-            draft.personas.ecostar.instructions = ECOSTAR_PERSONA_INSTRUCTIONS;
-            draft.personas.main.instructions = '';
-        });
-
         for (const field of ECOSTAR_FIELDS) {
             setChatHistories(prev => {
                 const newHistory = { ...prev };
@@ -405,16 +345,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
             });
             setReportSections(prev => ({...prev, [field.key]: 'Generating...'}));
             try {
-                const reportPrompt = `Generate a report for the "${field.label}" section. Use the general project context provided.`;
-                const finalPrompt = constructContextPrompt(reportPrompt);
-                const result = await getAiResponse('ecostar', finalPrompt, ecoStarSettings, [], { responseSchema: ecoStarSectionSchema });
-                
-                const parsedResult = JSON.parse(result.text);
-
-                if (typeof parsedResult !== 'object' || parsedResult === null || !('summary' in parsedResult) || !Array.isArray(parsedResult.keyConsiderations) || !Array.isArray(parsedResult.followUpQuestions)) {
-                    throw new Error(`AI response for ${field.label} did not match expected structure.`);
-                }
-                
+                const parsedResult = await generateEcoStarSection(field, selectedProject, members, state.settings.ai, '');
                 setReportSections(prev => ({...prev, [field.key]: parsedResult}));
             } catch (error: any) {
                  setReportSections(prev => ({ ...prev, [field.key]: `Error: The AI returned data in an unexpected format.` }));

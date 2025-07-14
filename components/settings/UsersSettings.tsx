@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../context/AppContext.tsx';
@@ -138,7 +139,7 @@ const UsersSettings: React.FC = () => {
                 <div className="p-4 border border-slate-200 rounded-lg">
                     <h3 className="text-lg font-semibold text-slate-800 mb-4">Create New User</h3>
                     <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                        <FormField label="Link to Member" htmlFor="user_member"><Select id="user_member" value={newUser.memberId} onChange={e => setNewUser(p => ({...p, memberId: e.target.value}))} options={[{value:'', label: 'Unlinked (e.g. Admin)'}, ...availableMembers.map(m => ({value: m.id, label: `${m.firstName} ${m.lastName}`}))]} /></FormField>
+                        <FormField label="Link to Member" htmlFor="user_member"><Select id="user_member" value={newUser.memberId} onChange={e => setNewUser(p => ({...p, memberId: e.target.value || null}))} options={[{value:'', label: 'Unlinked (e.g. Admin)'}, ...availableMembers.map(m => ({value: m.id, label: `${m.firstName} ${m.lastName}`}))]} /></FormField>
                         <FormField label="Username" htmlFor="user_username"><Input required id="user_username" value={newUser.username} onChange={e => setNewUser(p => ({...p, username: e.target.value}))} /></FormField>
                         <FormField label="Password" htmlFor="user_password"><Input required type="password" id="user_password" value={newUser.password} onChange={e => setNewUser(p => ({...p, password: e.target.value}))} /></FormField>
                         <FormField label="Role" htmlFor="user_role"><Select id="user_role" value={newUser.role} onChange={e => setNewUser(p => ({...p, role: e.target.value as UserRole}))} options={[{value: 'user', label: 'User'}, {value: 'admin', label: 'Admin'}]} /></FormField>
