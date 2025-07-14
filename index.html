@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Arts Incubator</title>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.1.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+        "react/": "https://esm.sh/react@^19.1.0/",
+        "immer": "https://esm.sh/immer@^10.1.1",
+        "react-hot-toast": "https://esm.sh/react-hot-toast@^2.5.2",
+        "jspdf": "https://esm.sh/jspdf@^3.0.1",
+        "jspdf-autotable": "https://esm.sh/jspdf-autotable@^5.0.2",
+        "@google/genai": "https://esm.sh/@google/genai@^1.9.0",
+        "rrule": "https://esm.sh/rrule@^2.8.1",
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.5"
+      }
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer" />
+    
+    <style>
+      details > summary { list-style: none; }
+      details > summary::-webkit-details-marker { display: none; }
+      details .details-arrow { 
+        transform: rotate(-90deg);
+        transition: transform 0.2s ease-in-out; 
+      }
+      details[open] .details-arrow { 
+        transform: rotate(0deg); 
+      }
+
+      @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-menu, #printable-menu * {
+            visibility: visible;
+        }
+        #printable-menu {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+      }
+
+      /* Enhanced Prose styling for rendered HTML reports */
+      .prose {
+        color: #334155; /* slate-700 */
+        line-height: 1.65;
+        max-width: none;
+      }
+      .prose h1 {
+        font-size: 1.875rem; /* 3xl */
+        font-weight: 800;
+        margin-bottom: 1rem;
+        margin-top: 0;
+        color: #1e293b; /* slate-800 */
+      }
+      .prose h2 {
+        font-size: 1.5rem; /* 2xl */
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #1e293b;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #0d9488; /* teal-600 */
+      }
+      .prose h3 {
+        font-size: 1.25rem; /* xl */
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        color: #334155;
+      }
+      .prose p {
+        margin-bottom: 1rem;
+      }
+      .prose ul, .prose ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .prose ul { list-style-type: disc; }
+      .prose ol { list-style-type: decimal; }
+      .prose li {
+        margin-bottom: 0.5rem;
+        padding-left: 0.25rem;
+      }
+      .prose li::marker {
+          color: #94a3b8; /* slate-400 */
+      }
+      .prose hr {
+        margin-top: 2.5rem;
+        margin-bottom: 2.5rem;
+        border-color: #cbd5e1; /* slate-300 */
+      }
+      .prose a {
+          color: #0d9488;
+          text-decoration: underline;
+      }
+      .prose a:hover {
+          color: #115e59;
+      }
+      
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
