@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../context/AppContext';
@@ -13,6 +12,8 @@ const GeneralSettings: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
     const [settings, setSettings] = useState<AppSettings['general']>(state.settings.general);
     const [isDirty, setIsDirty] = useState(false);
+
+    const isConnected = !state.setupNeeded;
 
     const handleChange = <K extends keyof AppSettings['general']>(field: K, value: AppSettings['general'][K]) => {
         setSettings(prev => ({ ...prev, [field]: value }));
@@ -36,8 +37,26 @@ const GeneralSettings: React.FC = () => {
     return (
         <div>
             <h2 className="text-2xl font-bold text-slate-900">General Settings</h2>
-            <p className="mt-1 text-sm text-slate-500">Configure application-wide settings for your collective.</p>
+            <p className="mt-1 text-sm text-slate-500">Configure application-wide settings and check system status.</p>
             
+            <div className="mt-8 p-4 border border-slate-200 rounded-lg bg-slate-50/70">
+                <h3 className="text-lg font-semibold text-slate-800">System Status</h3>
+                <div className="mt-4">
+                    <div className="flex items-center">
+                        <div className={`w-3 h-3 rounded-full mr-3 ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                        <span className="text-sm font-medium text-slate-700">Database Connection:</span>
+                        <span className={`ml-2 font-bold ${isConnected ? 'text-green-700' : 'text-red-700'}`}>
+                            {isConnected ? 'Connected' : 'Connection Failed'}
+                        </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1 ml-6">
+                        {isConnected 
+                            ? 'Successfully connected to the Supabase database.' 
+                            : 'Could not connect to the database. Please check your Supabase URL and Key in the environment variables.'}
+                    </p>
+                </div>
+            </div>
+
             <div className="mt-8 space-y-6 max-w-2xl">
                 <FormField label="Collective Name" htmlFor="collectiveName" instructions="This name will appear in the application header.">
                     <Input 
