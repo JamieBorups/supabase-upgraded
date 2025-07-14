@@ -83,7 +83,7 @@ const SetupGuide: React.FC = () => {
 
       <h3>Completing Setup</h3>
       <p>
-        Once all three environment variables are correctly set and your application has been redeployed, refresh the application page. The Setup Wizard will disappear, and you will be presented with the login screen. You can then log in with the default administrator account (username: <strong>admin</strong>, password: <strong>admin</strong>) to begin using the application.
+        Once all three environment variables are correctly set and your application has been redeployed, refresh the application page. The Setup Wizard will disappear, and you will be presented with the login screen.
       </p>
     </div>
   );
