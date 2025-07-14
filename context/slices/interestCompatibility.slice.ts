@@ -1,3 +1,4 @@
+
 import { AppState, Action } from '../../types';
 
 export const interestCompatibilityInitialState = {

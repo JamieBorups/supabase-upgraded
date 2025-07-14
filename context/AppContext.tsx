@@ -34,15 +34,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     useEffect(() => {
         const initializeApp = async () => {
-            // Check if essential environment variables are configured.
-            if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY || !process.env.API_KEY) {
+            // The Supabase client is now configured in supabase.ts with fallbacks.
+            // We only need to check for the Gemini API key here.
+            if (!process.env.API_KEY) {
                 dispatch({ type: 'SET_SETUP_STATUS', payload: true });
                 dispatch({ type: 'SET_LOADING', payload: false });
                 return;
             }
 
             try {
-                // If config is set, proceed with initialization
+                // This will throw an error if Supabase keys are invalid, which is caught below.
                 const settingsFromApi = await api.getSettings();
 
                 // If we get here, connection is good. Mark setup as complete.
@@ -96,7 +97,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
             } catch (error: any) {
                 console.error("Initialization failed:", error);
-                // If any part of the connection/fetch fails (with non-placeholder keys), it indicates a user config error.
+                // If any part of the connection/fetch fails (e.g., getting settings),
+                // it indicates a user config error with Supabase or network.
                 dispatch({ type: 'SET_SETUP_STATUS', payload: true });
             } finally {
                 dispatch({ type: 'SET_LOADING', payload: false });

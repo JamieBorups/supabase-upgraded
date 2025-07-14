@@ -2,6 +2,8 @@
 import { AppSettings } from '../../types.ts';
 import { AI_PERSONAS } from './personas.constants.ts';
 import { PROJECT_GENERATOR_FIELD_INSTRUCTIONS } from './projectGeneratorField.instructions.ts';
+import { ECOSTAR_FIELD_SETTINGS } from './ecostarFieldSettings.ts';
+import { INTEREST_COMPATIBILITY_SECTION_SETTINGS } from './interestCompatibility.constants.ts';
 
 export const initialSettings: AppSettings = {
   general: {
@@ -47,6 +49,8 @@ export const initialSettings: AppSettings = {
     plainTextMode: false,
     personas: AI_PERSONAS,
     projectGeneratorFieldInstructions: PROJECT_GENERATOR_FIELD_INSTRUCTIONS,
+    ecostarFieldSettings: ECOSTAR_FIELD_SETTINGS,
+    interestCompatibilitySectionSettings: INTEREST_COMPATIBILITY_SECTION_SETTINGS,
     personaTemplates: {
       main: [], projects: [], members: [], tasks: [], budget: [], reports: [], media: [],
       ecostar: [], projectGenerator: [], interestCompatibility: [], sdgAlignment: [], recreation: [],

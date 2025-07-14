@@ -20,3 +20,4 @@ export * from './models/sales.initial';
 export * from './models/task.initial';
 export * from './models/ticketType.initial';
 export * from './models/venue.initial';
+export * from './ai/interestCompatibility.constants';

@@ -1,5 +1,6 @@
 import { FormData } from '../../types.ts';
 import { initialBudget } from './budget.initial';
+import { DEFAULT_COLLABORATOR_RATIONALE } from '../text.constants.ts';
 
 export const initialFormData: FormData = {
   id: '',
@@ -28,7 +29,7 @@ export const initialFormData: FormData = {
   organizationalRationale: '',
   artisticDevelopment: '',
   additionalInfo: '',
-  whoWillWork: '',
+  whoWillWork: DEFAULT_COLLABORATOR_RATIONALE,
   howSelectionDetermined: "Artist and participant selection will be determined through a merit-based peer review process, ensuring a diverse and high-quality roster. Submissions will be evaluated by a panel of experienced arts professionals based on artistic excellence, relevance to the project theme, feasibility, and demonstrated capacity. Our aim is to curate a dynamic and engaging program that reflects a range of perspectives and artistic approaches.",
   collaboratorDetails: [],
   budget: initialBudget,
