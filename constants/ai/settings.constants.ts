@@ -1,11 +1,11 @@
 
 
+
 import { AppSettings } from '../../types.ts';
 import { AI_PERSONAS } from './personas.constants.ts';
 import { PROJECT_GENERATOR_FIELD_INSTRUCTIONS } from './projectGeneratorField.instructions.ts';
 import { ECOSTAR_FIELD_SETTINGS } from './ecostarFieldSettings.ts';
 import { INTEREST_COMPATIBILITY_SECTION_SETTINGS } from './interestCompatibility.constants.ts';
-import { RESEARCH_PLAN_SECTION_SETTINGS } from './researchPlanSection.instructions.ts';
 
 export const initialSettings: AppSettings = {
   general: {
@@ -53,11 +53,10 @@ export const initialSettings: AppSettings = {
     projectGeneratorFieldInstructions: PROJECT_GENERATOR_FIELD_INSTRUCTIONS,
     ecostarFieldSettings: ECOSTAR_FIELD_SETTINGS,
     interestCompatibilitySectionSettings: INTEREST_COMPATIBILITY_SECTION_SETTINGS,
-    researchPlanSectionSettings: RESEARCH_PLAN_SECTION_SETTINGS,
     personaTemplates: {
       main: [], projects: [], members: [], tasks: [], budget: [], reports: [], media: [],
       ecostar: [], projectGenerator: [], interestCompatibility: [], sdgAlignment: [], recreation: [],
-      taskGenerator: [], researchPlan: []
+      taskGenerator: [], kpiGenerator: []
     }
   },
   media: {

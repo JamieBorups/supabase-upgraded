@@ -18,8 +18,7 @@
         "jspdf-autotable": "https://esm.sh/jspdf-autotable@^5.0.2",
         "@google/genai": "https://esm.sh/@google/genai@^1.9.0",
         "rrule": "https://esm.sh/rrule@^2.8.1",
-        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.5",
-        "marked": "https://esm.sh/marked@13.0.2"
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.5"
       }
     }
     </script>
@@ -43,10 +42,11 @@
         body * {
             visibility: hidden;
         }
-        #printable-menu, #printable-menu * {
+        #printable-release, #printable-release *,
+        #printable-kpi-report, #printable-kpi-report * {
             visibility: visible;
         }
-        #printable-menu {
+        #printable-release, #printable-kpi-report {
             position: absolute;
             left: 0;
             top: 0;
@@ -54,6 +54,7 @@
             padding: 0;
             margin: 0;
             border: none;
+            overflow: visible !important;
         }
       }
 
