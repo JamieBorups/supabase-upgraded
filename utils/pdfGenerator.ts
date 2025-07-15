@@ -1,5 +1,4 @@
 
-
 import jsPDF from 'jspdf';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan } from '../types';
 import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES } from '../constants';
@@ -59,14 +58,19 @@ class PdfBuilder {
     
     addSectionTitle(title: string) {
         const titleHeight = this.fontSizes.h2 * this.lineHeightRatio;
-        // Prevent widow titles by ensuring there's space for the title and a few lines of text
-        this.checkPageBreak(titleHeight + 30); 
+        const wrappedTitle = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
+        const requiredHeight = wrappedTitle.length * titleHeight + 30;
+        this.checkPageBreak(requiredHeight);
 
         this.y += 15; // Top margin for section
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h2);
         this.doc.setTextColor('#1e293b');
-        this.doc.text(title, this.margin, this.y);
+        
+        wrappedTitle.forEach((line: string) => {
+             this.doc.text(line, this.margin, this.y);
+             this.y += titleHeight;
+        });
         
         this.y += (this.fontSizes.h2 * this.lineHeightRatio) * 0.5;
         this.doc.setDrawColor('#0d9488'); // teal-600
@@ -77,25 +81,37 @@ class PdfBuilder {
 
     addSubSectionTitle(title: string) {
         const titleHeight = this.fontSizes.h3 * this.lineHeightRatio;
-        // Prevent widow subtitles
-        this.checkPageBreak(titleHeight + 20); 
+        const wrappedTitle = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
+        const requiredHeight = wrappedTitle.length * titleHeight + 20;
+        this.checkPageBreak(requiredHeight);
+
         this.y += 12; // Top margin
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h3);
         this.doc.setTextColor('#334155'); // slate-700
-        this.doc.text(title, this.margin, this.y);
-        this.y += (this.fontSizes.h3 * this.lineHeightRatio);
+        
+        wrappedTitle.forEach((line: string) => {
+             this.doc.text(line, this.margin, this.y);
+             this.y += titleHeight;
+        });
     }
     
     addMinorSectionTitle(title: string) {
         const titleHeight = this.fontSizes.h4 * this.lineHeightRatio;
-        this.checkPageBreak(titleHeight + 15);
+        const wrappedTitle = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
+        const requiredHeight = wrappedTitle.length * titleHeight + 15;
+        this.checkPageBreak(requiredHeight);
+
         this.y += 10;
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h4);
         this.doc.setTextColor('#475569'); // slate-600
-        this.doc.text(title, this.margin, this.y);
-        this.y += (this.fontSizes.h4 * this.lineHeightRatio)
+        
+        wrappedTitle.forEach((line: string) => {
+             this.doc.text(line, this.margin, this.y);
+             this.y += titleHeight;
+        });
+        this.y += 2; // Spacing after title
     }
 
     addParagraph(text: string | null | undefined) {
@@ -103,58 +119,62 @@ class PdfBuilder {
             this.addText('N/A', this.fontSizes.p, 'italic', {top: 4, bottom: 12});
             return;
         }
-
-        // Helper to render a single line with inline bolding
-        const renderLineWithBold = (line: string) => {
-            const lineHeight = this.fontSizes.p * this.lineHeightRatio;
+    
+        const renderStyledLine = (line: string, { size = this.fontSizes.p, style = 'normal', xOffset = 0 } = {}) => {
+            const lineHeight = size * this.lineHeightRatio;
             this.checkPageBreak(lineHeight);
             
-            const parts = line.split('**');
-            let currentX = this.margin;
-            
-            parts.forEach((part, index) => {
-                if (part === '') return;
-                
-                const isBold = index % 2 !== 0;
-                this.doc.setFontSize(this.fontSizes.p);
-                this.doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-                
-                this.doc.text(part, currentX, this.y);
-                currentX += this.doc.getStringUnitWidth(part) * this.fontSizes.p / this.doc.internal.scaleFactor;
-            });
-            
-            this.y += lineHeight;
-        }
+            const parts = line.split(/(\*\*.*?\*\*)/g).filter(Boolean);
+            let currentX = this.margin + xOffset;
 
-        const blocks = text.split(/\n\s*\n/);
+            parts.forEach(part => {
+                const isBold = part.startsWith('**') && part.endsWith('**');
+                const cleanPart = isBold ? part.slice(2, -2) : part;
+
+                this.doc.setFontSize(size);
+                this.doc.setFont('helvetica', isBold ? 'bold' : style);
+                this.doc.text(cleanPart, currentX, this.y);
+                currentX += this.doc.getStringUnitWidth(cleanPart) * size / this.doc.internal.scaleFactor;
+            });
+            this.y += lineHeight;
+        };
+
+        const lines = text.split('\n');
         
-        blocks.forEach(block => {
-            if (block.trim() === '') return;
-            
-            const trimmedBlock = block.trim();
-            const listItems = trimmedBlock.split('\n').filter(line => line.trim().startsWith('* ') || line.trim().startsWith('- '));
-            
-            // Check for a line that is entirely bold (like a subheading)
-            if (trimmedBlock.startsWith('**') && trimmedBlock.endsWith('**')) {
-                this.addText(trimmedBlock.slice(2, -2), this.fontSizes.h4, 'bold', { top: 8, bottom: 2 });
-            // Check if the majority of the block consists of list items
-            } else if (listItems.length > 0 && listItems.length >= (trimmedBlock.split('\n').length * 0.8)) {
-                this.y += 4; // Top spacing for list block
-                listItems.forEach(item => {
-                    const content = `•  ${item.trim().substring(item.trim().indexOf(' ')).trim()}`;
-                    const wrappedLines = this.doc.splitTextToSize(content, this.pageWidth - this.margin * 2);
-                    wrappedLines.forEach(line => renderLineWithBold(line));
-                });
-                this.y += 8; // Bottom spacing for list block
-            // Handle as a normal paragraph
-            } else {
-                 this.y += 4; // Top spacing for paragraph
-                 const wrappedLines = this.doc.splitTextToSize(trimmedBlock, this.pageWidth - this.margin * 2);
-                 wrappedLines.forEach(line => renderLineWithBold(line));
-                 this.y += 8; // Bottom spacing for paragraph
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+
+            if (trimmedLine === '') {
+                this.y += this.fontSizes.p * 0.5; // Paragraph break
+                continue;
             }
-        });
+            if (trimmedLine.startsWith('## ')) {
+                this.addSubSectionTitle(trimmedLine.substring(3).trim());
+                continue;
+            }
+             if (trimmedLine.startsWith('### ')) {
+                 this.addMinorSectionTitle(trimmedLine.substring(4).trim());
+                 continue;
+            }
+            if (trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ')) {
+                const content = `•  ${trimmedLine.substring(2)}`;
+                const wrappedLines = this.doc.splitTextToSize(content, this.pageWidth - this.margin * 2 - 15);
+                wrappedLines.forEach(l => renderStyledLine(l, { xOffset: 15 }));
+                continue;
+            }
+
+            const isHeading = (trimmedLine.endsWith(':') && trimmedLine.length < 100) || (trimmedLine.startsWith('**') && trimmedLine.endsWith('**'));
+
+            if (isHeading) {
+                const headingText = trimmedLine.startsWith('**') ? trimmedLine.slice(2, -2) : trimmedLine;
+                this.addMinorSectionTitle(headingText);
+            } else {
+                const wrappedLines = this.doc.splitTextToSize(trimmedLine, this.pageWidth - this.margin * 2);
+                wrappedLines.forEach(l => renderStyledLine(l));
+            }
+        }
     }
+
 
     private addText(text: string, fontSize: number, fontStyle: 'normal' | 'bold' | 'italic', spacing: { top: number, bottom: number }) {
         this.y += spacing.top;
@@ -175,7 +195,7 @@ class PdfBuilder {
 
     addList(items: string[]) {
         if (!items || items.length === 0) return;
-        const listContent = items.map(item => `•  ${item}`).join('\n');
+        const listContent = items.map(item => `* ${item}`).join('\n');
         this.addParagraph(listContent);
     }
 
