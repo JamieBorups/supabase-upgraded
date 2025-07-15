@@ -11,6 +11,7 @@ import { PROJECT_GENERATOR_PERSONA_INSTRUCTIONS } from './projectGenerator.perso
 import { INTEREST_COMPATIBILITY_PERSONA_INSTRUCTIONS } from './interestCompatibility.persona.ts';
 import { SDG_ALIGNMENT_PERSONA_INSTRUCTIONS } from './sdgAlignment.persona.ts';
 import { RECREATION_PERSONA_INSTRUCTIONS } from './recreation.persona.ts';
+import { RESEARCH_PLAN_PERSONA_INSTRUCTIONS } from './researchPlan.persona.ts';
 
 export const AI_PERSONAS = {
     main: { instructions: MAIN_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
@@ -26,4 +27,5 @@ export const AI_PERSONAS = {
     interestCompatibility: { instructions: INTEREST_COMPATIBILITY_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.6 },
     sdgAlignment: { instructions: SDG_ALIGNMENT_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.6 },
     recreation: { instructions: RECREATION_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
+    researchPlan: { instructions: RESEARCH_PLAN_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
 };

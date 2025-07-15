@@ -1,14 +1,14 @@
 
 
-
 import { produce } from 'immer';
-import { AppState, Action, ProjectExportData, Member } from '../../types';
+import { AppState, Action, ProjectExportData, Member, ResearchPlan } from '../../types';
 
 export const uiInitialState = {
     loading: true,
     setupNeeded: false, // Default to false, AppContext will determine if setup is needed
     currentUser: null,
     reportProjectIdToOpen: null,
+    researchPlanToEdit: null,
     activeWorkshopItem: null,
 };
 
@@ -18,7 +18,7 @@ const otherInitialState = {
     reports: [], highlights: [], newsReleases: [], contacts: [], interactions: [],
     venues: [], events: [], ticketTypes: [], eventTickets: [], proposals: [],
     inventoryItems: [], inventoryCategories: [], salesTransactions: [], itemLists: [],
-    saleListings: [], ecostarReports: [], interestCompatibilityReports: [], recreationFrameworkReports: [], sdgAlignmentReports: [],
+    saleListings: [], ecostarReports: [], interestCompatibilityReports: [], recreationFrameworkReports: [], sdgAlignmentReports: [], researchPlans: [],
 };
 
 export const uiReducer = (state: AppState, action: Action): Partial<AppState> => {
@@ -50,6 +50,9 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
 
         case 'SET_REPORT_PROJECT_ID_TO_OPEN':
             return { reportProjectIdToOpen: action.payload };
+
+        case 'SET_RESEARCH_PLAN_TO_EDIT':
+            return { researchPlanToEdit: action.payload };
 
         case 'SET_ACTIVE_WORKSHOP_ITEM':
             return { activeWorkshopItem: action.payload };

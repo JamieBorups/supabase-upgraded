@@ -1,6 +1,8 @@
 
 
-import React, { useState } from 'react';
+
+
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useAppContext } from './context/AppContext.tsx';
 import Layout from './components/Layout.tsx';
 import ProjectManager from './ProjectManager.tsx';
@@ -33,10 +35,17 @@ import FrameworkForRecreationPage from './components/tools/FrameworkForRecreatio
 import AboutPage from './components/pages/AboutPage.tsx';
 import MarketplaceManager from './components/sales/SalesManager.tsx';
 import SetupWizard from './components/setup/SetupWizard.tsx';
+import ResearchPlanGeneratorPage from './components/tools/ResearchPlanGeneratorPage.tsx';
 
 const AppContent: React.FC = () => {
     const { state } = useAppContext();
     const [activePage, setActivePage] = useState<Page>('home');
+
+    useEffect(() => {
+        if (state.researchPlanToEdit) {
+            setActivePage('researchPlanGenerator');
+        }
+    }, [state.researchPlanToEdit]);
 
     const handleNavigate = (page: Page) => {
         setActivePage(page);
@@ -81,6 +90,7 @@ const AppContent: React.FC = () => {
             case 'interestCompatibility': return <InterestCompatibilityPage />;
             case 'sdgAlignment': return <SdgAlignmentPage />;
             case 'frameworkForRecreation': return <FrameworkForRecreationPage />;
+            case 'researchPlanGenerator': return <ResearchPlanGeneratorPage />;
             case 'dbTest': return <DbTestPage />;
             case 'communityReach': return <CommunityReachPage />;
             case 'impactAssessment': return <ImpactAssessmentPage />;

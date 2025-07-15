@@ -1,6 +1,6 @@
 // This is a barrel file. It re-exports all constants from the modularized files
-// in the /constants/ai and /constants/models directories. This allows for better
-// organization without breaking any existing imports in the application.
+// in the /constants directory. This allows for better organization without
+// breaking any existing imports in the application.
 
 // --- AI Settings ---
 export * from './ai/settings.constants';
@@ -20,4 +20,5 @@ export * from './models/sales.initial';
 export * from './models/task.initial';
 export * from './models/ticketType.initial';
 export * from './models/venue.initial';
+export * from './models/research.initial';
 export * from './ai/interestCompatibility.constants';

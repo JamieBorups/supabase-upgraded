@@ -15,6 +15,7 @@ import { ecostarInitialState } from '../slices/ecostar.slice';
 import { interestCompatibilityInitialState } from '../slices/interestCompatibility.slice.ts';
 import { sdgInitialState } from '../slices/sdg.slice.ts';
 import { recreationInitialState } from '../slices/recreation.slice.ts';
+import { researchInitialState } from '../slices/research.slice.ts';
 
 export const initialState: AppState = {
     ...uiInitialState,
@@ -30,4 +31,5 @@ export const initialState: AppState = {
     ...interestCompatibilityInitialState,
     ...sdgInitialState,
     ...recreationInitialState,
+    ...researchInitialState,
 };

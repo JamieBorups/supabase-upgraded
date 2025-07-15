@@ -55,13 +55,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     newsReleases, reports, contacts, interactions, venues, 
                     events, ticketTypes, eventTickets, proposals, directExpenses,
                     inventoryItems, inventoryCategories, saleSessions, salesTransactions, itemLists,
-                    saleListings, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports
+                    saleListings, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports,
+                    researchPlans
                 ] = await Promise.all([
                     api.getProjects(), api.getMembers(), api.getUsers(), api.getTasks(), api.getActivities(), api.getHighlights(),
                     api.getNewsReleases(), api.getReports(), api.getContacts(), api.getInteractions(), api.getVenues(),
                     api.getEvents(), api.getTicketTypes(), api.getEventTickets(), api.getProposals(), api.getDirectExpenses(),
                     api.getInventoryItems(), api.getInventoryCategories(), api.getSaleSessions(), api.getSalesTransactions(), api.getItemLists(),
-                    api.getSaleListings(), api.getEcoStarReports(), api.getInterestCompatibilityReports(), api.getSdgAlignmentReports(), api.getRecreationFrameworkReports()
+                    api.getSaleListings(), api.getEcoStarReports(), api.getInterestCompatibilityReports(), api.getSdgAlignmentReports(), api.getRecreationFrameworkReports(),
+                    api.getResearchPlans()
                 ]);
 
                 // Check for admin user after fetching users table
@@ -90,7 +92,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     newsReleases, reports, contacts, interactions, venues, events, ticketTypes,
                     eventTickets, proposals, directExpenses, inventoryItems, inventoryCategories,
                     saleSessions, salesTransactions, itemLists, saleListings, ecostarReports,
-                    interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports
+                    interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans
                 };
                 
                 dispatch({ type: 'LOAD_DATA', payload: loadedData });
