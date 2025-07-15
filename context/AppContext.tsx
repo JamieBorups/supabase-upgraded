@@ -34,8 +34,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     useEffect(() => {
         const initializeApp = async () => {
-            // The Supabase client is now configured in supabase.ts with fallbacks.
-            // We only need to check for the Gemini API key here.
+            // The Setup Wizard will be triggered if the API call fails, which covers invalid Supabase keys.
+            // We only need to pre-emptively check for the Gemini API key.
             if (!process.env.API_KEY) {
                 dispatch({ type: 'SET_SETUP_STATUS', payload: true });
                 dispatch({ type: 'SET_LOADING', payload: false });

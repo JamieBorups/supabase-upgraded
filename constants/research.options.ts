@@ -1,4 +1,20 @@
 
+
+import { ResearchPlanSection } from '../types';
+
+export const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; wordLimit: number }[] = [
+    { key: 'titleAndOverview', label: 'Overview', wordLimit: 300 },
+    { key: 'researchQuestions', label: 'Research Questions and Objectives', wordLimit: 400 },
+    { key: 'communityEngagement', label: 'Community Engagement and Context', wordLimit: 500 },
+    { key: 'designAndMethodology', label: 'Research Design and Methodology', wordLimit: 1000 },
+    { key: 'ethicalConsiderations', label: 'Ethical Considerations and Protocols', wordLimit: 750 },
+    { key: 'knowledgeMobilization', label: 'Knowledge Mobilization and Dissemination', wordLimit: 500 },
+    { key: 'projectManagement', label: 'Project Management and Timeline', wordLimit: 500 },
+    { key: 'sustainability', label: 'Sustainability', wordLimit: 800 },
+    { key: 'projectEvaluation', label: 'Project Evaluation', wordLimit: 400 },
+];
+
+
 export const EPISTEMOLOGY_OPTIONS = [
     { value: 'Indigenous Epistemologies', label: 'Indigenous Epistemologies' },
     { value: 'Participatory/Experiential Epistemology', label: 'Participatory/Experiential Epistemology' },

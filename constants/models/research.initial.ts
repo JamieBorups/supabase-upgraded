@@ -1,4 +1,5 @@
 
+
 import { ResearchPlan } from '../../types.ts';
 
 export const initialResearchPlanData: Omit<ResearchPlan, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -9,13 +10,15 @@ export const initialResearchPlanData: Omit<ResearchPlan, 'id' | 'createdAt' | 'u
     pedagogies: [],
     methodologies: [],
     mixedMethods: [],
+    communities: [],
     titleAndOverview: '',
-    communityEngagement: '',
     researchQuestions: '',
+    communityEngagement: '',
     designAndMethodology: '',
     ethicalConsiderations: '',
     knowledgeMobilization: '',
     projectManagement: '',
+    sustainability: '',
     projectEvaluation: '',
     fullReportHtml: '',
 };

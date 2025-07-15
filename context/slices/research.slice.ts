@@ -1,4 +1,5 @@
 
+
 import { AppState, Action } from '../../types';
 
 export const researchInitialState = {
@@ -11,6 +12,10 @@ export const researchReducer = (state: AppState, action: Action): Partial<AppSta
             return { researchPlans: action.payload };
         
         case 'ADD_RESEARCH_PLAN':
+            // Prevent duplicates if an add action is dispatched multiple times
+            if (state.researchPlans.some(p => p.id === action.payload.id)) {
+                return {};
+            }
             return { researchPlans: [...state.researchPlans, action.payload] };
 
         case 'UPDATE_RESEARCH_PLAN':

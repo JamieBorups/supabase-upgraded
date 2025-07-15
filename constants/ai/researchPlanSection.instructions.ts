@@ -1,4 +1,5 @@
 
+
 import { Type } from '@google/genai';
 import { AppSettings } from '../../types';
 
@@ -8,9 +9,14 @@ const commonResponseFormat = "Your response for this section MUST be only a sing
 
 export const RESEARCH_PLAN_SECTION_SETTINGS: ResearchPlanSettings = {
     titleAndOverview: {
-        prompt: `Generate a 'Project Title and Overview' section of at least 300 words. The response must be structured with the following sub-headings:
-- **Project Title:** Create a clear, concise, and co-created project title.
-- **Executive Summary:** Write a compelling executive summary (2-3 paragraphs) that highlights the project's purpose, methods, and expected outcomes, explicitly articulating the community's central role.
+        prompt: `Generate a compelling executive summary (2-3 paragraphs, minimum 300 words) that highlights the project's purpose, methods, and expected outcomes, explicitly articulating the community's central role. The output should be suitable for the "Overview" section of a research plan.
+${commonResponseFormat}`,
+        schema: { type: Type.STRING }
+    },
+    researchQuestions: {
+        prompt: `Generate a 'Research Questions and Objectives' section. Structure your response with the following sub-headings:
+- **Overarching Research Questions:** Formulate 2-3 broad, overarching research questions developed in collaboration with the community. Present these as a narrative paragraph.
+- **Specific Research Objectives:** List 4-5 specific, measurable, achievable, relevant, and time-bound (SMART) objectives that clearly demonstrate how the research will benefit the community.
 ${commonResponseFormat}`,
         schema: { type: Type.STRING }
     },
@@ -20,13 +26,6 @@ ${commonResponseFormat}`,
 - **Rationale for a Community-Based Approach:** Explain why a CBR approach is suitable, aligning with community needs and strengths.
 - **History of Engagement and Trust-Building:** Document any existing relationships and specific strategies for building trust.
 - **Participatory Needs and Strengths Assessment:** Describe how community needs and assets were identified through participatory processes.
-${commonResponseFormat}`,
-        schema: { type: Type.STRING }
-    },
-    researchQuestions: {
-        prompt: `Generate a 'Research Questions and Objectives' section. Structure your response with the following sub-headings:
-- **Overarching Research Questions:** Formulate 2-3 broad, overarching research questions developed in collaboration with the community. Present these as a narrative paragraph.
-- **Specific Research Objectives:** List 4-5 specific, measurable, achievable, relevant, and time-bound (SMART) objectives that clearly demonstrate how the research will benefit the community.
 ${commonResponseFormat}`,
         schema: { type: Type.STRING }
     },
@@ -66,6 +65,15 @@ ${commonResponseFormat}`,
 - **Roles and Responsibilities:** Clearly define roles and responsibilities for all team members, including community partners, emphasizing shared decision-making.
 - **Budget Justification for Community Participation:** Provide a rationale for budget items that specifically support community participation and benefit (e.g., honoraria, childcare, food).
 - **Governance and Decision-Making Structure:** Describe how the project will be governed and how decisions will be made collaboratively.
+${commonResponseFormat}`,
+        schema: { type: Type.STRING }
+    },
+    sustainability: {
+        prompt: `Generate a 'Sustainability' section of at least 800 words. Structure your response with the following sub-headings, providing a detailed, multi-paragraph analysis for each:
+- **Ongoing Operational Management:** Describe the plan for managing the project's activities and resources after the initial funding period.
+- **Future Resource Development:** Outline strategies for securing future financial and in-kind support (e.g., new grant applications, earned revenue, partnerships).
+- **Capacity Building and Leadership Transition:** Detail how the project will build internal capacity within the community to reduce dependency on external researchers and ensure local leadership can continue the work.
+- **Adaptation and Evolution:** Explain how the project's outcomes and activities will be monitored and adapted to meet evolving community needs.
 ${commonResponseFormat}`,
         schema: { type: Type.STRING }
     },
