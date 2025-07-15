@@ -1,7 +1,9 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { produce } from 'immer';
 import { GoogleGenAI, Type } from "@google/genai";
 import { useAppContext } from '../../context/AppContext.tsx';
+import { Select } from '../ui/Select.tsx';
 import { RecreationFrameworkReport } from '../../types.ts';
 import ConfirmationModal from '../ui/ConfirmationModal.tsx';
 import NotesModal from '../ui/NotesModal.tsx';
@@ -9,7 +11,6 @@ import * as api from '../../services/api.ts';
 import { generateRecreationFrameworkPdf } from '../../utils/pdfGenerator.ts';
 import { TextareaWithCounter } from '../ui/TextareaWithCounter.tsx';
 import FormField from '../ui/FormField.tsx';
-import ProjectFilter from '../ui/ProjectFilter.tsx';
 
 const FRAMEWORK_SECTIONS: { key: keyof Omit<RecreationFrameworkReport, 'id' | 'projectId' | 'createdAt' | 'notes' | 'fullReportText'>, label: string }[] = [
     { key: 'executiveSummary', label: 'Executive Summary' },
@@ -68,6 +69,11 @@ const FrameworkForRecreationPage: React.FC = () => {
     const [reportToDelete, setReportToDelete] = useState<RecreationFrameworkReport | null>(null);
     const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
     const [aiInstructions, setAiInstructions] = useState(settings.ai.personas.recreation.instructions);
+
+    const projectOptions = useMemo(() => [
+        { value: '', label: 'Select a project...' },
+        ...projects.map(p => ({ value: p.id, label: p.projectTitle }))
+    ], [projects]);
 
     const selectedProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [selectedProjectId, projects]);
     
@@ -193,11 +199,7 @@ const FrameworkForRecreationPage: React.FC = () => {
             <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
                 <h1 className="text-3xl font-bold text-slate-900">Framework for Recreation</h1>
                 <div className="w-full max-w-sm">
-                    <ProjectFilter
-                        value={selectedProjectId}
-                        onChange={setSelectedProjectId}
-                        allowAll={false}
-                    />
+                    <Select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} options={projectOptions} />
                 </div>
             </div>
 

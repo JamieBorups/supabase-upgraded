@@ -1,9 +1,11 @@
 
+
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { produce } from 'immer';
 import { Content } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
 import { Page, FormData as Project, EcoStarReport, ReportSectionContent, EcoStarField } from '../../types';
+import { Select } from '../ui/Select';
 import { Input } from '../ui/Input';
 import { getAiResponse } from '../../services/aiService';
 import { generateEcoStarSection } from '../../services/ecoStarService';
@@ -11,7 +13,6 @@ import ConfirmationModal from '../ui/ConfirmationModal';
 import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
 import { ECOSTAR_PERSONA_INSTRUCTIONS } from '../../constants/ai/ecostar.persona';
-import ProjectFilter from '../ui/ProjectFilter';
 
 const formatAiTextToHtml = (text: string = ''): string => {
     if (!text) return '';
@@ -98,7 +99,7 @@ const SimpleMarkdown: React.FC<{ text: string }> = ({ text }) => {
 
 const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ onNavigate }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { projects, members, researchPlans } = state;
+    const { projects, members } = state;
 
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
     const [chatHistories, setChatHistories] = useState<Record<string, Message[]>>({
@@ -113,6 +114,11 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
     const chatEndRef = useRef<HTMLDivElement>(null);
+
+    const projectOptions = useMemo(() => [
+        { value: '', label: 'Select a project to assess...' },
+        ...projects.map(p => ({ value: p.id, label: p.projectTitle }))
+    ], [projects]);
 
     const activeChatMessages = useMemo(() => {
         return currentTopic ? chatHistories[currentTopic.key] || [] : chatHistories._global || [];
@@ -183,12 +189,8 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
         const historyForTopic = chatHistories[topic.key] || [];
         const chatHistoryText = historyForTopic.map(m => `${m.sender}: ${m.text}`).join('\n');
         
-        const latestResearchPlan = researchPlans
-            .filter(rp => rp.projectId === selectedProject.id)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
         try {
-            const parsedResult = await generateEcoStarSection(topic, selectedProject, members, state.settings.ai, chatHistoryText, latestResearchPlan);
+            const parsedResult = await generateEcoStarSection(topic, selectedProject, members, state.settings.ai, chatHistoryText);
             
             setReportSections(prev => ({...prev, [topic.key]: parsedResult}));
             
@@ -211,7 +213,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, isGeneratingReport, selectedProject, members, state.settings.ai, chatHistories, getNextTopic, notify, researchPlans]);
+    }, [isLoading, isGeneratingReport, selectedProject, members, state.settings.ai, chatHistories, getNextTopic, notify]);
     
     const handleAiRequest = useCallback(async (topic: EcoStarField, prompt: string, userMessageText: string) => {
         setIsLoading(true);
@@ -335,10 +337,6 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
         setCurrentTopic(null);
         setChatHistories(prev => ({...prev, _global: [{ id: `sys_report_${Date.now()}`, sender: 'system', text: 'Generating full ECO-STAR report. This may take a moment...' }]}));
     
-        const latestResearchPlan = researchPlans
-            .filter(rp => rp.projectId === selectedProject.id)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
         for (const field of ECOSTAR_FIELDS) {
             setChatHistories(prev => {
                 const newHistory = { ...prev };
@@ -347,7 +345,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
             });
             setReportSections(prev => ({...prev, [field.key]: 'Generating...'}));
             try {
-                const parsedResult = await generateEcoStarSection(field, selectedProject, members, state.settings.ai, '', latestResearchPlan);
+                const parsedResult = await generateEcoStarSection(field, selectedProject, members, state.settings.ai, '');
                 setReportSections(prev => ({...prev, [field.key]: parsedResult}));
             } catch (error: any) {
                  setReportSections(prev => ({ ...prev, [field.key]: `Error: The AI returned data in an unexpected format.` }));
@@ -452,11 +450,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                 <div className="lg:col-span-1 space-y-6">
                     <div>
                         <label htmlFor="project-select" className="block text-sm font-medium text-slate-700 mb-1">1. Select a Project</label>
-                        <ProjectFilter
-                            value={selectedProjectId}
-                            onChange={handleProjectChange}
-                            allowAll={false}
-                        />
+                        <Select id="project-select" value={selectedProjectId} onChange={(e) => handleProjectChange(e.target.value)} options={projectOptions} />
                     </div>
                     {selectedProjectId && (
                         <div>
