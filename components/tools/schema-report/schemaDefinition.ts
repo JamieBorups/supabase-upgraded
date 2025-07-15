@@ -1,5 +1,6 @@
 
 
+
 // --- DB SCHEMA TYPES ---
 export interface RlsPolicy {
     name: string;
@@ -399,16 +400,35 @@ export const dbSchema: ModuleDefinition[] = [
                     { name: 'updated_at', type: 'timestamp with time zone default now()' },
                     { name: 'notes', type: 'text' },
                     { name: 'research_types', type: 'jsonb' },
+                    { name: 'epistemologies', type: 'jsonb' },
+                    { name: 'pedagogies', type: 'jsonb' },
+                    { name: 'methodologies', type: 'jsonb' },
+                    { name: 'mixed_methods', type: 'jsonb' },
                     { name: 'title_and_overview', type: 'text' },
-                    { name: 'community_engagement', type: 'text' },
                     { name: 'research_questions', type: 'text' },
+                    { name: 'community_engagement', type: 'text' },
                     { name: 'design_and_methodology', type: 'text' },
+                    { name: 'artistic_alignment_and_development', type: 'text' },
                     { name: 'ethical_considerations', type: 'text' },
                     { name: 'knowledge_mobilization', type: 'text' },
                     { name: 'project_management', type: 'text' },
                     { name: 'sustainability', type: 'text' },
                     { name: 'project_evaluation', type: 'text' },
                     { name: 'full_report_html', type: 'text' }
+                ],
+                rls: { enable: true, policies: [{ name: 'Public read-write access', command: 'ALL', using: 'true', check: 'true' }] }
+            },
+            {
+                tableName: 'research_plan_communities',
+                description: 'Stores communities associated with a research plan.',
+                columns: [
+                    { name: 'id', type: 'uuid', constraints: 'primary key default gen_random_uuid()' },
+                    { name: 'created_at', type: 'timestamp with time zone default now()' },
+                    { name: 'research_plan_id', type: 'uuid', constraints: 'not null', foreignKey: { table: 'research_plans', column: 'id', onDelete: 'CASCADE' } },
+                    { name: 'community_name', type: 'text' },
+                    { name: 'province_state', type: 'text' },
+                    { name: 'country', type: 'text' },
+                    { name: 'organization', type: 'text' }
                 ],
                 rls: { enable: true, policies: [{ name: 'Public read-write access', command: 'ALL', using: 'true', check: 'true' }] }
             }

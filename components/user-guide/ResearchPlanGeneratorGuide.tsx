@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -37,6 +38,21 @@ const ResearchPlanGeneratorGuide: React.FC = () => {
       <p>
         Selecting the right research approaches is the most critical step in shaping your plan. These choices tell the AI what principles to emphasize in the generated text. For a detailed explanation of what each option means, please refer to the <strong>Research Approaches</strong> page in the user guide menu.
       </p>
+      
+      <h3>The Sections of the Plan</h3>
+      <p>The generator guides you through constructing a comprehensive research plan, broken down into key sections:</p>
+      <ul>
+        <li><strong>Overview:</strong> A high-level summary of your project.</li>
+        <li><strong>Research Questions and Objectives:</strong> The core questions your research seeks to answer.</li>
+        <li><strong>Community Engagement and Context:</strong> Details about the community you're working with and how they are involved.</li>
+        <li><strong>Research Design and Methodology:</strong> The "how-to" of your research, outlining your methods and theoretical framework.</li>
+        <li><strong>Artistic Alignment & Development:</strong> A dedicated section to frame your project's value to the arts sector. It details how artistic disciplines will be applied, how artists will benefit, and how the project contributes to the arts ecosystem. This is critical for arts-specific funders.</li>
+        <li><strong>Ethical Considerations and Protocols:</strong> How you will conduct your research ethically, ensuring respect and safety for participants.</li>
+        <li><strong>Knowledge Mobilization and Dissemination:</strong> Your plan for sharing the research findings in accessible and impactful ways.</li>
+        <li><strong>Project Management and Timeline:</strong> The practical plan for managing the research project, including roles, responsibilities, and key dates.</li>
+        <li><strong>Sustainability:</strong> How the project's benefits and activities might continue after the initial research phase.</li>
+        <li><strong>Project Evaluation:</strong> How you will measure the success and impact of your project.</li>
+      </ul>
     </div>
   );
 };
