@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
@@ -8,6 +7,7 @@ import FormField from '../../ui/FormField';
 import { TextareaWithCounter } from '../../ui/TextareaWithCounter';
 import * as api from '../../../services/api';
 import { getAiResponse } from '../../../services/aiService';
+import { marked } from 'marked';
 
 const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; wordLimit: number }[] = [
     { key: 'titleAndOverview', label: 'Project Title and Overview', wordLimit: 300 },
@@ -192,11 +192,7 @@ const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, s
     const handleFinishEditing = async () => {
         const formatTextToHtml = (text: string) => {
             if (!text || typeof text !== 'string') return '<p><em>Not provided.</em></p>';
-            return text
-                .split(/\n\s*\n/)
-                .filter(p => p.trim() !== '')
-                .map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
-                .join('');
+            return marked.parse(text) as string;
         };
 
         const reportHtml = RESEARCH_PLAN_SECTIONS.map(section => {
