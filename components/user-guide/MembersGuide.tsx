@@ -1,3 +1,4 @@
+
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -31,11 +32,17 @@ const MembersGuide: React.FC = () => {
         <li><strong>Delete:</strong> Permanently remove a member from the collective. This will also un-assign them from any projects or tasks they were linked to.</li>
       </ul>
 
-      <h3>The Member Viewer</h3>
-      <p>When you view a member, you'll see a dashboard with two tabs:</p>
+      <h3>The Member Viewer: A 360-Degree Profile</h3>
+      <p>
+        When you view a member, you get a comprehensive dashboard of their involvement in the collective. It's an excellent tool for understanding individual workload, contributions, and areas of expertise.
+      </p>
         <ul>
-            <li><strong>Profile Information:</strong> Displays the member's contact details, bios, and a full list of all the projects they are assigned to, including their role and progress on tasks for each project.</li>
-            <li><strong>Activity Report:</strong> A high-level summary of the member's contributions across all their projects, including total hours logged and a visual breakdown of their effort by project.</li>
+            <li>
+              <strong>Profile Information Tab:</strong> This tab displays the member's contact details and full biographies. Below that, it provides a complete list of every project the member is assigned to. For each project, you can see their role, their progress on assigned tasks, and a financial summary of their paid vs. in-kind contributions. This is perfect for annual reviews or preparing personalized reports.
+            </li>
+            <li>
+              <strong>Activity Report Tab:</strong> This tab provides a high-level summary of the member's contributions across <strong>all</strong> of their projects. It includes snapshot metrics like total hours logged, the number of projects they are working on, and a visual chart showing how their hours are distributed across different projects.
+            </li>
         </ul>
 
       <h3>The Member Editor</h3>

@@ -1,15 +1,15 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../context/AppContext';
 import { Page, FormData as ProjectData, AiPersonaName } from '../../types';
-import { Select } from '../ui/Select';
 import { TextareaWithCounter } from '../ui/TextareaWithCounter';
 import { CheckboxGroup } from '../ui/CheckboxGroup';
 import { getAiResponse } from '../../services/aiService';
 import { initialFormData, ARTISTIC_DISCIPLINES, CRAFT_GENRES, DANCE_GENRES, LITERARY_GENRES, MEDIA_GENRES, MUSIC_GENRES, THEATRE_GENRES, VISUAL_ARTS_GENRES, initialSettings, GENERATOR_FIELDS, PROJECT_GENERATOR_ENHANCE_INSTRUCTIONS } from '../../constants';
 import * as api from '../../services/api';
 import FormField from '../ui/FormField';
+import ProjectFilter from '../ui/ProjectFilter';
+import { Select } from '../ui/Select';
 
 const SuggestionPanel: React.FC<{
     suggestions: any[];
@@ -227,7 +227,12 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
                 </button>
                 <div className="flex items-center gap-2">
                     <span className="text-slate-500">or</span>
-                    <Select value={selectedProjectId || ''} onChange={(e) => handleProjectLoad(e.target.value)} options={[{ value: '', label: 'Load Existing Project...' }, ...projects.map(p => ({ value: p.id, label: p.projectTitle }))]} />
+                    <ProjectFilter
+                        value={selectedProjectId || ''}
+                        onChange={handleProjectLoad}
+                        allowAll={false}
+                        className="w-64"
+                    />
                 </div>
             </div>
         </div>

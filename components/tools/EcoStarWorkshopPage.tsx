@@ -1,11 +1,8 @@
-
-
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { produce } from 'immer';
 import { Content } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
 import { Page, FormData as Project, EcoStarReport, ReportSectionContent, EcoStarField } from '../../types';
-import { Select } from '../ui/Select';
 import { Input } from '../ui/Input';
 import { getAiResponse } from '../../services/aiService';
 import { generateEcoStarSection } from '../../services/ecoStarService';
@@ -13,6 +10,7 @@ import ConfirmationModal from '../ui/ConfirmationModal';
 import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
 import { ECOSTAR_PERSONA_INSTRUCTIONS } from '../../constants/ai/ecostar.persona';
+import ProjectFilter from '../ui/ProjectFilter';
 
 const formatAiTextToHtml = (text: string = ''): string => {
     if (!text) return '';
@@ -114,11 +112,6 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
     const chatEndRef = useRef<HTMLDivElement>(null);
-
-    const projectOptions = useMemo(() => [
-        { value: '', label: 'Select a project to assess...' },
-        ...projects.map(p => ({ value: p.id, label: p.projectTitle }))
-    ], [projects]);
 
     const activeChatMessages = useMemo(() => {
         return currentTopic ? chatHistories[currentTopic.key] || [] : chatHistories._global || [];
@@ -450,7 +443,11 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                 <div className="lg:col-span-1 space-y-6">
                     <div>
                         <label htmlFor="project-select" className="block text-sm font-medium text-slate-700 mb-1">1. Select a Project</label>
-                        <Select id="project-select" value={selectedProjectId} onChange={(e) => handleProjectChange(e.target.value)} options={projectOptions} />
+                        <ProjectFilter
+                            value={selectedProjectId}
+                            onChange={handleProjectChange}
+                            allowAll={false}
+                        />
                     </div>
                     {selectedProjectId && (
                         <div>

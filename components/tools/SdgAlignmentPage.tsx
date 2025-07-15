@@ -1,13 +1,12 @@
-
 import React, { useState, useMemo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
-import { Select } from '../ui/Select';
 import { SdgAlignmentReport, DetailedSdgAlignment } from '../../types';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
 import { generateSdgPdf } from '../../utils/pdfGenerator';
+import ProjectFilter from '../ui/ProjectFilter';
 
 const formatAiTextToHtml = (text: string = ''): string => {
     if (!text) return '';
@@ -84,11 +83,6 @@ const SdgAlignmentPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [generatedReport, setGeneratedReport] = useState<Partial<SdgAlignmentReport> | null>(null);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
-
-    const projectOptions = useMemo(() => [
-        { value: '', label: 'Select a project to assess...' },
-        ...projects.map(p => ({ value: p.id, label: p.projectTitle }))
-    ], [projects]);
 
     const selectedProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [selectedProjectId, projects]);
 
@@ -244,7 +238,11 @@ const SdgAlignmentPage: React.FC = () => {
 
                 <div className="flex items-end gap-4 mb-8">
                     <div className="flex-grow max-w-md">
-                        <Select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} options={projectOptions} />
+                        <ProjectFilter
+                            value={selectedProjectId}
+                            onChange={setSelectedProjectId}
+                            allowAll={false}
+                        />
                     </div>
                     <button
                         onClick={handleGenerateReport}

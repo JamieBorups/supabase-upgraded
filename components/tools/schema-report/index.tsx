@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Input } from '../../ui/Input.tsx';
 import { ARTISTIC_DISCIPLINES, PROVINCES } from '../../../constants.ts';
 import { AccordionItem, SchemaTable, ConstantsTable } from './SchemaReport.components.tsx';
-import { allSchemaConfigs } from './schemaConfigs.ts';
+import { schemaGroups } from './schemaConfigs.ts';
 
 const SchemaReportPage: React.FC = () => {
     const [openSections, setOpenSections] = useState<Set<string>>(new Set(['project']));
@@ -21,14 +21,24 @@ const SchemaReportPage: React.FC = () => {
         });
     };
 
-    const filteredConfigs = useMemo(() => {
-        if (!searchTerm) return allSchemaConfigs;
+    const filteredGroups = useMemo(() => {
+        if (!searchTerm) return schemaGroups;
         const lowerSearchTerm = searchTerm.toLowerCase();
-        return allSchemaConfigs.filter(config => 
-            config.title.toLowerCase().includes(lowerSearchTerm) ||
-            config.description.toLowerCase().includes(lowerSearchTerm) ||
-            config.fieldConfig.some(field => field.key.toLowerCase().includes(lowerSearchTerm) || field.desc.toLowerCase().includes(lowerSearchTerm))
-        );
+
+        return schemaGroups
+            .map(group => {
+                const filteredConfigs = group.configs.filter(config =>
+                    config.title.toLowerCase().includes(lowerSearchTerm) ||
+                    config.description.toLowerCase().includes(lowerSearchTerm) ||
+                    config.fieldConfig.some(field => field.key.toLowerCase().includes(lowerSearchTerm) || field.desc.toLowerCase().includes(lowerSearchTerm))
+                );
+
+                if (filteredConfigs.length > 0) {
+                    return { ...group, configs: filteredConfigs };
+                }
+                return null;
+            })
+            .filter((group): group is NonNullable<typeof group> => group !== null);
     }, [searchTerm]);
 
     return (
@@ -44,17 +54,24 @@ const SchemaReportPage: React.FC = () => {
                 />
             </div>
 
-            <div className="space-y-4">
-                {filteredConfigs.length > 0 ? filteredConfigs.map(config => (
-                    <AccordionItem
-                        key={config.key}
-                        title={config.title}
-                        description={config.description}
-                        isOpen={openSections.has(config.key)}
-                        onToggle={() => toggleSection(config.key)}
-                    >
-                        <SchemaTable dataObject={config.dataObject} fieldConfig={config.fieldConfig} />
-                    </AccordionItem>
+            <div className="space-y-6">
+                {filteredGroups.length > 0 ? filteredGroups.map(group => (
+                    <div key={group.moduleTitle} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <h2 className="text-xl font-semibold text-slate-700 mb-4 pb-2 border-b border-slate-300">{group.moduleTitle}</h2>
+                        <div className="space-y-4">
+                            {group.configs.map(config => (
+                                <AccordionItem
+                                    key={config.key}
+                                    title={config.title}
+                                    description={config.description}
+                                    isOpen={openSections.has(config.key)}
+                                    onToggle={() => toggleSection(config.key)}
+                                >
+                                    <SchemaTable dataObject={config.dataObject} fieldConfig={config.fieldConfig} />
+                                </AccordionItem>
+                            ))}
+                        </div>
+                    </div>
                 )) : (
                     <div className="text-center py-10 text-slate-500">
                         <p>No schema models match your search term.</p>
