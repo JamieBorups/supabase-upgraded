@@ -1,5 +1,6 @@
 
 
+
 import { ResearchPlanSection } from '../types';
 
 export const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; wordLimit: number }[] = [
@@ -7,6 +8,7 @@ export const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; 
     { key: 'researchQuestions', label: 'Research Questions and Objectives', wordLimit: 400 },
     { key: 'communityEngagement', label: 'Community Engagement and Context', wordLimit: 500 },
     { key: 'designAndMethodology', label: 'Research Design and Methodology', wordLimit: 1000 },
+    { key: 'artisticAlignmentAndDevelopment', label: 'Artistic Alignment & Development', wordLimit: 1000 },
     { key: 'ethicalConsiderations', label: 'Ethical Considerations and Protocols', wordLimit: 750 },
     { key: 'knowledgeMobilization', label: 'Knowledge Mobilization and Dissemination', wordLimit: 500 },
     { key: 'projectManagement', label: 'Project Management and Timeline', wordLimit: 500 },

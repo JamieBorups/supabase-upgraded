@@ -1,5 +1,6 @@
 
 
+
 import { supabase } from '../../supabase.ts';
 import { ResearchPlan, ResearchPlanCommunity } from '../../types.ts';
 import { mapObjectToSnakeCase, mapObjectToCamelCase, handleResponse } from './utils';
@@ -40,22 +41,28 @@ export const addResearchPlan = async (plan: Omit<ResearchPlan, 'id' | 'createdAt
 
 export const updateResearchPlan = async (id: string, plan: Partial<ResearchPlan>): Promise<ResearchPlan> => {
     const { communities, ...planData } = plan;
+
+    // Ensure the new field is included in the snake_case conversion
+    const dbPayload = mapObjectToSnakeCase(planData);
+
     const { data, error } = await supabase
         .from('research_plans')
-        .update(mapObjectToSnakeCase(planData))
+        .update(dbPayload)
         .eq('id', id)
         .select()
         .single();
     handleResponse({ data, error });
     
     // Replace communities: delete old ones, insert new ones
-    const { error: deleteError } = await supabase.from('research_plan_communities').delete().eq('research_plan_id', id);
-    if(deleteError) throw deleteError;
+    if (communities !== undefined) {
+        const { error: deleteError } = await supabase.from('research_plan_communities').delete().eq('research_plan_id', id);
+        if(deleteError) throw deleteError;
 
-    if (communities && communities.length > 0) {
-        const communitiesToInsert = communities.map(c => ({...c, research_plan_id: id }));
-        const { error: insertError } = await supabase.from('research_plan_communities').insert(communitiesToInsert.map(mapObjectToSnakeCase));
-        if (insertError) throw insertError;
+        if (communities && communities.length > 0) {
+            const communitiesToInsert = communities.map(c => ({...c, research_plan_id: id }));
+            const { error: insertError } = await supabase.from('research_plan_communities').insert(communitiesToInsert.map(mapObjectToSnakeCase));
+            if (insertError) throw insertError;
+        }
     }
 
     const finalPlan = await getResearchPlans().then(plans => plans.find(p => p.id === id));

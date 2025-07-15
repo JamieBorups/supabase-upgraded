@@ -1,5 +1,6 @@
 
 
+
 import { Type } from '@google/genai';
 import { AppSettings } from '../../types';
 
@@ -36,6 +37,21 @@ ${commonResponseFormat}`,
 - **Sampling Strategy:** Explain the participant selection process, ensuring it is respectful and involves the community.
 - **Data Collection Methods:** Detail all proposed participatory and culturally appropriate data collection methods (e.g., story circles, workshops, interviews).
 - **Data Analysis Process:** Describe the plan for a collaborative data analysis process where community members are involved in interpreting the findings.
+${commonResponseFormat}`,
+        schema: { type: Type.STRING }
+    },
+    artisticAlignmentAndDevelopment: {
+        prompt: `Generate a comprehensive 'Artistic Alignment & Development' section of approximately 1000 words. This section must passionately and persuasively frame the entire project exclusively for an arts-focused audience, such as arts funders, artists, and arts organizations.
+Your response must be a single string of well-written, multi-paragraph text formatted for a formal research proposal. Use double newlines (\\n\\n) to separate paragraphs.
+
+You MUST address the following key points in detail, drawing from and synthesizing all available project context (description, background, budget, collaborators, chosen artistic disciplines/genres, and research approaches) WITHOUT being repetitive:
+
+1.  **Alignment with the Arts Sector:** Begin by framing the project's core purpose and value proposition directly to the arts sector. Explain how the project addresses a specific need or opportunity within the arts ecosystem.
+2.  **Explicit Application of Artistic Disciplines and Genres:** For EACH artistic discipline and genre selected in the project context (e.g., 'Dance: Contemporary', 'Craft: Fibre art'), provide a detailed explanation of how it will be actively developed, applied, and advanced through the project's activities. Be specific about the techniques, forms, or conceptual explorations involved.
+3.  **Benefits for Artists:** Detail the tangible and intangible benefits for participating artists, both emerging and established. This must include specific skill development (artistic techniques, collaborative practices, administrative skills), networking opportunities, portfolio development, and potential for artistic growth and career advancement.
+4.  **Benefits for Arts Collectives & Organizations:** Explain how the project will benefit small arts collectives, under-resourced groups, and non-profits. Focus on capacity building, shared learning, model development (e.g., new collaborative models), and creating sustainable practices that other groups can adopt.
+5.  **Synergy with Research Approaches:** Connect the selected research approaches (e.g., Arts-Based Research, CBPR) to the artistic development goals. Explain how the research process itself is a form of artistic inquiry and development that contributes to the project's artistic outcomes.
+6.  **Concluding Vision:** End with a strong, visionary statement that encapsulates the project's overall contribution to the vitality, innovation, and resilience of the arts sector, its artists, and its communities.
 ${commonResponseFormat}`,
         schema: { type: Type.STRING }
     },
