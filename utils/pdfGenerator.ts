@@ -1,4 +1,5 @@
 
+
 import jsPDF from 'jspdf';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan } from '../types';
 import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES } from '../constants';
@@ -99,17 +100,60 @@ class PdfBuilder {
 
     addParagraph(text: string | null | undefined) {
         if (!text || typeof text !== 'string' || text.trim() === '') {
-            this.doc.setFont('helvetica', 'italic');
-            this.doc.setFontSize(this.fontSizes.p);
-            this.doc.setTextColor('#94a3b8'); // slate-400
             this.addText('N/A', this.fontSizes.p, 'italic', {top: 4, bottom: 12});
             return;
         }
 
-        this.doc.setFont('helvetica', 'normal');
-        this.doc.setFontSize(this.fontSizes.p);
-        this.doc.setTextColor('#334155');
-        this.addText(text, this.fontSizes.p, 'normal', { top: 4, bottom: 12 });
+        // Helper to render a single line with inline bolding
+        const renderLineWithBold = (line: string) => {
+            const lineHeight = this.fontSizes.p * this.lineHeightRatio;
+            this.checkPageBreak(lineHeight);
+            
+            const parts = line.split('**');
+            let currentX = this.margin;
+            
+            parts.forEach((part, index) => {
+                if (part === '') return;
+                
+                const isBold = index % 2 !== 0;
+                this.doc.setFontSize(this.fontSizes.p);
+                this.doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+                
+                this.doc.text(part, currentX, this.y);
+                currentX += this.doc.getStringUnitWidth(part) * this.fontSizes.p / this.doc.internal.scaleFactor;
+            });
+            
+            this.y += lineHeight;
+        }
+
+        const blocks = text.split(/\n\s*\n/);
+        
+        blocks.forEach(block => {
+            if (block.trim() === '') return;
+            
+            const trimmedBlock = block.trim();
+            const listItems = trimmedBlock.split('\n').filter(line => line.trim().startsWith('* ') || line.trim().startsWith('- '));
+            
+            // Check for a line that is entirely bold (like a subheading)
+            if (trimmedBlock.startsWith('**') && trimmedBlock.endsWith('**')) {
+                this.addText(trimmedBlock.slice(2, -2), this.fontSizes.h4, 'bold', { top: 8, bottom: 2 });
+            // Check if the majority of the block consists of list items
+            } else if (listItems.length > 0 && listItems.length >= (trimmedBlock.split('\n').length * 0.8)) {
+                this.y += 4; // Top spacing for list block
+                listItems.forEach(item => {
+                    const content = `•  ${item.trim().substring(item.trim().indexOf(' ')).trim()}`;
+                    const wrappedLines = this.doc.splitTextToSize(content, this.pageWidth - this.margin * 2);
+                    wrappedLines.forEach(line => renderLineWithBold(line));
+                });
+                this.y += 8; // Bottom spacing for list block
+            // Handle as a normal paragraph
+            } else {
+                 this.y += 4; // Top spacing for paragraph
+                 const wrappedLines = this.doc.splitTextToSize(trimmedBlock, this.pageWidth - this.margin * 2);
+                 wrappedLines.forEach(line => renderLineWithBold(line));
+                 this.y += 8; // Bottom spacing for paragraph
+            }
+        });
     }
 
     private addText(text: string, fontSize: number, fontStyle: 'normal' | 'bold' | 'italic', spacing: { top: number, bottom: number }) {
