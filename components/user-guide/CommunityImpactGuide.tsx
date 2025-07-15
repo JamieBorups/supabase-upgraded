@@ -1,4 +1,3 @@
-
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -7,7 +6,7 @@ const CommunityImpactGuide: React.FC = () => {
     <div>
       <h2>Community Impact</h2>
       <p>
-        Tracking and reporting on your project's community impact is crucial for many grant applications and for understanding the real-world value of your work. Funders increasingly want to see not just what art you created, but who you engaged and what difference it made. This application provides two dedicated pages, accessible from the "Projects" dropdown, to help you manage this data in a structured way that aligns with funder expectations.
+        Tracking and reporting on your project's community impact is crucial for many grant applications and for understanding the real-world value of your work. This application provides two dedicated pages, accessible from the "Projects" dropdown, to help you manage this: <code>Community Reach</code> and <code>Impact Assessment</code>.
       </p>
       <p>
         Both pages are part of the Final Report for a project. While you can edit them here at any time, their primary purpose is to feed into the reporting process once a project is complete.

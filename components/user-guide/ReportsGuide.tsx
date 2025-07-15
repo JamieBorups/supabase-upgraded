@@ -23,7 +23,7 @@ const ReportsGuide: React.FC = () => {
           <strong>Select the Project:</strong> On this page, select a completed project from the top dropdown menu.
         </li>
         <li>
-          <strong>Fill Out the Report:</strong> The form is divided into several sections. Much of the financial data is pulled automatically from your project's budget and approved activity logs. You will need to fill in the narrative sections, such as "Project Results" and "Feedback". This is also where you will answer the questions for the Community Reach and Impact Assessment parts of the report.
+          <strong>Fill Out the Report:</strong> The form is divided into several sections. Much of the financial data is pulled automatically from your project's budget and approved activity logs. You will need to fill in the narrative sections, such as "Project Results" and "Feedback".
         </li>
         <li>
           <strong>Edit and Save:</strong> Click the "Edit Report" button to make changes. When you're done, click "Save Report". Your progress is saved, so you can come back and work on it later.

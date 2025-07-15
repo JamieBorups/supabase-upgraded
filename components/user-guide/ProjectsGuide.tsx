@@ -1,4 +1,3 @@
-
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -23,16 +22,6 @@ const ProjectsGuide: React.FC = () => {
         <li><strong>Change Status:</strong> Use the small dropdown menu (three dots) to quickly change a project's status (e.g., from "Active" to "Completed").</li>
       </ul>
 
-      <h3>The Project Editor: Building Your Application</h3>
-      <p>
-        When you add or edit a project, you'll work within the Project Editor. Its tabbed interface is designed to mirror a typical grant application, helping you build a comprehensive proposal.
-      </p>
-      <ul>
-          <li><strong>Project Information Tab:</strong> This is where you enter the core narrative of your project—the what, why, and how. The fields are designed to prompt you for the kind of detailed information that funders look for, from your artistic background to your community impact statement.</li>
-          <li><strong>Collaborators Tab:</strong> Here, you describe your team. You can also assign members from your <code>Members</code> list to specific roles on this project. This is crucial, as only assigned collaborators can be assigned to tasks for this project.</li>
-          <li><strong>Budget Tab:</strong> This is an interactive budgeting tool. You can add revenue sources (like grants) and detailed expense items (like artist fees or venue rentals). As you'll see in the Tasks section, this budget becomes dynamic when you link tasks to these expense items.</li>
-      </ul>
-
       <h3>The Project Viewer: A Deep Dive</h3>
       <p>The Project Viewer gives you a comprehensive, 360-degree look at a single project through several tabs:</p>
       <ul>
@@ -45,7 +34,7 @@ const ProjectsGuide: React.FC = () => {
               <li>The <strong>Actuals</strong> are calculated automatically. When a team member logs time (an <strong>Activity</strong>) against a <strong>Task</strong> that is linked to a budget line item, the system multiplies the hours by the task's hourly rate and adds it to the "Actual Paid" total once the activity is approved. This gives you a real-time view of your spending.</li>
           </ul>
         </li>
-        <li><strong>Workplan:</strong> This tab provides a Gantt chart-like view of your project's milestones and tasks over time. It helps you visualize your project timeline and see how different phases overlap.</li>
+        <li><strong>Workplan:</strong> This report provides a different financial perspective. It organizes your tasks by the budget category they are linked to, helping you see which tasks are contributing to which expenses. It's a great tool for understanding the financial structure of your workplan.</li>
         <li><strong>Activity & Insights:</strong> A real-time dashboard showing the pulse of your project. Here you can see a live feed of all approved activities and direct expenses, and get a breakdown of which collaborators are contributing the most hours.</li>
         <li><strong>External Contacts:</strong> A list of all contacts from your CRM (e.g., funders, media) that have been associated with this project.</li>
       </ul>

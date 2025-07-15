@@ -58,23 +58,16 @@ const SettingsGuide: React.FC = () => {
       <h4>Media & Comms</h4>
       <p>Customize your default boilerplate text for news releases, create custom categories for your contacts (e.g., "Media", "Funder", "Board Member"), and manage AI templates for generating communications.</p>
 
-      <h3>AI Settings Explained: Your Creative Co-Pilot</h3>
+      <h4>AI Settings Explained</h4>
       <p>
         This is a powerful section where you can configure the personality and behavior of the various AI assistants used throughout the application.
       </p>
       <ul>
-          <li><strong>Master AI Switch:</strong> Turn all AI features on or off globally. If you're not using the AI, you can disable it here.</li>
-          <li><strong>Plain Text Mode:</strong> Some AI responses use Markdown for formatting (like bold text or lists). Toggling this on forces all AI responses into simple plain text, which can be easier to copy and paste into other documents.</li>
-          <li><strong>Personas: Giving the AI a Role:</strong> Each tab (Main, Projects, Budget, etc.) has its own "persona." A persona is a set of instructions that tells the AI *how* to behave for that specific part of the app.</li>
-          <li><strong>Instructions: The AI's 'Job Description':</strong> This is the most important part of a persona. It's a text box where you give the AI its role and rules. For example, the 'Budget' persona is told to be a "meticulous, friendly bookkeeper," while the 'Projects' persona is an "expert grant writer's assistant." You can edit these instructions to change the AI's tone, focus, and output style.</li>
-          <li><strong>Model & Temperature: Tuning the Engine:</strong>
-            <ul>
-                <li><strong>Model:</strong> This lets you choose which underlying AI model to use. Newer models are generally more capable.</li>
-                <li><strong>Temperature:</strong> This slider controls the AI's creativity. A low temperature (e.g., 0.2) makes the AI more focused, factual, and predictable. A high temperature (e.g., 0.9) makes it more creative, experimental, and sometimes random. For factual tasks like summarizing, a low temperature is best. For brainstorming, a higher temperature can be useful.</li>
-            </ul>
-          </li>
-          <li><strong>Templates: Saving Your Best Prompts:</strong> For each persona, you can save and load multiple instruction sets as templates. This is great for quickly switching the AI's behavior without copy-pasting. For example, in the 'Media' persona, you could have a template for a "Formal Press Release" and another for a "Casual Social Media Post."</li>
-          <li><strong>Testing:</strong> The "Test Persona" button on each tab is your sandbox. It opens a chat window where you can talk directly to the AI with the settings you've just configured, allowing you to see how it responds before you save your changes.</li>
+          <li><strong>Master AI Switch:</strong> Turn all AI features on or off globally.</li>
+          <li><strong>Personas:</strong> Each tab (Main, Projects, Budget, etc.) has its own "persona". A persona consists of a set of instructions, a creativity level (temperature), and a specific AI model.</li>
+          <li><strong>Instructions:</strong> This is the most important part. It's a text box where you tell the AI *how* to behave for that section. For example, the 'Budget' persona is told to be a "meticulous, friendly bookkeeper," while the 'Projects' persona is told to be a "creative grant writer's assistant."</li>
+          <li><strong>Templates:</strong> For each persona, you can save and load multiple instruction sets as templates. This allows you to quickly switch the AI's behavior (e.g., from a "Formal" tone to a "Casual" tone) without copy-pasting.</li>
+          <li><strong>Test Persona:</strong> Use the "Test Persona" button to open a chat window and see how your current instructions affect the AI's responses in real time.</li>
       </ul>
       
     </div>
