@@ -1,4 +1,6 @@
 
+
+
 import React from 'react';
 import { produce } from 'immer';
 import { AiPersonaSettings, ResearchPlanSectionSettings } from '../../../types';
@@ -6,6 +8,7 @@ import FormField from '../../ui/FormField';
 import { TextareaWithCounter } from '../../ui/TextareaWithCounter';
 import PersonaEditor from './PersonaEditor';
 import ResearchApproachDescriptions from './ResearchApproachDescriptions';
+import { RESEARCH_PLAN_SECTIONS } from '../../../constants';
 
 interface ResearchPlanSettingsEditorProps {
     persona: AiPersonaSettings;
@@ -14,17 +17,6 @@ interface ResearchPlanSettingsEditorProps {
     onSectionSettingsChange: (settings: Record<string, ResearchPlanSectionSettings>) => void;
     onTestPersona: () => void;
 }
-
-const RESEARCH_PLAN_SECTIONS = [
-    { key: 'titleAndOverview', label: 'Project Title and Overview' },
-    { key: 'communityEngagement', label: 'Community Engagement and Context' },
-    { key: 'researchQuestions', label: 'Research Questions and Objectives' },
-    { key: 'designAndMethodology', label: 'Research Design and Methodology' },
-    { key: 'ethicalConsiderations', label: 'Ethical Considerations and Protocols' },
-    { key: 'knowledgeMobilization', label: 'Knowledge Mobilization and Dissemination' },
-    { key: 'projectManagement', label: 'Project Management and Timeline' },
-    { key: 'projectEvaluation', label: 'Project Evaluation' },
-];
 
 const ResearchPlanSettingsEditor: React.FC<ResearchPlanSettingsEditorProps> = ({ 
     persona, onPersonaChange, sectionSettings, onSectionSettingsChange, onTestPersona 

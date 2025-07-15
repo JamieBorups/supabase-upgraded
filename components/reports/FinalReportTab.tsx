@@ -167,7 +167,7 @@ const FinalReportTab: React.FC<FinalReportTabProps> = ({ selectedProject }) => {
             IMPACT_OPTIONS,
             PEOPLE_INVOLVED_OPTIONS,
             GRANT_ACTIVITIES_OPTIONS,
-        }, settings);
+        }, settings, events, eventTickets, venues);
     } catch (error: any) {
         console.error("Failed to generate PDF:", error);
         notify("An error occurred while generating the PDF. Please try again.", 'error');
