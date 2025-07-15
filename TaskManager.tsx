@@ -9,10 +9,10 @@ import ActivityEditor from './components/task/ActivityEditor.tsx';
 import ConfirmationModal from './components/ui/ConfirmationModal.tsx';
 import { initialTaskData, initialActivityData } from './constants.ts';
 import { Task, TaskManagerView, Activity, TaskStatus } from './types.ts';
+import { Select } from './components/ui/Select.tsx';
 import FormField from './components/ui/FormField.tsx';
 import { useAppContext } from './context/AppContext.tsx';
 import * as api from './services/api.ts';
-import ProjectFilter from './components/ui/ProjectFilter.tsx';
 
 const TaskManager: React.FC = () => {
   const { state, dispatch, notify } = useAppContext();
@@ -253,10 +253,7 @@ const TaskManager: React.FC = () => {
         <h1 className="text-3xl font-bold text-slate-900">Tasks & Timesheets</h1>
         <div className="w-full md:w-auto md:max-w-xs">
             <FormField label="Filter by Project" htmlFor="task_project_select" className="mb-0">
-                <ProjectFilter
-                  value={selectedProjectId}
-                  onChange={setSelectedProjectId}
-                />
+                <Select id="task_project_select" value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} options={[{ value: '', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.projectTitle }))]} />
             </FormField>
         </div>
       </div>

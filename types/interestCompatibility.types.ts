@@ -46,11 +46,4 @@ export interface ProjectContextForAI {
         totalExpenses: number;
         expenseBreakdown: Record<string, number>;
     };
-    researchPlanContext?: {
-        titleAndOverview?: string;
-        researchQuestions?: string;
-        communityEngagement?: string;
-        designAndMethodology?: string;
-        ethicalConsiderations?: string;
-    };
 }

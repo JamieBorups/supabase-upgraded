@@ -1,6 +1,5 @@
-
 import { getAiResponse } from './aiService';
-import { AppSettings, EcoStarField, FormData as Project, Member, ReportSectionContent, ResearchPlan } from '../types';
+import { AppSettings, EcoStarField, FormData as Project, Member, ReportSectionContent } from '../types';
 
 /**
  * Generates the context prompt for the ECO-STAR AI.
@@ -9,13 +8,13 @@ import { AppSettings, EcoStarField, FormData as Project, Member, ReportSectionCo
  * @param members The list of all members to find collaborator details.
  * @returns A fully constructed prompt with context.
  */
-const constructContextPrompt = (basePrompt: string, project: Project, members: Member[], researchPlan?: ResearchPlan | null): string => {
+const constructContextPrompt = (basePrompt: string, project: Project, members: Member[]): string => {
     const collaboratorDetails = project.collaboratorDetails.map(c => {
         const member = members.find(m => m.id === c.memberId);
         return member ? `${member.firstName} ${member.lastName} (${c.role})` : `Unknown Member (${c.role})`;
     }).join(', ');
 
-    const context: any = {
+    const context = {
         projectTitle: project.projectTitle,
         projectDescription: project.projectDescription,
         background: project.background,
@@ -25,17 +24,6 @@ const constructContextPrompt = (basePrompt: string, project: Project, members: M
         culturalIntegrity: project.culturalIntegrity,
         additionalInfo: project.additionalInfo,
     };
-
-    if (researchPlan) {
-        context.researchPlanContext = {
-            title: researchPlan.titleAndOverview,
-            researchQuestions: researchPlan.researchQuestions,
-            methodologies: researchPlan.methodologies,
-            epistemologies: researchPlan.epistemologies,
-            ethicalConsiderations: researchPlan.ethicalConsiderations
-        };
-    }
-
 
     return `${basePrompt}\n\n### PROJECT CONTEXT ###\n${JSON.stringify(context, null, 2)}`;
 };
@@ -55,8 +43,7 @@ export const generateEcoStarSection = async (
     project: Project,
     members: Member[],
     settings: AppSettings['ai'],
-    chatHistoryText: string = '',
-    researchPlan?: ResearchPlan | null
+    chatHistoryText: string = ''
 ): Promise<ReportSectionContent> => {
     const fieldConfig = settings.ecostarFieldSettings[topic.key];
     if (!fieldConfig) {
@@ -64,7 +51,7 @@ export const generateEcoStarSection = async (
     }
 
     const basePrompt = `${fieldConfig.prompt} ${chatHistoryText ? `Use the following chat history as your primary source for generating the report content: \n\n${chatHistoryText}` : 'Use the general project context provided for your analysis.'}`;
-    const finalPrompt = constructContextPrompt(basePrompt, project, members, researchPlan);
+    const finalPrompt = constructContextPrompt(basePrompt, project, members);
 
     try {
         const result = await getAiResponse(

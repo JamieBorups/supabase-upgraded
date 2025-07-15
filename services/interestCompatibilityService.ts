@@ -1,5 +1,4 @@
-
-import { FormData as ProjectData, Member, ProjectContextForAI, ResearchPlan } from '../types';
+import { FormData as ProjectData, Member, ProjectContextForAI } from '../types';
 
 const createBudgetSummary = (budget: ProjectData['budget']) => {
     if (!budget) {
@@ -28,7 +27,7 @@ const createBudgetSummary = (budget: ProjectData['budget']) => {
     return { totalRevenue, totalExpenses, expenseBreakdown };
 };
 
-export const getInterestCompatibilityContext = (project: ProjectData, members: Member[], researchPlans: ResearchPlan[]): ProjectContextForAI => {
+export const getInterestCompatibilityContext = (project: ProjectData, members: Member[]): ProjectContextForAI => {
     const collaboratorDetails = project.collaboratorDetails.map(c => {
         const member = members.find(m => m.id === c.memberId);
         return {
@@ -40,11 +39,7 @@ export const getInterestCompatibilityContext = (project: ProjectData, members: M
 
     const budgetSummary = createBudgetSummary(project.budget);
 
-    const latestResearchPlan = researchPlans
-        .filter(plan => plan.projectId === project.id)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
-    const context: ProjectContextForAI = {
+    return {
         projectTitle: project.projectTitle,
         projectDescription: project.projectDescription,
         background: project.background,
@@ -53,16 +48,4 @@ export const getInterestCompatibilityContext = (project: ProjectData, members: M
         collaborators: collaboratorDetails,
         budgetSummary: budgetSummary,
     };
-
-    if (latestResearchPlan) {
-        context.researchPlanContext = {
-            titleAndOverview: latestResearchPlan.titleAndOverview,
-            researchQuestions: latestResearchPlan.researchQuestions,
-            communityEngagement: latestResearchPlan.communityEngagement,
-            designAndMethodology: latestResearchPlan.designAndMethodology,
-            ethicalConsiderations: latestResearchPlan.ethicalConsiderations,
-        };
-    }
-
-    return context;
 };
