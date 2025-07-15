@@ -19,6 +19,8 @@ import InterestCompatibilityGuide from './InterestCompatibilityGuide';
 import AcknowledgementsGuide from './AcknowledgementsGuide';
 import EmpoweringTheArtsGuide from './EmpoweringTheArtsGuide';
 import SetupGuide from './SetupGuide';
+import ResearchPlanGeneratorGuide from './ResearchPlanGeneratorGuide.tsx';
+import ResearchApproachesGuide from './ResearchApproachesGuide.tsx';
 
 
 import './guide.css';
@@ -26,7 +28,7 @@ import './guide.css';
 type GuideTopic = 
   | 'welcome' | 'setup' | 'acknowledgements' | 'empowering' | 'projects' | 'members' | 'tasks' | 'events' | 'sales' | 'media' 
   | 'reports' | 'communityImpact' | 'supplementalReports' | 'tools' | 'settings'
-  | 'ecoStar' | 'sdg' | 'recreation' | 'interest';
+  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches';
 
 interface MenuItem {
     id: GuideTopic;
@@ -66,6 +68,14 @@ const menuStructure: MenuSection[] = [
         items: [
             { id: 'reports', label: 'Final Reporting', icon: 'fa-solid fa-file-invoice' },
             { id: 'communityImpact', label: 'Community Impact', icon: 'fa-solid fa-users-viewfinder' },
+            { 
+                id: 'researchPlanGenerator',
+                label: 'Research Plan Generator', 
+                icon: 'fa-solid fa-book-open-reader',
+                children: [
+                    { id: 'researchPlanApproaches', label: 'Research Approaches', icon: 'fa-solid fa-puzzle-piece' }
+                ]
+            },
             { 
                 id: 'supplementalReports', 
                 label: 'Supplemental Reports', 
@@ -112,6 +122,8 @@ const UserGuide: React.FC = () => {
             case 'sdg': return <SdgGuide />;
             case 'recreation': return <RecreationFrameworkGuide />;
             case 'interest': return <InterestCompatibilityGuide />;
+            case 'researchPlanGenerator': return <ResearchPlanGeneratorGuide />;
+            case 'researchPlanApproaches': return <ResearchApproachesGuide />;
             default: return <WelcomePage />;
         }
     };
