@@ -1,5 +1,6 @@
 
 
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan, DetailedBudget } from '../types';
@@ -190,6 +191,11 @@ export const generateResearchPlanPdf = (plan: ResearchPlan, projectTitle: string
 
     builder.addSectionTitle('Research Design and Methodology');
     builder.addParagraph(plan.designAndMethodology);
+
+    if (plan.artisticAlignmentAndDevelopment) {
+        builder.addSectionTitle('Artistic Alignment & Development');
+        builder.addParagraph(plan.artisticAlignmentAndDevelopment);
+    }
 
     builder.addSectionTitle('Ethical Considerations and Protocols');
     builder.addParagraph(plan.ethicalConsiderations);

@@ -24,6 +24,7 @@ export interface ResearchPlan {
     researchQuestions?: string;
     communityEngagement?: string;
     designAndMethodology?: string;
+    artisticAlignmentAndDevelopment?: string;
     ethicalConsiderations?: string;
     knowledgeMobilization?: string;
     projectManagement?: string;
