@@ -9,7 +9,7 @@ export const Select: React.FC<SelectProps> = ({ options, ...props }) => {
   return (
     <select
       {...props}
-      className={`block w-full pl-3 pr-10 py-2 text-base border-slate-400 rounded-md shadow-sm 
+      className={`block w-full pl-3 pr-10 py-2 text-base border border-teal-500 rounded-md shadow-sm 
                  focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent
                  sm:text-sm transition-shadow duration-150 ${props.className}`}
     >
