@@ -1,24 +1,28 @@
 
+
+
+
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, FormData as Project } from '../../types';
+import { EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, FormData as Project, ResearchPlan, Page } from '../../types';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import * as api from '../../services/api';
-import { generateEcoStarPdf, generateInterestCompatibilityPdf, generateSdgPdf, generateRecreationFrameworkPdf } from '../../utils/pdfGenerator';
+import { generateEcoStarPdf, generateInterestCompatibilityPdf, generateSdgPdf, generateRecreationFrameworkPdf, generateResearchPlanPdf } from '../../utils/pdfGenerator';
 
 const FormattedReportViewer: React.FC<{ htmlContent: string }> = ({ htmlContent = '' }) => {
     return <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
 };
 
 const ReportList: React.FC<{
-    reports: (EcoStarReport | InterestCompatibilityReport | SdgAlignmentReport | RecreationFrameworkReport)[];
+    reports: any[];
     onDelete: (report: any) => void;
+    onEdit?: (report: any) => void;
     onDownloadPdf: (report: any) => void;
     onCopy: (htmlContent: string) => void;
     title: string;
     noReportsMessage: string;
     toolName: string;
-}> = ({ reports, onDelete, onDownloadPdf, onCopy, title, noReportsMessage, toolName }) => {
+}> = ({ reports, onDelete, onEdit, onDownloadPdf, onCopy, title, noReportsMessage, toolName }) => {
     const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
 
     const toggleReportExpansion = (reportId: string) => {
@@ -46,7 +50,8 @@ const ReportList: React.FC<{
                             <p className="text-sm text-slate-600 italic">Notes: {report.notes || 'No notes'}</p>
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                            <button onClick={() => onCopy(report.fullReportText || '')} className="px-3 py-1 text-xs font-semibold text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300" title="Copy content to clipboard"><i className="fa-solid fa-copy mr-1"></i>Copy</button>
+                            {onEdit && <button onClick={() => onEdit(report)} className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700" title="Edit Report"><i className="fa-solid fa-pencil mr-1"></i>Edit</button>}
+                            <button onClick={() => onCopy(report.fullReportHtml || report.fullReportText || '')} className="px-3 py-1 text-xs font-semibold text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300" title="Copy content to clipboard"><i className="fa-solid fa-copy mr-1"></i>Copy</button>
                             <button onClick={() => onDownloadPdf(report)} className="px-3 py-1 text-xs font-semibold text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700" title="Download as PDF"><i className="fa-solid fa-file-pdf mr-1"></i>PDF</button>
                             <button onClick={() => onDelete(report)} className="px-3 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-md hover:bg-red-200" title="Delete Report"><i className="fa-solid fa-trash mr-1"></i>Delete</button>
                             <button onClick={() => toggleReportExpansion(report.id)} className="p-2 text-slate-500 hover:text-slate-700" title={expandedReportId === report.id ? 'Collapse' : 'Expand'}>
@@ -56,7 +61,7 @@ const ReportList: React.FC<{
                     </div>
                     {expandedReportId === report.id && (
                         <div className="p-4 border-t border-slate-200 bg-white">
-                            <FormattedReportViewer htmlContent={report.fullReportText || '<p>No content available.</p>'} />
+                            <FormattedReportViewer htmlContent={report.fullReportHtml || report.fullReportText || '<p>No content available.</p>'} />
                         </div>
                     )}
                 </div>
@@ -65,7 +70,7 @@ const ReportList: React.FC<{
     );
 };
 
-type ReportType = 'ecostar' | 'interest' | 'sdg' | 'recreation';
+type ReportType = 'ecostar' | 'interest' | 'sdg' | 'recreation' | 'research';
 
 interface SupplementalReportsTabProps {
     selectedProject: Project | null;
@@ -73,21 +78,26 @@ interface SupplementalReportsTabProps {
 
 const SupplementalReportsTab: React.FC<SupplementalReportsTabProps> = ({ selectedProject }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports } = state;
-    const [reportToDelete, setReportToDelete] = useState<(EcoStarReport | InterestCompatibilityReport | SdgAlignmentReport | RecreationFrameworkReport) | null>(null);
+    const { ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans } = state;
+    const [reportToDelete, setReportToDelete] = useState<(any) | null>(null);
     const [reportTypeToDelete, setReportTypeToDelete] = useState<ReportType | null>(null);
-    const [activeReportType, setActiveReportType] = useState<ReportType>('ecostar');
+    const [activeReportType, setActiveReportType] = useState<ReportType>('research');
 
     const filteredReports = useMemo(() => {
-        if (!selectedProject) return { ecostar: [], interest: [], sdg: [], recreation: [] };
+        if (!selectedProject) return { ecostar: [], interest: [], sdg: [], recreation: [], research: [] };
         const projectId = selectedProject.id;
         return {
             ecostar: ecostarReports.filter(r => r.projectId === projectId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
             interest: interestCompatibilityReports.filter(r => r.projectId === projectId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
             sdg: sdgAlignmentReports.filter(r => r.projectId === projectId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-            recreation: recreationFrameworkReports.filter(r => r.projectId === projectId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            recreation: recreationFrameworkReports.filter(r => r.projectId === projectId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+            research: researchPlans.filter(r => r.projectId === projectId).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
         };
-    }, [selectedProject, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports]);
+    }, [selectedProject, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans]);
+
+    const handleEditReport = (report: ResearchPlan) => {
+        dispatch({ type: 'SET_RESEARCH_PLAN_TO_EDIT', payload: report });
+    };
 
     const handleDeleteClick = (report: any, type: ReportType) => {
         setReportToDelete(report);
@@ -102,6 +112,7 @@ const SupplementalReportsTab: React.FC<SupplementalReportsTabProps> = ({ selecte
             else if (reportTypeToDelete === 'interest') await api.deleteInterestCompatibilityReport(reportToDelete.id);
             else if (reportTypeToDelete === 'sdg') await api.deleteSdgAlignmentReport(reportToDelete.id);
             else if (reportTypeToDelete === 'recreation') await api.deleteRecreationFrameworkReport(reportToDelete.id);
+            else if (reportTypeToDelete === 'research') await api.deleteResearchPlan(reportToDelete.id);
             
             dispatch({ type: `DELETE_${reportTypeToDelete.toUpperCase()}_REPORT` as any, payload: reportToDelete.id });
             notify('Report deleted successfully.', 'success');
@@ -129,6 +140,7 @@ const SupplementalReportsTab: React.FC<SupplementalReportsTabProps> = ({ selecte
             else if ('stakeholderAnalysis' in report) generateInterestCompatibilityPdf(report, selectedProject.projectTitle);
             else if ('detailedAnalysis' in report) generateSdgPdf(report, selectedProject.projectTitle);
             else if ('activeLiving' in report) generateRecreationFrameworkPdf(report, selectedProject.projectTitle);
+            else if ('researchQuestions' in report) generateResearchPlanPdf(report, selectedProject.projectTitle);
             else notify("Unknown report type.", 'error');
         } catch (e: any) {
             console.error("PDF Generation Error:", e);
@@ -159,6 +171,7 @@ const SupplementalReportsTab: React.FC<SupplementalReportsTabProps> = ({ selecte
     };
 
     const navItems: {id: ReportType, label: string}[] = [
+        {id: 'research', label: 'Research'},
         {id: 'ecostar', label: 'ECO-STAR'}, {id: 'interest', label: 'Interest Compatibility'},
         {id: 'sdg', label: 'SDG Alignment'}, {id: 'recreation', label: 'Recreation Framework'},
     ];
@@ -205,6 +218,7 @@ const SupplementalReportsTab: React.FC<SupplementalReportsTabProps> = ({ selecte
             </div>
 
             <div>
+                {activeReportType === 'research' && <ReportList reports={filteredReports.research} onEdit={handleEditReport} onDelete={(r) => handleDeleteClick(r, 'research')} onDownloadPdf={handleDownloadPdf} onCopy={handleCopyToClipboard} title="Research Plans" noReportsMessage="No Research Plans found." toolName="Research Plan Generator" />}
                 {activeReportType === 'ecostar' && <ReportList reports={filteredReports.ecostar} onDelete={(r) => handleDeleteClick(r, 'ecostar')} onDownloadPdf={handleDownloadPdf} onCopy={handleCopyToClipboard} title="ECO-STAR Reports" noReportsMessage="No ECO-STAR reports found." toolName="ECO-STAR AI Workshop" />}
                 {activeReportType === 'interest' && <ReportList reports={filteredReports.interest} onDelete={(r) => handleDeleteClick(r, 'interest')} onDownloadPdf={handleDownloadPdf} onCopy={handleCopyToClipboard} title="Interest Compatibility Reports" noReportsMessage="No Interest Compatibility reports found." toolName="Interest Compatibility Assessment" />}
                 {activeReportType === 'sdg' && <ReportList reports={filteredReports.sdg} onDelete={(r) => handleDeleteClick(r, 'sdg')} onDownloadPdf={handleDownloadPdf} onCopy={handleCopyToClipboard} title="SDG Alignment Reports" noReportsMessage="No SDG Alignment reports found." toolName="SDG Alignment Report" />}

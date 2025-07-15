@@ -1,9 +1,10 @@
 
+
 import React, { useState } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
 import { AppSettings, AiPersonaName, AiPersonaSettings, CommunicationTemplate, InterestCompatibilitySectionSettings } from '../../../types';
-import { initialSettings } from '../../../constants';
+import { initialSettings } from '../../../constants.ts';
 import MainAiTab from './MainAiTab';
 import ModuleAiTab from './ModuleAiTab';
 import PersonaTestModal from './PersonaTestModal';
@@ -13,6 +14,7 @@ import EcoStarSettingsEditor from './EcoStarSettingsEditor';
 import InterestCompatibilitySettingsEditor from './InterestCompatibilitySettingsEditor';
 import { Select } from '../../ui/Select';
 import FormField from '../../ui/FormField';
+import ResearchPlanSettingsEditor from './ResearchPlanSettingsEditor.tsx';
 
 const AiSettings: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
@@ -24,6 +26,7 @@ const AiSettings: React.FC = () => {
 
     const tabs: { id: AiPersonaName, label: string }[] = [
         { id: 'main', label: 'Main' },
+        { id: 'researchPlan', label: 'Research Plan' },
         { id: 'ecostar', label: 'ECO-STAR' },
         { id: 'interestCompatibility', label: 'Interest Compatibility' },
         { id: 'sdgAlignment', label: 'SDG Alignment' },
@@ -158,6 +161,23 @@ const AiSettings: React.FC = () => {
                     onPersonaChange={(field, value) => handlePersonaChange(activeTab, field, value)}
                     sectionSettings={settings.interestCompatibilitySectionSettings}
                     onSectionSettingsChange={handleInterestCompatibilitySectionSettingsChange}
+                    onTestPersona={() => setTestModalContext(activeTab)}
+                />
+            )
+        }
+        
+        if (activeTab === 'researchPlan') {
+            return (
+                 <ResearchPlanSettingsEditor
+                    persona={persona}
+                    onPersonaChange={(field, value) => handlePersonaChange(activeTab, field, value)}
+                    sectionSettings={settings.researchPlanSectionSettings}
+                    onSectionSettingsChange={(newSettings) => {
+                         setSettings(prev => produce(prev, draft => {
+                            draft.researchPlanSectionSettings = newSettings;
+                        }));
+                        setIsDirty(true);
+                    }}
                     onTestPersona={() => setTestModalContext(activeTab)}
                 />
             )

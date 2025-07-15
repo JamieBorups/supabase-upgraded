@@ -1,6 +1,5 @@
 
 
-
 import React, { useState } from 'react';
 import { SettingsCategory, UserRole } from '../../types';
 import GeneralSettings from './GeneralSettings';
@@ -24,6 +23,7 @@ const SettingsManager: React.FC = () => {
     const menuItems: { id: SettingsCategory; label: string; icon: string; adminOnly?: boolean }[] = [
         { id: 'general', label: 'General', icon: 'fa-solid fa-sliders' },
         { id: 'users', label: 'Users', icon: 'fa-solid fa-users-cog', adminOnly: true },
+        { id: 'ai', label: 'AI Settings', icon: 'fa-solid fa-wand-magic-sparkles' },
         { id: 'projects', label: 'Projects', icon: 'fa-solid fa-briefcase' },
         { id: 'proposals', label: 'Proposals', icon: 'fa-solid fa-camera-retro' },
         { id: 'sales', label: 'Sales & Inventory', icon: 'fa-solid fa-cash-register' },
@@ -33,7 +33,6 @@ const SettingsManager: React.FC = () => {
         { id: 'events', label: 'Events & Venues', icon: 'fa-solid fa-calendar-days' },
         { id: 'highlights', label: 'Highlights', icon: 'fa-solid fa-images' },
         { id: 'media', label: 'Media & Comms', icon: 'fa-solid fa-bullhorn' },
-        { id: 'ai', label: 'AI Settings', icon: 'fa-solid fa-wand-magic-sparkles' },
     ];
     
     const renderContent = () => {

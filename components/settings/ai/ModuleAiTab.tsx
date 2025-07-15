@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AiPersonaName, AiPersonaSettings, CommunicationTemplate } from '../../../types';
 import PersonaEditor from './PersonaEditor';
@@ -36,7 +37,8 @@ const ModuleAiTab: React.FC<ModuleAiTabProps> = ({
         projectGenerator: "Configure the AI assistant that guides users through creating a new project from scratch.",
         interestCompatibility: "Configure the AI that analyzes project data to assess compatibility between stakeholders.",
         sdgAlignment: "Configure the AI that analyzes a project's alignment with the UN Sustainable Development Goals.",
-        recreation: "Configure the AI that helps align a project with the goals of the Framework for Recreation in Canada."
+        recreation: "Configure the AI that helps align a project with the goals of the Framework for Recreation in Canada.",
+        researchPlan: "Configure the AI that assists in drafting sections of a community-based research plan.",
     };
 
   return (
