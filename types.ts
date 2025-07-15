@@ -17,3 +17,4 @@ export * from './types/ecostar.types';
 export * from './types/interestCompatibility.types';
 export * from './types/sdg.types';
 export * from './types/recreation.types';
+export * from './types/research.types';

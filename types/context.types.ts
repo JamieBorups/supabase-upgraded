@@ -1,6 +1,5 @@
 
 
-
 import React from 'react';
 import { FormData } from './project.types';
 import { Member, User } from './member.types';
@@ -16,6 +15,7 @@ import { EcoStarReport } from './ecostar.types';
 import { InterestCompatibilityReport } from './interestCompatibility.types';
 import { SdgAlignmentReport } from './sdg.types';
 import { RecreationFrameworkReport } from './recreation.types';
+import { ResearchPlan } from './research.types.ts';
 
 export interface ProjectExportData {
   project: FormData;
@@ -68,8 +68,10 @@ export interface AppState {
     interestCompatibilityReports: InterestCompatibilityReport[];
     sdgAlignmentReports: SdgAlignmentReport[];
     recreationFrameworkReports: RecreationFrameworkReport[];
+    researchPlans: ResearchPlan[];
     currentUser: User | null;
     reportProjectIdToOpen: string | null;
+    researchPlanToEdit: ResearchPlan | null;
     activeWorkshopItem: {
       type: 'task';
       itemId: string;
@@ -151,6 +153,7 @@ export type Action =
   | { type: 'SET_CURRENT_USER'; payload: User | null }
   | { type: 'LOGOUT' }
   | { type: 'SET_REPORT_PROJECT_ID_TO_OPEN'; payload: string | null }
+  | { type: 'SET_RESEARCH_PLAN_TO_EDIT'; payload: ResearchPlan | null }
   | { type: 'SET_ACTIVE_WORKSHOP_ITEM'; payload: AppState['activeWorkshopItem'] }
   | { type: 'ADD_PROJECT_DATA', payload: ProjectExportData }
   | { type: 'LOAD_DATA'; payload: Omit<Partial<AppState>, 'reportProjectIdToOpen' | 'activeWorkshopItem' | 'currentUser' | 'loading'> }
@@ -189,7 +192,11 @@ export type Action =
   | { type: 'DELETE_SDG_REPORT'; payload: string }
   | { type: 'SET_RECREATION_REPORTS'; payload: RecreationFrameworkReport[] }
   | { type: 'ADD_RECREATION_REPORT'; payload: RecreationFrameworkReport }
-  | { type: 'DELETE_RECREATION_REPORT'; payload: string };
+  | { type: 'DELETE_RECREATION_REPORT'; payload: string }
+  | { type: 'SET_RESEARCH_PLANS'; payload: ResearchPlan[] }
+  | { type: 'ADD_RESEARCH_PLAN'; payload: ResearchPlan }
+  | { type: 'UPDATE_RESEARCH_PLAN'; payload: ResearchPlan }
+  | { type: 'DELETE_RESEARCH_PLAN'; payload: string };
 
 
 export interface AppContextType {

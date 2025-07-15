@@ -14,3 +14,4 @@ export * from './api_slices/ecostar';
 export * from './api_slices/interestCompatibility';
 export * from './api_slices/sdg';
 export * from './api_slices/recreation';
+export * from './api_slices/research';

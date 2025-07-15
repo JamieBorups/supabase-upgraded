@@ -1,6 +1,9 @@
 
 import jsPDF from 'jspdf';
-import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport } from '../types';
+import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan } from '../types';
+import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES } from '../constants';
+
+const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
 /**
  * A from-scratch PDF builder that creates free-flowing, document-style reports without tables for layout.
@@ -138,7 +141,40 @@ class PdfBuilder {
 }
 
 
-// --- Report Generation Functions (Rewritten to use the new builder) ---
+// --- Report Generation Functions ---
+
+export const generateResearchPlanPdf = (plan: ResearchPlan, projectTitle: string) => {
+    if (!plan) throw new Error("Research Plan data is missing.");
+    
+    const builder = new PdfBuilder('Community-Based Research Plan', projectTitle);
+    
+    builder.addSectionTitle('Title and Overview');
+    builder.addParagraph(plan.titleAndOverview);
+
+    builder.addSectionTitle('Community Engagement and Context');
+    builder.addParagraph(plan.communityEngagement);
+
+    builder.addSectionTitle('Research Questions and Objectives');
+    builder.addParagraph(plan.researchQuestions);
+
+    builder.addSectionTitle('Research Design and Methodology');
+    builder.addParagraph(plan.designAndMethodology);
+
+    builder.addSectionTitle('Ethical Considerations and Protocols');
+    builder.addParagraph(plan.ethicalConsiderations);
+
+    builder.addSectionTitle('Knowledge Mobilization and Dissemination');
+    builder.addParagraph(plan.knowledgeMobilization);
+
+    builder.addSectionTitle('Project Management and Timeline');
+    builder.addParagraph(plan.projectManagement);
+
+    builder.addSectionTitle('Project Evaluation');
+    builder.addParagraph(plan.projectEvaluation);
+
+    const safeFileName = projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 30);
+    builder.save(`Research-Plan-${safeFileName}-${new Date().toISOString().split('T')[0]}.pdf`);
+};
 
 export const generateEcoStarPdf = (report: EcoStarReport, projectTitle: string) => {
     if (!report || typeof report !== 'object') throw new Error("Report data is missing or corrupted.");
@@ -296,6 +332,154 @@ export const generateRecreationFrameworkPdf = (report: RecreationFrameworkReport
 
     builder.save(`Recreation-Framework-Report-${projectTitle.slice(0, 15)}-${new Date().toISOString().split('T')[0]}.pdf`);
 };
+
+export const generateProposalSnapshotPdf = (
+    snapshot: ProposalSnapshot,
+    members: Member[],
+    events: Event[],
+    venues: Venue[],
+    eventTickets: EventTicket[]
+) => {
+    const builder = new PdfBuilder('Proposal Snapshot', snapshot.projectData.projectTitle);
+    
+    builder.addSubSectionTitle('Snapshot Details');
+    builder.addParagraph(`Created On: ${new Date(snapshot.createdAt).toLocaleString()}`);
+    if (snapshot.updatedAt) {
+        builder.addParagraph(`Updated On: ${new Date(snapshot.updatedAt).toLocaleString()}`);
+    }
+    builder.addParagraph(`Notes: ${snapshot.notes || 'N/A'}`);
+    
+    addProjectInfoToPdf(builder, snapshot.projectData);
+    addCollaboratorsToPdf(builder, snapshot.projectData, members);
+    addBudgetToPdf(builder, snapshot);
+    addWorkplanToPdf(builder, snapshot.tasks);
+
+    builder.save(`Proposal-Snapshot-${snapshot.projectData.projectTitle.slice(0, 15)}-${new Date(snapshot.createdAt).toISOString().split('T')[0]}.pdf`);
+};
+
+function addProjectInfoToPdf(builder: any, project: FormData) {
+    builder.addSectionTitle('Project Information');
+    const fields = [
+        { label: 'Project Title', content: project.projectTitle },
+        { label: 'Project Dates', content: `Start: ${project.projectStartDate || 'N/A'} | End: ${project.projectEndDate || 'N/A'}` },
+        { label: 'Activity Type', content: ACTIVITY_TYPES.find(a => a.value === project.activityType)?.label || project.activityType },
+        { label: 'Artistic Disciplines', content: (project.artisticDisciplines.map(d => ARTISTIC_DISCIPLINES.find(ad => ad.value === d)?.label || d)).join(', ') },
+        { label: 'Background', content: project.background },
+        { label: 'Project Description', content: project.projectDescription },
+        { label: 'Audience & Outreach', content: project.audience },
+        { label: 'Payment & Working Conditions', content: project.paymentAndConditions },
+        { label: 'Schedule', content: project.schedule },
+        { label: 'Cultural Integrity', content: project.culturalIntegrity },
+        { label: 'Community Impact', content: project.communityImpact },
+        { label: 'Organizational Rationale', content: project.organizationalRationale },
+        { label: 'Artistic Development', content: project.artisticDevelopment },
+    ];
+    fields.forEach(field => {
+        builder.addMinorSectionTitle(field.label);
+        builder.addParagraph(field.content);
+    });
+}
+
+function addCollaboratorsToPdf(builder: any, project: FormData, members: Member[]) {
+    builder.addSectionTitle('Collaborators');
+    builder.addMinorSectionTitle('Collaboration Rationale');
+    builder.addParagraph(project.whoWillWork);
+
+    if (project.collaboratorDetails && project.collaboratorDetails.length > 0) {
+        builder.addMinorSectionTitle('Assigned Collaborators');
+        project.collaboratorDetails.forEach(collab => {
+            const member = members.find(m => m.id === collab.memberId);
+            if(member) {
+                builder.addSubSectionTitle(`${member.firstName} ${member.lastName} (${collab.role})`);
+                builder.addParagraph(member.shortBio || member.artistBio || 'No bio provided.');
+            }
+        });
+    }
+}
+
+function addBudgetToPdf(builder: any, snapshot: ProposalSnapshot) {
+    builder.addSectionTitle('Proposed Budget');
+    const budget = snapshot.projectData.budget;
+    const ticketCalcs = snapshot.calculatedMetrics;
+    if (!budget) {
+        builder.addParagraph('No budget data available for this snapshot.');
+        return;
+    }
+    
+    const sumItems = (items: BudgetItem[] = []) => items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const totalGrants = sumItems(budget.revenues.grants);
+    const totalSales = sumItems(budget.revenues.sales);
+    const totalFundraising = sumItems(budget.revenues.fundraising);
+    const totalContributions = sumItems(budget.revenues.contributions);
+    const totalTicketRevenue = ticketCalcs?.projectedRevenue || 0;
+    const totalRevenue = totalGrants + totalTicketRevenue + totalSales + totalFundraising + totalContributions;
+    
+    const totalExpenses = Object.values(budget.expenses).reduce((sum, expenseCategory) => sum + sumItems(expenseCategory), 0);
+    const balance = totalRevenue - totalExpenses;
+
+    builder.addMinorSectionTitle('Budget Summary');
+    builder.addParagraph(`Total Projected Revenue: ${formatCurrency(totalRevenue)}`);
+    builder.addParagraph(`Total Projected Expenses: ${formatCurrency(totalExpenses)}`);
+    builder.addParagraph(`Projected Balance: ${formatCurrency(balance)}`);
+
+    builder.addSubSectionTitle('Revenue Breakdown');
+    const revenueCategories = [
+        { title: 'Grants', items: budget.revenues.grants },
+        { title: 'Sales', items: budget.revenues.sales },
+        { title: 'Fundraising', items: budget.revenues.fundraising },
+        { title: 'Contributions', items: budget.revenues.contributions },
+    ];
+    revenueCategories.forEach(cat => {
+        if(cat.items.length > 0) {
+            builder.addMinorSectionTitle(cat.title);
+            cat.items.forEach(item => builder.addParagraph(`${item.description || item.source}: ${formatCurrency(item.amount)}`));
+        }
+    });
+    builder.addMinorSectionTitle('Tickets & Box Office');
+    builder.addParagraph(`Projected Revenue: ${formatCurrency(totalTicketRevenue)}`);
+
+    builder.addSubSectionTitle('Expense Breakdown');
+    Object.entries(budget.expenses).forEach(([key, items]) => {
+         if (items.length > 0) {
+            builder.addMinorSectionTitle(key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()));
+            items.forEach(item => builder.addParagraph(`${item.description || item.source}: ${formatCurrency(item.amount)}`));
+        }
+    });
+}
+
+function addWorkplanToPdf(builder: any, tasks: Task[]) {
+    builder.addSectionTitle('Workplan');
+    const milestones = tasks.filter(t => t.taskType === 'Milestone').sort((a,b) => (a.orderBy || 0) - (b.orderBy || 0));
+    const tasksByParent = tasks.reduce((acc, task) => {
+        if (task.taskType !== 'Milestone') {
+            const parentId = task.parentTaskId || 'unparented';
+            if (!acc[parentId]) acc[parentId] = [];
+            acc[parentId].push(task);
+        }
+        return acc;
+    }, {} as Record<string, Task[]>);
+    
+    if (tasks.length === 0) {
+        builder.addParagraph('No tasks defined in this snapshot.');
+        return;
+    }
+
+    milestones.forEach(milestone => {
+        builder.addSubSectionTitle(`${milestone.title} (Due: ${milestone.dueDate || 'N/A'})`);
+        builder.addParagraph(milestone.description);
+        const childTasks = tasksByParent[milestone.id] || [];
+        if(childTasks.length > 0) {
+            childTasks.forEach(task => builder.addParagraph(`  • Task: ${task.title} (Due: ${task.dueDate || 'N/A'})`));
+        } else {
+             builder.addParagraph('  • No sub-tasks for this milestone.');
+        }
+    });
+
+    if (tasksByParent['unparented'] && tasksByParent['unparented'].length > 0) {
+        builder.addSubSectionTitle('Other Tasks');
+        tasksByParent['unparented'].forEach(task => builder.addParagraph(`  • ${task.title} (Due: ${task.dueDate || 'N/A'})`));
+    }
+}
 
 
 // --- Legacy stubs for other reports that can be upgraded later ---
