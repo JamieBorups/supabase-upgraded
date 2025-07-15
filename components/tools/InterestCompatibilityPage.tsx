@@ -4,7 +4,7 @@ import { produce } from 'immer';
 import { GoogleGenAI, Content } from "@google/genai";
 import { marked } from 'https://esm.sh/marked@13.0.2';
 import { useAppContext } from '../../context/AppContext';
-import { InterestCompatibilityReport, FormData as ProjectData, AppSettings, Member } from '../../types';
+import { InterestCompatibilityReport, FormData as ProjectData, AppSettings, Member, ResearchPlan } from '../../types';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
@@ -104,7 +104,7 @@ const AiMessage: React.FC<{ message: ChatMessage }> = ({ message }) => {
     );
 };
 
-const ChatAssistant: React.FC<{ project: ProjectData | undefined, members: Member[], settings: AppSettings }> = ({ project, members, settings }) => {
+const ChatAssistant: React.FC<{ project: ProjectData | undefined, members: Member[], researchPlans: ResearchPlan[], settings: AppSettings }> = ({ project, members, researchPlans, settings }) => {
     const [history, setHistory] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -127,7 +127,7 @@ const ChatAssistant: React.FC<{ project: ProjectData | undefined, members: Membe
             setHistory(prev => [...prev, { id: `user_${Date.now()}`, sender: 'user', text: userMessage }]);
             setIsLoading(true);
             
-            const context = getInterestCompatibilityContext(project, members);
+            const context = getInterestCompatibilityContext(project, members, researchPlans);
             const finalPrompt = `The user is asking a general question related to the project's interest compatibility. Your role is a helpful, encouraging brainstorming partner. Keep your answers concise and focused on the user's query.\n\nUser's message: "${userMessage}"\n\n### PROJECT CONTEXT ###\n${JSON.stringify(context, null, 2)}`;
             
             const aiHistory = [...history, { id: `user_temp`, sender: 'user', text: userMessage }].map(m => ({
@@ -201,7 +201,7 @@ const ChatAssistant: React.FC<{ project: ProjectData | undefined, members: Membe
 
 const InterestCompatibilityPage: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
-    const { projects, members } = state;
+    const { projects, members, researchPlans } = state;
     const reportContainerRef = useRef<HTMLDivElement>(null);
 
     const [activeTab, setActiveTab] = useState<'report' | 'chat'>('report');
@@ -225,7 +225,7 @@ const InterestCompatibilityPage: React.FC = () => {
         if (!isFullReportMode) setLoadingSection(section.key);
 
         try {
-            const context = getInterestCompatibilityContext(selectedProject, members);
+            const context = getInterestCompatibilityContext(selectedProject, members, researchPlans);
             const sectionData = await generateInterestCompatibilitySection(context, state.settings.ai, section.key as keyof AppSettings['ai']['interestCompatibilitySectionSettings']);
             
             setGeneratedSections(prev => ({ ...prev, ...sectionData }));
@@ -386,7 +386,7 @@ const InterestCompatibilityPage: React.FC = () => {
                             {activeTab === 'report' ? (
                                 <div className="overflow-y-auto h-full scrollbar-hide pr-2 -mr-2">{renderReportGenerator()}</div>
                             ) : (
-                                <ChatAssistant project={selectedProject} members={members} settings={state.settings} />
+                                <ChatAssistant project={selectedProject} members={members} researchPlans={researchPlans} settings={state.settings} />
                             )}
                         </div>
                     )}

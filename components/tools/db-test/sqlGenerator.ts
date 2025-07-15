@@ -77,7 +77,7 @@ const CREATION_ORDER = [
     'sale_listings', 'activities', 'direct_expenses', 'sales_transactions',
     'sales_transaction_items', 'reports', 'highlights', 'news_releases', 'interactions',
     'proposal_snapshots', 'ecostar_reports', 'interest_compatibility_reports',
-    'sdg_alignment_reports', 'recreation_framework_reports', 'research_plans'
+    'sdg_alignment_reports', 'recreation_framework_reports', 'research_plans', 'research_plan_communities'
 ];
 
 export const generateSchemaCreationSql = (): string => {
@@ -146,7 +146,8 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
         }),
         'contact_projects': (state) => state.contacts.flatMap(c => c.associatedProjectIds.map(pid => ({ contact_id: c.id, project_id: pid }))),
         'event_members': (state) => state.events.flatMap(e => (e.assignedMembers || []).map(am => ({ event_id: e.id, member_id: am.memberId, role: am.role }))),
-        'sales_transaction_items': (state) => state.salesTransactions.flatMap(tx => tx.items.map(item => ({ ...item, transaction_id: tx.id })))
+        'sales_transaction_items': (state) => state.salesTransactions.flatMap(tx => tx.items.map(item => ({ ...item, transaction_id: tx.id }))),
+        'research_plan_communities': (state) => state.researchPlans.flatMap(plan => (plan.communities || []).map(community => ({ research_plan_id: plan.id, ...community }))),
     };
     
     const tablesToProcess = tableNames.map(name => allTables.find(t => t.tableName === name)).filter((t): t is TableDefinition => !!t);
@@ -225,7 +226,7 @@ export const generateDataDumpSqlParts = (state: AppState): { dataPart1: string, 
         'activities', 'direct_expenses', 'sales_transactions', 'sales_transaction_items',
         'reports', 'highlights', 'news_releases', 'interactions', 'proposal_snapshots',
         'ecostar_reports', 'interest_compatibility_reports', 'sdg_alignment_reports', 
-        'recreation_framework_reports', 'research_plans'
+        'recreation_framework_reports', 'research_plans', 'research_plan_communities'
     ];
     const dataPart4 = generateInsertStatementsForTables(dataOrderPart4, allTables, state);
     

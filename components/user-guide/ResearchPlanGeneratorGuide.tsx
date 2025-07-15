@@ -22,7 +22,7 @@ const ResearchPlanGeneratorGuide: React.FC = () => {
         <li><strong>Generate Content:</strong> You have two options for generating content:
             <ul>
                 <li><strong>Generate Full Draft:</strong> Click this button for a fast start. The AI will go through each section of the research plan sequentially, generating a complete first draft for you. It's smart enough to pass context from one section to the next, ensuring a cohesive document.</li>
-                <li><strong>Generate Section by Section:</strong> For more control, click the "Generate" button within each specific section (e.g., "Ethical Considerations"). The AI will generate content only for that part.</li>
+                <li><strong>Generate Section by Section:</strong> For more control, click the "Generate" button within each specific section (e.g., "Sustainability"). The AI will generate content only for that part.</li>
             </ul>
         </li>
         <li><strong>Edit and Refine:</strong> The generated text appears directly in an editable field. You are in full control to modify, add, or delete any part of the text to ensure it accurately reflects your vision and community agreements.</li>

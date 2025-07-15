@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
@@ -8,17 +10,7 @@ import { TextareaWithCounter } from '../../ui/TextareaWithCounter';
 import * as api from '../../../services/api';
 import { getAiResponse } from '../../../services/aiService';
 import { marked } from 'marked';
-
-const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; wordLimit: number }[] = [
-    { key: 'titleAndOverview', label: 'Project Title and Overview', wordLimit: 300 },
-    { key: 'communityEngagement', label: 'Community Engagement and Context', wordLimit: 500 },
-    { key: 'researchQuestions', label: 'Research Questions and Objectives', wordLimit: 400 },
-    { key: 'designAndMethodology', label: 'Research Design and Methodology', wordLimit: 1000 },
-    { key: 'ethicalConsiderations', label: 'Ethical Considerations and Protocols', wordLimit: 750 },
-    { key: 'knowledgeMobilization', label: 'Knowledge Mobilization and Dissemination', wordLimit: 500 },
-    { key: 'projectManagement', label: 'Project Management and Timeline', wordLimit: 500 },
-    { key: 'projectEvaluation', label: 'Project Evaluation', wordLimit: 400 },
-];
+import { RESEARCH_PLAN_SECTIONS } from '../../../constants';
 
 const SectionEditor: React.FC<{
     section: typeof RESEARCH_PLAN_SECTIONS[0];

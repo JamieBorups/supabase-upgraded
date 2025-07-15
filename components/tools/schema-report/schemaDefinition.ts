@@ -406,6 +406,7 @@ export const dbSchema: ModuleDefinition[] = [
                     { name: 'ethical_considerations', type: 'text' },
                     { name: 'knowledge_mobilization', type: 'text' },
                     { name: 'project_management', type: 'text' },
+                    { name: 'sustainability', type: 'text' },
                     { name: 'project_evaluation', type: 'text' },
                     { name: 'full_report_html', type: 'text' }
                 ],
