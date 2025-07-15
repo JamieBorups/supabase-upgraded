@@ -1,9 +1,12 @@
 
-import jsPDF from 'jspdf';
-import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan } from '../types';
-import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES } from '../constants';
 
-const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, InventoryItem, SaleSession, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan, DetailedBudget } from '../types';
+import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES, REVENUE_FIELDS, EXPENSE_FIELDS, initialBudget } from '../constants';
+import { useTicketRevenueCalculations } from '../hooks/useBudgetCalculations';
+
+const formatCurrency = (value: number | null | undefined) => (value || 0).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
 /**
  * A from-scratch PDF builder that creates free-flowing, document-style reports without tables for layout.
@@ -31,20 +34,24 @@ class PdfBuilder {
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h1);
         this.doc.setTextColor('#1e293b'); // slate-800
-        this.doc.text(docTitle, this.margin, this.y);
-        this.y += this.fontSizes.h1 * this.lineHeightRatio;
+        
+        this.doc.text(docTitle, this.margin, this.y, { maxWidth: this.pageWidth - this.margin * 2 });
+        this.y += this.doc.getTextDimensions(docTitle, { maxWidth: this.pageWidth - this.margin * 2, fontSize: this.fontSizes.h1 }).h;
+
 
         if (projectTitle) {
             this.doc.setFont('helvetica', 'normal');
             this.doc.setFontSize(this.fontSizes.h2);
             this.doc.setTextColor('#475569'); // slate-600
-            this.doc.text(projectTitle, this.margin, this.y);
-            this.y += this.fontSizes.h2 * this.lineHeightRatio;
+            
+            this.y += 5; // Add some space before the subtitle
+            this.doc.text(projectTitle, this.margin, this.y, { maxWidth: this.pageWidth - this.margin * 2 });
+            this.y += this.doc.getTextDimensions(projectTitle, { maxWidth: this.pageWidth - this.margin * 2, fontSize: this.fontSizes.h2 }).h;
         }
 
         this.doc.setFontSize(this.fontSizes.small);
         this.doc.setTextColor('#64748b'); // slate-500
-        this.doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, this.margin, this.y);
+        this.doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, this.margin, this.y, { maxWidth: this.pageWidth - this.margin * 2 });
         
         this.y += (this.fontSizes.small * this.lineHeightRatio) + 25;
     }
@@ -57,22 +64,18 @@ class PdfBuilder {
     }
     
     addSectionTitle(title: string) {
-        const titleHeight = this.fontSizes.h2 * this.lineHeightRatio;
-        const wrappedTitle = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
-        const requiredHeight = wrappedTitle.length * titleHeight + 30;
-        this.checkPageBreak(requiredHeight);
-
-        this.y += 15; // Top margin for section
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h2);
+        
+        const titleHeight = this.doc.getTextDimensions(title, { maxWidth: this.pageWidth - this.margin * 2, fontSize: this.fontSizes.h2 }).h;
+        this.checkPageBreak(titleHeight + 30); 
+
+        this.y += 15; // Top margin for section
         this.doc.setTextColor('#1e293b');
+        this.doc.text(title, this.margin, this.y, { maxWidth: this.pageWidth - this.margin * 2 });
+        this.y += titleHeight;
         
-        wrappedTitle.forEach((line: string) => {
-             this.doc.text(line, this.margin, this.y);
-             this.y += titleHeight;
-        });
-        
-        this.y += (this.fontSizes.h2 * this.lineHeightRatio) * 0.5;
+        this.y += 5; // Space between text and line
         this.doc.setDrawColor('#0d9488'); // teal-600
         this.doc.setLineWidth(1.5);
         this.doc.line(this.margin, this.y, this.pageWidth - this.margin, this.y);
@@ -80,101 +83,43 @@ class PdfBuilder {
     }
 
     addSubSectionTitle(title: string) {
-        const titleHeight = this.fontSizes.h3 * this.lineHeightRatio;
-        const wrappedTitle = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
-        const requiredHeight = wrappedTitle.length * titleHeight + 20;
-        this.checkPageBreak(requiredHeight);
-
-        this.y += 12; // Top margin
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h3);
-        this.doc.setTextColor('#334155'); // slate-700
+        const titleHeight = this.doc.getTextDimensions(title, { maxWidth: this.pageWidth - this.margin * 2, fontSize: this.fontSizes.h3 }).h;
         
-        wrappedTitle.forEach((line: string) => {
-             this.doc.text(line, this.margin, this.y);
-             this.y += titleHeight;
-        });
+        this.checkPageBreak(titleHeight + 20); 
+        this.y += 12; // Top margin
+        
+        this.doc.setTextColor('#334155'); // slate-700
+        this.doc.text(title, this.margin, this.y, { maxWidth: this.pageWidth - this.margin * 2 });
+        this.y += titleHeight;
     }
     
     addMinorSectionTitle(title: string) {
-        const titleHeight = this.fontSizes.h4 * this.lineHeightRatio;
-        const wrappedTitle = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
-        const requiredHeight = wrappedTitle.length * titleHeight + 15;
-        this.checkPageBreak(requiredHeight);
-
-        this.y += 10;
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h4);
-        this.doc.setTextColor('#475569'); // slate-600
+        const titleHeight = this.doc.getTextDimensions(title, { maxWidth: this.pageWidth - this.margin * 2, fontSize: this.fontSizes.h4 }).h;
         
-        wrappedTitle.forEach((line: string) => {
-             this.doc.text(line, this.margin, this.y);
-             this.y += titleHeight;
-        });
-        this.y += 2; // Spacing after title
+        this.checkPageBreak(titleHeight + 15);
+        this.y += 10;
+        
+        this.doc.setTextColor('#475569'); // slate-600
+        this.doc.text(title, this.margin, this.y, { maxWidth: this.pageWidth - this.margin * 2 });
+        this.y += titleHeight;
     }
 
-    addParagraph(text: string | null | undefined) {
+    addParagraph(text: string | null | undefined, options: { top?: number, bottom?: number, color?: string, fontSize?: number, fontStyle?: 'normal' | 'bold' | 'italic' } = {}) {
+        const { top = 4, bottom = 12, color = '#334155', fontSize = this.fontSizes.p, fontStyle = 'normal' } = options;
+
         if (!text || typeof text !== 'string' || text.trim() === '') {
+            this.doc.setTextColor('#94a3b8'); // slate-400
             this.addText('N/A', this.fontSizes.p, 'italic', {top: 4, bottom: 12});
             return;
         }
-    
-        const renderStyledLine = (line: string, { size = this.fontSizes.p, style = 'normal', xOffset = 0 } = {}) => {
-            const lineHeight = size * this.lineHeightRatio;
-            this.checkPageBreak(lineHeight);
-            
-            const parts = line.split(/(\*\*.*?\*\*)/g).filter(Boolean);
-            let currentX = this.margin + xOffset;
-
-            parts.forEach(part => {
-                const isBold = part.startsWith('**') && part.endsWith('**');
-                const cleanPart = isBold ? part.slice(2, -2) : part;
-
-                this.doc.setFontSize(size);
-                this.doc.setFont('helvetica', isBold ? 'bold' : style);
-                this.doc.text(cleanPart, currentX, this.y);
-                currentX += this.doc.getStringUnitWidth(cleanPart) * size / this.doc.internal.scaleFactor;
-            });
-            this.y += lineHeight;
-        };
-
-        const lines = text.split('\n');
         
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-
-            if (trimmedLine === '') {
-                this.y += this.fontSizes.p * 0.5; // Paragraph break
-                continue;
-            }
-            if (trimmedLine.startsWith('## ')) {
-                this.addSubSectionTitle(trimmedLine.substring(3).trim());
-                continue;
-            }
-             if (trimmedLine.startsWith('### ')) {
-                 this.addMinorSectionTitle(trimmedLine.substring(4).trim());
-                 continue;
-            }
-            if (trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ')) {
-                const content = `•  ${trimmedLine.substring(2)}`;
-                const wrappedLines = this.doc.splitTextToSize(content, this.pageWidth - this.margin * 2 - 15);
-                wrappedLines.forEach(l => renderStyledLine(l, { xOffset: 15 }));
-                continue;
-            }
-
-            const isHeading = (trimmedLine.endsWith(':') && trimmedLine.length < 100) || (trimmedLine.startsWith('**') && trimmedLine.endsWith('**'));
-
-            if (isHeading) {
-                const headingText = trimmedLine.startsWith('**') ? trimmedLine.slice(2, -2) : trimmedLine;
-                this.addMinorSectionTitle(headingText);
-            } else {
-                const wrappedLines = this.doc.splitTextToSize(trimmedLine, this.pageWidth - this.margin * 2);
-                wrappedLines.forEach(l => renderStyledLine(l));
-            }
-        }
+        this.doc.setTextColor(color);
+        this.addText(text, fontSize, fontStyle, { top, bottom });
     }
-
 
     private addText(text: string, fontSize: number, fontStyle: 'normal' | 'bold' | 'italic', spacing: { top: number, bottom: number }) {
         this.y += spacing.top;
@@ -195,10 +140,24 @@ class PdfBuilder {
 
     addList(items: string[]) {
         if (!items || items.length === 0) return;
-        const listContent = items.map(item => `* ${item}`).join('\n');
+        const listContent = items.map(item => `•  ${item}`).join('\n');
         this.addParagraph(listContent);
     }
 
+    addTable(head: string[][], body: (string|number)[][]) {
+        this.y += 5;
+        autoTable(this.doc, {
+            head: head,
+            body: body,
+            startY: this.y,
+            theme: 'grid',
+            headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
+            styles: { fontSize: 8 },
+            margin: { left: this.margin, right: this.margin },
+        });
+        this.y = (this.doc as any).lastAutoTable.finalY + 15;
+    }
+    
     save(fileName: string) {
         this.doc.save(fileName);
     }
@@ -212,14 +171,22 @@ export const generateResearchPlanPdf = (plan: ResearchPlan, projectTitle: string
     
     const builder = new PdfBuilder('Community-Based Research Plan', projectTitle);
     
-    builder.addSectionTitle('Title and Overview');
+    builder.addSectionTitle('Overview');
     builder.addParagraph(plan.titleAndOverview);
+
+    if (plan.communities && plan.communities.length > 0) {
+        builder.addSectionTitle('Participating Communities');
+        builder.addTable(
+            [['Community', 'Region', 'Country', 'Organization']],
+            plan.communities.map(c => [c.communityName, c.provinceState, c.country, c.organization || 'N/A'])
+        );
+    }
+    
+    builder.addSectionTitle('Research Questions and Objectives');
+    builder.addParagraph(plan.researchQuestions);
 
     builder.addSectionTitle('Community Engagement and Context');
     builder.addParagraph(plan.communityEngagement);
-
-    builder.addSectionTitle('Research Questions and Objectives');
-    builder.addParagraph(plan.researchQuestions);
 
     builder.addSectionTitle('Research Design and Methodology');
     builder.addParagraph(plan.designAndMethodology);
@@ -232,6 +199,11 @@ export const generateResearchPlanPdf = (plan: ResearchPlan, projectTitle: string
 
     builder.addSectionTitle('Project Management and Timeline');
     builder.addParagraph(plan.projectManagement);
+
+    if (plan.sustainability) {
+        builder.addSectionTitle('Sustainability');
+        builder.addParagraph(plan.sustainability);
+    }
 
     builder.addSectionTitle('Project Evaluation');
     builder.addParagraph(plan.projectEvaluation);
@@ -471,12 +443,14 @@ function addBudgetToPdf(builder: any, snapshot: ProposalSnapshot) {
     }
     
     const sumItems = (items: BudgetItem[] = []) => items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    
     const totalGrants = sumItems(budget.revenues.grants);
     const totalSales = sumItems(budget.revenues.sales);
     const totalFundraising = sumItems(budget.revenues.fundraising);
     const totalContributions = sumItems(budget.revenues.contributions);
+    const totalRevenueFromItems = totalGrants + totalSales + totalFundraising + totalContributions;
     const totalTicketRevenue = ticketCalcs?.projectedRevenue || 0;
-    const totalRevenue = totalGrants + totalTicketRevenue + totalSales + totalFundraising + totalContributions;
+    const totalRevenue = totalRevenueFromItems + totalTicketRevenue;
     
     const totalExpenses = Object.values(budget.expenses).reduce((sum, expenseCategory) => sum + sumItems(expenseCategory), 0);
     const balance = totalRevenue - totalExpenses;
@@ -504,7 +478,7 @@ function addBudgetToPdf(builder: any, snapshot: ProposalSnapshot) {
 
     builder.addSubSectionTitle('Expense Breakdown');
     Object.entries(budget.expenses).forEach(([key, items]) => {
-         if (items.length > 0) {
+         if (Array.isArray(items) && items.length > 0) {
             builder.addMinorSectionTitle(key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()));
             items.forEach(item => builder.addParagraph(`${item.description || item.source}: ${formatCurrency(item.amount)}`));
         }
@@ -546,13 +520,214 @@ function addWorkplanToPdf(builder: any, tasks: Task[]) {
 }
 
 
-// --- Legacy stubs for other reports that can be upgraded later ---
-export const generateReportPdf = (project: FormData, report: Report, members: Member[], tasks: Task[], highlights: Highlight[], newsReleases: NewsRelease[], actuals: Map<string, number>, options: any, settings: AppSettings) => {
-    console.error("generateReportPdf needs to be updated to use the new PdfBuilder.");
-    alert("This PDF generator is not yet updated. Please check back later.");
+export const generateReportPdf = (
+    project: FormData,
+    report: Report,
+    members: Member[],
+    tasks: Task[],
+    highlights: Highlight[],
+    newsReleases: NewsRelease[],
+    actuals: Map<string, number>,
+    options: any,
+    settings: AppSettings,
+    events: Event[],
+    eventTickets: EventTicket[],
+    venues: Venue[],
+) => {
+    const builder = new PdfBuilder('Final Report', project.projectTitle);
+    
+    const { revenueLabels, expenseLabels } = settings.budget;
+
+    // Build field maps
+    const revenueFieldMap = new Map(Object.values(REVENUE_FIELDS).flat().map(f => [f.key, (revenueLabels[f.key] !== undefined && revenueLabels[f.key] !== '') ? revenueLabels[f.key] : f.label]));
+    const expenseFieldMap = new Map(Object.values(EXPENSE_FIELDS).flat().map(f => [f.key, (expenseLabels[f.key] !== undefined && expenseLabels[f.key] !== '') ? expenseLabels[f.key] : f.label]));
+
+    // --- SECTION 1: Project Description ---
+    builder.addSectionTitle("Project Description");
+    builder.addParagraph(report.projectResults);
+
+    // --- SECTION 2: Financial Report ---
+    builder.addSectionTitle("Financial Report");
+    builder.addParagraph(report.grantSpendingDescription);
+
+    const budget = project.budget || initialBudget;
+    
+    // Re-implement useBudgetCalculations logic here
+    const sumAmounts = (items: BudgetItem[] = []) => items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const sumActuals = (items: BudgetItem[] = []) => items.reduce((sum, item) => sum + (item.actualAmount || 0), 0);
+    const filterAndSum = (items: BudgetItem[] = []) => 
+        items.filter(item => item.status !== 'Denied').reduce((sum, item) => sum + (item.amount || 0), 0);
+
+    const totalRevenueFromItems = filterAndSum(budget.revenues.grants) + filterAndSum(budget.revenues.sales) + filterAndSum(budget.revenues.fundraising) + filterAndSum(budget.revenues.contributions);
+    const totalExpenses = Object.values(budget.expenses).reduce((sum, cat) => sum + sumAmounts(cat), 0);
+    const totalActualRevenueFromItems = sumActuals(budget.revenues.grants) + sumActuals(budget.revenues.sales) + sumActuals(budget.revenues.fundraising) + sumActuals(budget.revenues.contributions);
+    const totalTicketsActual = budget.revenues.tickets?.actualRevenue || 0;
+    const totalActualRevenue = totalActualRevenueFromItems + totalTicketsActual;
+    
+    const ticketCalcs = useTicketRevenueCalculations(project.id, events, venues, eventTickets);
+    
+    const totalActualExpenses = Array.from(actuals.values()).reduce((sum, val) => sum + val, 0);
+    const totalProjectedRevenue = totalRevenueFromItems + ticketCalcs.projectedRevenue;
+
+    builder.addSubSectionTitle("Budget Summary");
+    builder.addTable(
+        [["", "Projected", "Actual"]],
+        [
+            ["Total Revenue", formatCurrency(totalProjectedRevenue), formatCurrency(totalActualRevenue)],
+            ["Total Expenses", formatCurrency(totalExpenses), formatCurrency(totalActualExpenses)],
+            ["Balance", formatCurrency(totalProjectedRevenue - totalExpenses), formatCurrency(totalActualRevenue - totalActualExpenses)],
+        ]
+    );
+
+    builder.addSubSectionTitle("Revenue Details");
+    builder.addTable(
+        [['Source', 'Projected', 'Actual', 'Status']],
+        [...budget.revenues.grants, ...budget.revenues.sales, ...budget.revenues.fundraising, ...budget.revenues.contributions].map(item => [
+            revenueFieldMap.get(item.source) || item.source,
+            formatCurrency(item.amount),
+            formatCurrency(item.actualAmount),
+            item.status || 'N/A'
+        ]).concat([
+            ["Tickets & Box Office", formatCurrency(ticketCalcs.projectedRevenue), formatCurrency(budget.revenues.tickets.actualRevenue), 'N/A']
+        ])
+    );
+    
+    builder.addSubSectionTitle("Expense Details");
+     Object.entries(budget.expenses).forEach(([categoryKey, items]) => {
+        if (Array.isArray(items) && items.length > 0) {
+            builder.addMinorSectionTitle(categoryKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()));
+            builder.addTable(
+                [['Expense', 'Projected', 'Actual', 'Description']],
+                items.map(item => [
+                    expenseFieldMap.get(item.source) || item.source,
+                    formatCurrency(item.amount),
+                    formatCurrency(actuals.get(item.id) || 0),
+                    item.description || ''
+                ])
+            );
+        }
+    });
+
+    // --- SECTION 3: Workplan ---
+    builder.addSectionTitle("Workplan");
+    builder.addParagraph(report.workplanAdjustments);
+
+    // --- SECTION 4: Community Reach ---
+    builder.addSectionTitle("Community Reach");
+    if (Array.isArray(report.involvedPeople) && report.involvedPeople.length > 0) {
+        builder.addSubSectionTitle("My activities actively involved individuals who identify as:");
+        const peopleLabels = report.involvedPeople.map(val => options.PEOPLE_INVOLVED_OPTIONS.find((opt: any) => opt.value === val)?.label.replace('... ', '') || val);
+        builder.addList(peopleLabels);
+    }
+    if (Array.isArray(report.involvedActivities) && report.involvedActivities.length > 0) {
+        builder.addSubSectionTitle("The activities supported by this grant involved:");
+        const activityLabels = report.involvedActivities.map(val => options.GRANT_ACTIVITIES_OPTIONS.find((opt: any) => opt.value === val)?.label.replace('... ', '') || val);
+        builder.addList(activityLabels);
+    }
+
+    // --- SECTION 5: Impact Assessment ---
+    builder.addSectionTitle("Impact Assessment");
+    options.IMPACT_QUESTIONS.forEach((q: any) => {
+        const answerValue = report.impactStatements[q.id];
+        const answerLabel = options.IMPACT_OPTIONS.find((opt: any) => opt.value === answerValue)?.label || 'Not answered';
+        builder.addMinorSectionTitle(q.label);
+        builder.addParagraph(`Answer: ${answerLabel}`, { fontStyle: 'italic', color: '#475569' });
+    });
+
+    // --- SECTION 6: Project Highlights & Media ---
+    builder.addSectionTitle("Project Highlights & Media");
+    if (highlights.length > 0) {
+        builder.addSubSectionTitle("Highlights");
+        highlights.forEach(h => builder.addParagraph(`${h.title}: ${h.url}`));
+    }
+    if (newsReleases.length > 0) {
+        builder.addSubSectionTitle("News Releases");
+        newsReleases.forEach(nr => builder.addParagraph(`${nr.headline} (${nr.status})`));
+    }
+
+    // --- SECTION 7: Closing ---
+    builder.addSectionTitle("Closing");
+    builder.addSubSectionTitle("What worked well with the grant program and what could be improved?");
+    builder.addParagraph(report.feedback);
+    builder.addSubSectionTitle("Is there anything else you would like to share?");
+    builder.addParagraph(report.additionalFeedback);
+
+    const safeFileName = project.projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 30);
+    builder.save(`Final-Report-${safeFileName}.pdf`);
 };
 
 export const generateSalesPdf = (options: any) => {
-    console.error("generateSalesPdf needs to be updated to use the new PdfBuilder.");
-    alert("This PDF generator is not yet updated. Please check back later.");
+    const { title, summary, itemBreakdown, vouchersBreakdown, transactions, itemMap } = options;
+    const doc = new jsPDF();
+    let y = 20;
+
+    doc.setFontSize(18);
+    doc.text(title, 14, y);
+    y += 10;
+
+    if (summary) {
+        doc.setFontSize(12);
+        doc.text("Financial Summary", 14, y);
+        y += 5;
+        autoTable(doc, {
+            body: summary.map((s:any) => [s.label, s.value]),
+            startY: y,
+            theme: 'plain',
+            styles: { fontSize: 10 },
+        });
+        y = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    if (itemBreakdown && itemBreakdown.length > 0) {
+        doc.setFontSize(12);
+        doc.text("Item Sales Breakdown", 14, y);
+        y += 5;
+        autoTable(doc, {
+            head: [['Item', 'Qty', 'Cost/Unit', 'Price/Unit', 'Total Cost', 'Total Revenue', 'Profit']],
+            body: itemBreakdown.map((item: any) => [
+                item.name, item.quantity, formatCurrency(item.costPrice), formatCurrency(item.salePrice),
+                formatCurrency(item.totalCost), formatCurrency(item.totalRevenue), formatCurrency(item.profit)
+            ]),
+            startY: y,
+        });
+        y = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    if (vouchersBreakdown && vouchersBreakdown.length > 0) {
+        doc.setFontSize(12);
+        doc.text("Voucher Redemptions (Promotional Cost)", 14, y);
+        y += 5;
+        autoTable(doc, {
+            head: [['Item', 'Qty Redeemed', 'Cost/Unit', 'Total Cost']],
+            body: vouchersBreakdown.map((item: any) => [
+                item.name, item.quantity, formatCurrency(item.costPrice), formatCurrency(item.totalCost)
+            ]),
+            startY: y,
+        });
+        y = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    if (transactions && transactions.length > 0) {
+        doc.setFontSize(12);
+        doc.text("Full Transaction Log", 14, y);
+        y += 5;
+        const body = transactions.flatMap((tx: any) => [
+            [{ content: `Transaction: ${tx.id.slice(-6)} - ${new Date(tx.createdAt).toLocaleString()}`, colSpan: 4, styles: { fontStyle: 'bold', fillColor: '#f1f5f9' } }],
+            ...tx.items.map((item: any) => [
+                itemMap.get(item.inventoryItemId)?.name || 'Unknown Item',
+                item.quantity,
+                formatCurrency(item.pricePerItem),
+                formatCurrency(item.itemTotal)
+            ]),
+            [{ content: `Subtotal: ${formatCurrency(tx.subtotal)} | Taxes: ${formatCurrency(tx.taxes)} | Total: ${formatCurrency(tx.total)}`, colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } }]
+        ]);
+        autoTable(doc, {
+            head: [['Item', 'Qty', 'Price', 'Total']],
+            body: body,
+            startY: y,
+        });
+    }
+
+    const safeFileName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 30);
+    doc.save(`${safeFileName}.pdf`);
 };
