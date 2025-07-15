@@ -6,8 +6,6 @@ import NewsReleaseEditor from './NewsReleaseEditor';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import NewsReleaseViewer from './NewsReleaseViewer';
 import * as api from '../../services/api';
-import FormField from '../ui/FormField';
-import ProjectFilter from '../ui/ProjectFilter';
 
 type ViewMode = 'list' | 'edit';
 
@@ -20,7 +18,6 @@ const MediaManager: React.FC = () => {
     const [currentProjectId, setCurrentProjectId] = useState<string>('');
     const [releaseToView, setReleaseToView] = useState<NewsRelease | null>(null);
     const [releaseToDelete, setReleaseToDelete] = useState<string | null>(null);
-    const [selectedProjectIdFilter, setSelectedProjectIdFilter] = useState('');
 
     const releasesByProject = useMemo(() => {
         const map = new Map<string, NewsRelease[]>();
@@ -31,14 +28,6 @@ const MediaManager: React.FC = () => {
         });
         return map;
     }, [newsReleases]);
-    
-    const filteredProjects = useMemo(() => {
-        const sortedProjects = [...projects].sort((a,b) => b.id.localeCompare(a.id));
-        if (!selectedProjectIdFilter) {
-            return sortedProjects;
-        }
-        return sortedProjects.filter(p => p.id === selectedProjectIdFilter);
-    }, [projects, selectedProjectIdFilter]);
     
     const handleAddNew = (projectId: string) => {
         setCurrentProjectId(projectId);
@@ -122,16 +111,8 @@ const MediaManager: React.FC = () => {
                             message="Are you sure you want to permanently delete this news release?"
                         />
                     )}
-                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-200 pb-4 gap-4">
+                    <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
                         <h1 className="text-3xl font-bold text-slate-900">Media Center</h1>
-                        <div className="w-full md:w-auto md:max-w-xs">
-                            <FormField label="Filter by Project" htmlFor="media_project_select" className="mb-0">
-                                <ProjectFilter
-                                    value={selectedProjectIdFilter}
-                                    onChange={setSelectedProjectIdFilter}
-                                />
-                            </FormField>
-                        </div>
                     </div>
 
                     {projects.length === 0 ? (
@@ -142,7 +123,7 @@ const MediaManager: React.FC = () => {
                         </div>
                     ) : (
                         <div className="space-y-8">
-                            {filteredProjects.map(project => {
+                            {projects.map(project => {
                                 const projectReleases = releasesByProject.get(project.id) || [];
                                 return (
                                     <div key={project.id} className="bg-slate-50/70 p-4 rounded-lg border border-slate-200">

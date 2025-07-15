@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../context/AppContext.tsx';
+import { Select } from './ui/Select.tsx';
 import FormField from './ui/FormField.tsx';
 import { CheckboxGroup } from './ui/CheckboxGroup.tsx';
 import { PEOPLE_INVOLVED_OPTIONS, GRANT_ACTIVITIES_OPTIONS, initialReportData } from '../constants.ts';
 import { Report } from '../types.ts';
 import * as api from '../services/api.ts';
-import ProjectFilter from './ui/ProjectFilter.tsx';
 
 const ViewDisplay: React.FC<{ label: string, values: string[], options: { value: string, label: string }[] }> = ({ label, values, options }) => {
     const displayLabels = values.map(val => options.find(opt => opt.value === val)?.label.replace('... ', '') || val);
@@ -96,16 +96,27 @@ const CommunityReachPage: React.FC = () => {
         }));
     };
 
+    const projectOptions = useMemo(() => {
+        return projects.map(p => ({
+            value: p.id,
+            label: `${p.projectTitle}`
+        }));
+    }, [projects]);
+
     return (
         <div className="bg-white shadow-lg rounded-xl p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
                 <h1 className="text-3xl font-bold text-slate-900">Community Reach</h1>
                 <div className="w-full max-w-sm">
                     <FormField label="Select a Project to View/Edit Reach Data" htmlFor="reach_project_select" className="mb-0">
-                        <ProjectFilter
+                        <Select
+                            id="reach_project_select"
                             value={selectedProjectId}
-                            onChange={setSelectedProjectId}
-                            allowAll={false}
+                            onChange={e => setSelectedProjectId(e.target.value)}
+                            options={[
+                                { value: '', label: 'Select a project...' },
+                                ...projectOptions
+                            ]}
                         />
                     </FormField>
                 </div>
