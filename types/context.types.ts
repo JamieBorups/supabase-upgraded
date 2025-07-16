@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { FormData } from './project.types';
 import { Member, User } from './member.types';
@@ -16,6 +15,7 @@ import { InterestCompatibilityReport } from './interestCompatibility.types';
 import { SdgAlignmentReport } from './sdg.types';
 import { RecreationFrameworkReport } from './recreation.types';
 import { ResearchPlan } from './research.types.ts';
+import { OtfApplication, ProgramGuideline } from './otf.types.ts';
 
 export interface ProjectExportData {
   project: FormData;
@@ -71,9 +71,12 @@ export interface AppState {
     sdgAlignmentReports: SdgAlignmentReport[];
     recreationFrameworkReports: RecreationFrameworkReport[];
     researchPlans: ResearchPlan[];
+    otfApplications: OtfApplication[];
+    programGuidelines: ProgramGuideline[];
     currentUser: User | null;
     reportProjectIdToOpen: string | null;
     researchPlanToEdit: ResearchPlan | null;
+    otfApplicationToEdit: OtfApplication | null;
     activeWorkshopItem: {
       type: 'task';
       itemId: string;
@@ -156,6 +159,7 @@ export type Action =
   | { type: 'LOGOUT' }
   | { type: 'SET_REPORT_PROJECT_ID_TO_OPEN'; payload: string | null }
   | { type: 'SET_RESEARCH_PLAN_TO_EDIT'; payload: ResearchPlan | null }
+  | { type: 'SET_OTF_APPLICATION_TO_EDIT'; payload: OtfApplication | null }
   | { type: 'SET_ACTIVE_WORKSHOP_ITEM'; payload: AppState['activeWorkshopItem'] }
   | { type: 'ADD_PROJECT_DATA', payload: ProjectExportData }
   | { type: 'LOAD_DATA'; payload: Omit<Partial<AppState>, 'reportProjectIdToOpen' | 'activeWorkshopItem' | 'currentUser' | 'loading'> }
@@ -198,7 +202,14 @@ export type Action =
   | { type: 'SET_RESEARCH_PLANS'; payload: ResearchPlan[] }
   | { type: 'ADD_RESEARCH_PLAN'; payload: ResearchPlan }
   | { type: 'UPDATE_RESEARCH_PLAN'; payload: ResearchPlan }
-  | { type: 'DELETE_RESEARCH_PLAN'; payload: string };
+  | { type: 'DELETE_RESEARCH_PLAN'; payload: string }
+  | { type: 'SET_OTF_APPLICATIONS'; payload: OtfApplication[] }
+  | { type: 'ADD_OTF_APPLICATION'; payload: OtfApplication }
+  | { type: 'UPDATE_OTF_APPLICATION'; payload: OtfApplication }
+  | { type: 'DELETE_OTF_APPLICATION'; payload: string }
+  | { type: 'SET_PROGRAM_GUIDELINES'; payload: ProgramGuideline[] }
+  | { type: 'ADD_PROGRAM_GUIDELINE'; payload: ProgramGuideline }
+  | { type: 'UPDATE_PROGRAM_GUIDELINE'; payload: ProgramGuideline };
 
 
 export interface AppContextType {
