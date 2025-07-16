@@ -1,6 +1,4 @@
 
-
-
 import { AppState, Action } from '../../types.ts';
 import { projectsReducer } from '../slices/projects.slice';
 import { membersReducer } from '../slices/members.slice';
@@ -15,7 +13,7 @@ import { ecostarReducer } from '../slices/ecostar.slice';
 import { interestCompatibilityReducer } from '../slices/interestCompatibility.slice';
 import { sdgReducer } from '../slices/sdg.slice';
 import { recreationReducer } from '../slices/recreation.slice';
-import { kpiReducer } from '../slices/kpi.slice';
+import { researchReducer } from '../slices/research.slice.ts';
 
 export const appReducer = (state: AppState, action: Action): AppState => {
     // Each reducer is responsible for its own slice of the state.
@@ -35,7 +33,7 @@ export const appReducer = (state: AppState, action: Action): AppState => {
         ...interestCompatibilityReducer(state, action),
         ...sdgReducer(state, action),
         ...recreationReducer(state, action),
-        ...kpiReducer(state, action),
+        ...researchReducer(state, action),
     };
     return newState;
 };

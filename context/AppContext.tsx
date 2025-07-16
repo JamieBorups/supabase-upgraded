@@ -1,6 +1,4 @@
 
-
-
 import React, { createContext, useReducer, useEffect, useContext, ReactNode, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { AppState, AppContextType, NotificationType } from '../types.ts';
@@ -36,8 +34,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     useEffect(() => {
         const initializeApp = async () => {
-            // The Supabase client is now configured in supabase.ts with fallbacks.
-            // We only need to check for the Gemini API key here.
+            // The Setup Wizard will be triggered if the API call fails, which covers invalid Supabase keys.
+            // We only need to pre-emptively check for the Gemini API key.
             if (!process.env.API_KEY) {
                 dispatch({ type: 'SET_SETUP_STATUS', payload: true });
                 dispatch({ type: 'SET_LOADING', payload: false });
@@ -58,14 +56,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     events, ticketTypes, eventTickets, proposals, directExpenses,
                     inventoryItems, inventoryCategories, saleSessions, salesTransactions, itemLists,
                     saleListings, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports,
-                    kpiLibrary, projectKpis, kpiReports
+                    researchPlans
                 ] = await Promise.all([
                     api.getProjects(), api.getMembers(), api.getUsers(), api.getTasks(), api.getActivities(), api.getHighlights(),
                     api.getNewsReleases(), api.getReports(), api.getContacts(), api.getInteractions(), api.getVenues(),
                     api.getEvents(), api.getTicketTypes(), api.getEventTickets(), api.getProposals(), api.getDirectExpenses(),
                     api.getInventoryItems(), api.getInventoryCategories(), api.getSaleSessions(), api.getSalesTransactions(), api.getItemLists(),
                     api.getSaleListings(), api.getEcoStarReports(), api.getInterestCompatibilityReports(), api.getSdgAlignmentReports(), api.getRecreationFrameworkReports(),
-                    api.getKpiLibrary(), api.getProjectKpis(), api.getKpiReports()
+                    api.getResearchPlans()
                 ]);
 
                 // Check for admin user after fetching users table
@@ -94,8 +92,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     newsReleases, reports, contacts, interactions, venues, events, ticketTypes,
                     eventTickets, proposals, directExpenses, inventoryItems, inventoryCategories,
                     saleSessions, salesTransactions, itemLists, saleListings, ecostarReports,
-                    interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports,
-                    kpiLibrary, projectKpis, kpiReports
+                    interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans
                 };
                 
                 dispatch({ type: 'LOAD_DATA', payload: loadedData });
