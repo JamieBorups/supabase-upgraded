@@ -1,8 +1,7 @@
-
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { Page, Task, TaskStatus } from '../../types';
-import { Select } from '../ui/Select';
+import ProjectFilter from '../ui/ProjectFilter';
 
 const getStatusBadge = (status: TaskStatus | string) => {
     const baseClasses = "px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full";
@@ -30,11 +29,6 @@ const TaskAssessorPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNa
     const { state, dispatch } = useAppContext();
     const { projects, tasks } = state;
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-
-    const projectOptions = useMemo(() => [
-        { value: '', label: 'Select a project to assess...' },
-        ...projects.map(p => ({ value: p.id, label: p.projectTitle }))
-    ], [projects]);
 
     const selectedProject = useMemo(() => {
         if (!selectedProjectId) return null;
@@ -103,7 +97,11 @@ const TaskAssessorPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNa
             
             <div className="max-w-4xl mx-auto mt-6">
                 <div className="max-w-md mb-6">
-                    <Select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} options={projectOptions} />
+                    <ProjectFilter
+                        value={selectedProjectId}
+                        onChange={setSelectedProjectId}
+                        allowAll={false}
+                    />
                 </div>
 
                 {selectedProject ? (

@@ -26,16 +26,16 @@ const SupplementalReportsGuide: React.FC = () => {
       <p>Each tool is designed to analyze your project data through a different strategic lens, helping you communicate its value to different audiences:</p>
       <ul>
         <li>
-          <strong>ECO-STAR AI Workshop:</strong> Frames your project using a business and sustainability model. Excellent for social enterprise grants or partners interested in community and environmental impact.
+          <strong>ECO-STAR AI Workshop:</strong> Frames your project using a business and sustainability model. <strong>Best for:</strong> Social enterprise grants, community economic development funders, or partners interested in environmental impact.
         </li>
         <li>
-          <strong>SDG Alignment Report:</strong> Positions your project within a global context by aligning it with the UN Sustainable Development Goals. Invaluable for large foundations, corporate sponsors, and federal grants.
+          <strong>SDG Alignment Report:</strong> Positions your project within a global context by aligning it with the UN Sustainable Development Goals. <strong>Best for:</strong> Large national/international foundations, corporate sponsors with CSR mandates, and federal government grants.
         </li>
         <li>
-          <strong>Framework for Recreation in Canada Alignment Report:</strong> Translates your arts project into the language of recreation and wellness. This is key for unlocking funding from municipal, health, and community-focused bodies.
+          <strong>Framework for Recreation in Canada Alignment Report:</strong> Translates your arts project into the language of community recreation and wellness. <strong>Best for:</strong> Municipal grants, provincial "Healthy Communities" funding streams, and partners in the health and wellness sector.
         </li>
         <li>
-          <strong>Interest Compatibility Assessment:</strong> Acts as a strategic planning tool for your team. It analyzes the stated and unstated interests of all stakeholders to identify potential synergies and conflicts before they arise.
+          <strong>Interest Compatibility Assessment:</strong> Acts as an internal strategic planning tool for your team. It helps you anticipate and manage stakeholder relationships, making it a valuable document for board meetings, project kick-offs, and partnership negotiations.
         </li>
       </ul>
       <p>By using these tools, you can create a portfolio of documents that showcase the multi-faceted value of your artistic work, making your projects more competitive and resilient.</p>

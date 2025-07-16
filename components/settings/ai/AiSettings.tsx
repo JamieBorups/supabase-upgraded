@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
@@ -15,6 +17,7 @@ import InterestCompatibilitySettingsEditor from './InterestCompatibilitySettings
 import { Select } from '../../ui/Select';
 import FormField from '../../ui/FormField';
 import ResearchPlanSettingsEditor from './ResearchPlanSettingsEditor.tsx';
+import OtfSettingsEditor from './OtfSettingsEditor.tsx';
 
 const AiSettings: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
@@ -32,6 +35,7 @@ const AiSettings: React.FC = () => {
         { id: 'sdgAlignment', label: 'SDG Alignment' },
         { id: 'recreation', label: 'Recreation Framework' },
         { id: 'projectGenerator', label: 'Project Generator' },
+        { id: 'otf', label: 'OTF Generator' },
         { id: 'projects', label: 'Projects' },
         { id: 'tasks', label: 'Workplan Generator' },
         { id: 'taskGenerator', label: 'Task Generator' },
@@ -181,6 +185,23 @@ const AiSettings: React.FC = () => {
                     onTestPersona={() => setTestModalContext(activeTab)}
                 />
             )
+        }
+
+        if (activeTab === 'otf') {
+            return (
+                <OtfSettingsEditor
+                    persona={persona}
+                    onPersonaChange={(field, value) => handlePersonaChange(activeTab, field, value)}
+                    fieldSettings={settings.otfFieldSettings}
+                    onFieldSettingsChange={(newFieldSettings) => {
+                        setSettings(prev => produce(prev, draft => {
+                           draft.otfFieldSettings = newFieldSettings;
+                       }));
+                       setIsDirty(true);
+                   }}
+                    onTestPersona={() => setTestModalContext(activeTab)}
+                />
+            );
         }
         
         return (

@@ -8,8 +8,6 @@ import {
     initialVenueData,
     initialEventData,
     initialTicketTypeData,
-    ARTISTIC_DISCIPLINES,
-    PROVINCES,
     initialSettings,
     initialInventoryItem,
     initialSaleSession,
@@ -17,15 +15,14 @@ import {
     initialInventoryCategory,
     initialRecreationReportData
 } from '../../../constants.ts';
-import { Contact, Interaction, DirectExpense, Highlight, NewsRelease, TicketType, EventTicket, ProposalSnapshot, SalesTransaction, SaleListing, SalesTransactionItem, EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport } from '../../../types.ts';
+import { User, Contact, Interaction, DirectExpense, Highlight, NewsRelease, EventTicket, ProposalSnapshot, SalesTransaction, SaleListing, SalesTransactionItem, EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport } from '../../../types.ts';
 
 // Local initializers for models not in constants.ts
 const initialHighlightData: Omit<Highlight, 'id'> = { projectId: '', title: '', url: '' };
 const initialDirectExpenseData: Omit<DirectExpense, 'id'> = { projectId: '', budgetItemId: '', description: '', amount: 0, date: '' };
-const initialNewsReleaseData: Omit<NewsRelease, 'id'> = {
+const initialNewsReleaseData: Omit<NewsRelease, 'id' | 'createdAt' | 'updatedAt'> = {
     projectId: '', type: '', contactMemberId: '', headline: '', subhead: '', publishDate: '', publishedUrl: '',
     location: '', introduction: '', body: '', quotes: '', boilerplate: '', contactInfo: '', status: 'Draft',
-    createdAt: '', updatedAt: ''
 };
 const initialEventTicketData: Omit<EventTicket, 'id'> = { eventId: '', ticketTypeId: '', price: 0, capacity: 0, soldCount: 0 };
 const initialContactData: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -39,9 +36,9 @@ const initialProposalSnapshotData: Omit<ProposalSnapshot, 'id'> = {
     projectId: '', createdAt: '', updatedAt: '', notes: '', projectData: initialFormData, tasks: [],
     calculatedMetrics: { projectedRevenue: 0, projectedAudience: 0, numberOfPresentations: 0, averageTicketPrice: 0, averagePctSold: 0, averageVenueCapacity: 0 }
 };
-const initialSalesTransactionData: Omit<SalesTransaction, 'id'| 'createdAt' | 'items'> = { saleSessionId: '', notes: '', subtotal: 0, taxes: 0, total: 0 };
+const initialSalesTransactionData: Omit<SalesTransaction, 'id' | 'createdAt' | 'items'> = { saleSessionId: '', notes: '', subtotal: 0, taxes: 0, total: 0 };
 const initialSalesTransactionItemData: Omit<SalesTransactionItem, 'id' | 'transactionId'> = { inventoryItemId: '', quantity: 0, pricePerItem: 0, itemTotal: 0, isVoucherRedemption: false };
-const initialSaleListingData: Omit<SaleListing, 'id' | 'saleSessionId'> = { inventoryItemId: '' };
+const initialSaleListingData: Omit<SaleListing, 'id'> = { saleSessionId: '', inventoryItemId: '' };
 const initialEcoStarReportData: Omit<EcoStarReport, 'id' | 'projectId' | 'createdAt'> = {
     notes: '', environmentReport: null, customerReport: null, opportunityReport: null,
     solutionReport: null, teamReport: null, advantageReport: null, resultsReport: null, fullReportText: ''
@@ -53,10 +50,71 @@ const initialInterestCompatibilityReportData: Omit<InterestCompatibilityReport, 
 const initialSdgAlignmentReportData: Omit<SdgAlignmentReport, 'id' | 'projectId' | 'createdAt'> = {
     notes: '', executiveSummary: '', detailedAnalysis: [], strategicRecommendations: [], fullReportText: ''
 };
+const initialUserData: Omit<User, 'id'> = {
+    username: 'sample_user',
+    passwordHash: 'a_very_long_secure_hash_string_representing_the_real_hash',
+    role: 'user',
+    memberId: 'mem_123456789'
+};
 
+// --- SCHEMA CONFIGS ---
 
-export const allSchemaConfigs = [
+const coreAndSettingsConfigs = [
     {
+        key: 'settings',
+        title: 'Application Settings Model',
+        description: 'Represents all configurable options in the Settings page.',
+        dataObject: initialSettings,
+        fieldConfig: [
+            { key: 'general', desc: 'General app settings like collective name and currency.' },
+            { key: 'projects', desc: 'Settings for projects, like custom statuses.' },
+            { key: 'members', desc: 'Settings for members, like custom roles.' },
+            { key: 'tasks', desc: 'Settings for tasks, like default rates.' },
+            { key: 'ai', desc: 'Settings for AI, including personas and master switch.' },
+            { key: 'budget', desc: 'Settings for budget, like custom labels.' },
+            { key: 'media', desc: 'Settings for media, like boilerplate and communication types.' },
+            { key: 'events', desc: 'Settings for events, like custom venue statuses.' },
+            { key: 'gallery', desc: 'Settings for the splash screen image URLs.' },
+            { key: 'sales', desc: 'Settings for sales, including tax rates.' },
+        ]
+    },
+    {
+        key: 'user',
+        title: 'User Data Model',
+        description: 'Represents a user account with login credentials and permissions.',
+        dataObject: initialUserData,
+        fieldConfig: [
+            { key: 'id', desc: 'Unique identifier for the user (UUID).' },
+            { key: 'username', desc: 'The unique username for login.' },
+            { key: 'passwordHash', desc: 'The SHA-256 hash of the user\'s password.' },
+            { key: 'role', desc: 'User role, either \'user\' or \'admin\'.' },
+            { key: 'memberId', desc: 'The ID of the Member profile this user is linked to, if any.' },
+        ]
+    },
+];
+
+const projectsAndMembersConfigs = [
+     {
+        key: 'member',
+        title: 'Member Data Model',
+        description: 'Represents a single member of the collective.',
+        dataObject: initialMemberData,
+        fieldConfig: [
+            { key: 'id', desc: 'Unique identifier for the member.' },
+            { key: 'memberId', desc: 'An optional, user-defined ID for the member.' },
+            { key: 'firstName', desc: 'Member\'s first name.' },
+            { key: 'lastName', desc: 'Member\'s last name.' },
+            { key: 'email', desc: 'Member\'s primary email address.' },
+            { key: 'province', desc: 'Member\'s province or territory.' },
+            { key: 'city', desc: 'Member\'s city.' },
+            { key: 'postalCode', desc: 'Member\'s postal code.' },
+            { key: 'imageUrl', desc: 'URL for the member\'s profile picture.' },
+            { key: 'shortBio', desc: 'A brief, one-paragraph biography.' },
+            { key: 'artistBio', desc: 'A longer, formal artist biography.' },
+            { key: 'availability', desc: 'Member\'s general availability (e.g., Full Time, Contract).' },
+        ]
+    },
+     {
         key: 'project',
         title: 'Project Data Model',
         description: 'Represents a single artistic project. This is the central data object.',
@@ -100,25 +158,24 @@ export const allSchemaConfigs = [
         ]
     },
     {
-        key: 'member',
-        title: 'Member Data Model',
-        description: 'Represents a single member of the collective.',
-        dataObject: initialMemberData,
+        key: 'proposal_snapshot',
+        title: 'Proposal Snapshot Data Model',
+        description: 'A point-in-time, read-only copy of a project\'s data for archival or grant submission.',
+        dataObject: initialProposalSnapshotData,
         fieldConfig: [
-            { key: 'id', desc: 'Unique identifier for the member.' },
-            { key: 'memberId', desc: 'An optional, user-defined ID for the member.' },
-            { key: 'firstName', desc: 'Member\'s first name.' },
-            { key: 'lastName', desc: 'Member\'s last name.' },
-            { key: 'email', desc: 'Member\'s primary email address.' },
-            { key: 'province', desc: 'Member\'s province or territory.' },
-            { key: 'city', desc: 'Member\'s city.' },
-            { key: 'postalCode', desc: 'Member\'s postal code.' },
-            { key: 'imageUrl', desc: 'URL for the member\'s profile picture.' },
-            { key: 'shortBio', desc: 'A brief, one-paragraph biography.' },
-            { key: 'artistBio', desc: 'A longer, formal artist biography.' },
-            { key: 'availability', desc: 'Member\'s general availability (e.g., Full Time, Contract).' },
+            { key: 'id', desc: 'Unique identifier for the snapshot.' },
+            { key: 'projectId', desc: 'ID of the source project.' },
+            { key: 'createdAt', desc: 'Timestamp of when the snapshot was created.' },
+            { key: 'updatedAt', desc: 'Timestamp of when the snapshot was last updated with fresh data.' },
+            { key: 'notes', desc: 'User-added notes for context (e.g., "Version submitted to MAC").' },
+            { key: 'projectData', desc: 'A deep, read-only copy of the entire Project (FormData) object at the time of creation.' },
+            { key: 'tasks', desc: 'A deep, read-only copy of all associated tasks at the time of creation.' },
+            { key: 'calculatedMetrics', desc: 'A read-only copy of the calculated budget/ticket metrics (projected revenue, audience, etc.) at the time of creation.' },
         ]
     },
+];
+
+const tasksAndActivitiesConfigs = [
     {
         key: 'task',
         title: 'Task Data Model',
@@ -180,34 +237,42 @@ export const allSchemaConfigs = [
             { key: 'date', desc: 'The date the expense was incurred.' },
         ]
     },
+];
+
+const crmAndMediaConfigs = [
     {
-        key: 'report',
-        title: 'Report Data Model',
-        description: 'Stores the narrative content for a project\'s final report.',
-        dataObject: initialReportData,
+        key: 'contact',
+        title: 'Contact Data Model (CRM)',
+        description: 'Represents an external contact (e.g., media, funder, venue).',
+        dataObject: initialContactData,
         fieldConfig: [
-            { key: 'id', desc: 'Unique identifier for the report.' },
-            { key: 'projectId', desc: 'The ID of the project this report is for.' },
-            { key: 'projectResults', desc: 'Narrative on the project\'s results.' },
-            { key: 'grantSpendingDescription', desc: 'Narrative on how grant funds were spent.' },
-            { key: 'workplanAdjustments', desc: 'Narrative on any changes to the original workplan.' },
-            { key: 'involvedPeople', desc: 'Array of strings representing community reach demographics.' },
-            { key: 'involvedActivities', desc: 'Array of strings representing community involvement types.' },
-            { key: 'impactStatements', desc: 'Record object storing answers to impact assessment questions.' },
-            { key: 'feedback', desc: 'User feedback on the grant program.' },
-            { key: 'additionalFeedback', desc: 'Any other closing thoughts from the user.' },
+            { key: 'id', desc: 'Unique identifier for the contact.' },
+            { key: 'firstName', desc: 'Contact\'s first name.' },
+            { key: 'lastName', desc: 'Contact\'s last name.' },
+            { key: 'email', desc: 'Contact\'s primary email address.' },
+            { key: 'phone', desc: 'Contact\'s phone number.' },
+            { key: 'title', desc: 'Contact\'s professional title (e.g., Journalist).' },
+            { key: 'organization', desc: 'The organization the contact belongs to.' },
+            { key: 'contactType', desc: 'High-level category (e.g., Media, Funder).' },
+            { key: 'associatedProjectIds', desc: 'Array of project IDs this contact is linked to.' },
+            { key: 'address', desc: 'Nested object for mailing address (street, city, province, postalCode).' },
+            { key: 'tags', desc: 'Array of user-defined tags for filtering.' },
+            { key: 'notes', desc: 'General purpose notes field.' },
+            { key: 'createdAt', desc: 'Timestamp of creation.' },
+            { key: 'updatedAt', desc: 'Timestamp of last update.' },
         ]
     },
     {
-        key: 'highlight',
-        title: 'Highlight Data Model',
-        description: 'A simple link to an external resource (e.g., press, video) for a project.',
-        dataObject: initialHighlightData,
+        key: 'interaction',
+        title: 'Interaction Data Model (CRM)',
+        description: 'Represents a single interaction (e.g., a call, email) with a Contact.',
+        dataObject: initialInteractionData,
         fieldConfig: [
-            { key: 'id', desc: 'Unique identifier for the highlight.' },
-            { key: 'projectId', desc: 'The ID of the project this highlight is for.' },
-            { key: 'title', desc: 'The title of the linked resource.' },
-            { key: 'url', desc: 'The URL of the external resource.' },
+            { key: 'id', desc: 'Unique identifier for the interaction.' },
+            { key: 'contactId', desc: 'The ID of the contact this interaction belongs to.' },
+            { key: 'date', desc: 'The date of the interaction.' },
+            { key: 'type', desc: 'The type of interaction (Email, Call, Meeting, Note).' },
+            { key: 'notes', desc: 'Detailed notes about the interaction.' },
         ]
     },
     {
@@ -235,6 +300,21 @@ export const allSchemaConfigs = [
             { key: 'updatedAt', desc: 'Timestamp of the last update.' },
         ]
     },
+    {
+        key: 'highlight',
+        title: 'Highlight Data Model',
+        description: 'A simple link to an external resource (e.g., press, video) for a project.',
+        dataObject: initialHighlightData,
+        fieldConfig: [
+            { key: 'id', desc: 'Unique identifier for the highlight.' },
+            { key: 'projectId', desc: 'The ID of the project this highlight is for.' },
+            { key: 'title', desc: 'The title of the linked resource.' },
+            { key: 'url', desc: 'The URL of the external resource.' },
+        ]
+    },
+];
+
+const eventsAndVenuesConfigs = [
     {
         key: 'venue',
         title: 'Venue Data Model',
@@ -320,58 +400,10 @@ export const allSchemaConfigs = [
             { key: 'soldCount', desc: 'The number of tickets sold (for future use).' },
         ]
     },
+];
+
+const salesAndMarketplaceConfigs = [
     {
-        key: 'proposal_snapshot',
-        title: 'Proposal Snapshot Data Model',
-        description: 'A point-in-time, read-only copy of a project\'s data for archival or grant submission.',
-        dataObject: initialProposalSnapshotData,
-        fieldConfig: [
-            { key: 'id', desc: 'Unique identifier for the snapshot.' },
-            { key: 'projectId', desc: 'ID of the source project.' },
-            { key: 'createdAt', desc: 'Timestamp of when the snapshot was created.' },
-            { key: 'updatedAt', desc: 'Timestamp of when the snapshot was last updated with fresh data.' },
-            { key: 'notes', desc: 'User-added notes for context (e.g., "Version submitted to MAC").' },
-            { key: 'projectData', desc: 'A deep, read-only copy of the entire Project (FormData) object at the time of creation.' },
-            { key: 'tasks', desc: 'A deep, read-only copy of all associated tasks at the time of creation.' },
-            { key: 'calculatedMetrics', desc: 'A read-only copy of the calculated budget/ticket metrics (projected revenue, audience, etc.) at the time of creation.' },
-        ]
-    },
-    {
-        key: 'contact',
-        title: 'Contact Data Model (CRM)',
-        description: 'Represents an external contact (e.g., media, funder, venue).',
-        dataObject: initialContactData,
-        fieldConfig: [
-            { key: 'id', desc: 'Unique identifier for the contact.' },
-            { key: 'firstName', desc: 'Contact\'s first name.' },
-            { key: 'lastName', desc: 'Contact\'s last name.' },
-            { key: 'email', desc: 'Contact\'s primary email address.' },
-            { key: 'phone', desc: 'Contact\'s phone number.' },
-            { key: 'title', desc: 'Contact\'s professional title (e.g., Journalist).' },
-            { key: 'organization', desc: 'The organization the contact belongs to.' },
-            { key: 'contactType', desc: 'High-level category (e.g., Media, Funder).' },
-            { key: 'associatedProjectIds', desc: 'Array of project IDs this contact is linked to.' },
-            { key: 'address', desc: 'Nested object for mailing address (street, city, province, postalCode).' },
-            { key: 'tags', desc: 'Array of user-defined tags for filtering.' },
-            { key: 'notes', desc: 'General purpose notes field.' },
-            { key: 'createdAt', desc: 'Timestamp of creation.' },
-            { key: 'updatedAt', desc: 'Timestamp of last update.' },
-        ]
-    },
-    {
-        key: 'interaction',
-        title: 'Interaction Data Model (CRM)',
-        description: 'Represents a single interaction (e.g., a call, email) with a Contact.',
-        dataObject: initialInteractionData,
-        fieldConfig: [
-            { key: 'id', desc: 'Unique identifier for the interaction.' },
-            { key: 'contactId', desc: 'The ID of the contact this interaction belongs to.' },
-            { key: 'date', desc: 'The date of the interaction.' },
-            { key: 'type', desc: 'The type of interaction (Email, Call, Meeting, Note).' },
-            { key: 'notes', desc: 'Detailed notes about the interaction.' },
-        ]
-    },
-     {
         key: 'inventory_category',
         title: 'Inventory Category Data Model',
         description: 'A category for organizing inventory items.',
@@ -444,22 +476,25 @@ export const allSchemaConfigs = [
             { key: 'itemOrder', desc: 'JSON array of inventory item IDs in display order.' }, { key: 'createdAt', desc: 'Timestamp.' }, { key: 'updatedAt', desc: 'Timestamp.' }
         ]
     },
+];
+
+const reportingConfigs = [
     {
-        key: 'settings',
-        title: 'Application Settings Model',
-        description: 'Represents all configurable options in the Settings page.',
-        dataObject: initialSettings,
+        key: 'report',
+        title: 'Report Data Model',
+        description: 'Stores the narrative content for a project\'s final report.',
+        dataObject: initialReportData,
         fieldConfig: [
-            { key: 'general', desc: 'General app settings like collective name and currency.' },
-            { key: 'projects', desc: 'Settings for projects, like custom statuses.' },
-            { key: 'members', desc: 'Settings for members, like custom roles.' },
-            { key: 'tasks', desc: 'Settings for tasks, like default rates.' },
-            { key: 'ai', desc: 'Settings for AI, including personas and master switch.' },
-            { key: 'budget', desc: 'Settings for budget, like custom labels.' },
-            { key: 'media', desc: 'Settings for media, like boilerplate and communication types.' },
-            { key: 'events', desc: 'Settings for events, like custom venue statuses.' },
-            { key: 'gallery', desc: 'Settings for the splash screen image URLs.' },
-            { key: 'sales', desc: 'Settings for sales, including tax rates.' },
+            { key: 'id', desc: 'Unique identifier for the report.' },
+            { key: 'projectId', desc: 'The ID of the project this report is for.' },
+            { key: 'projectResults', desc: 'Narrative on the project\'s results.' },
+            { key: 'grantSpendingDescription', desc: 'Narrative on how grant funds were spent.' },
+            { key: 'workplanAdjustments', desc: 'Narrative on any changes to the original workplan.' },
+            { key: 'involvedPeople', desc: 'Array of strings representing community reach demographics.' },
+            { key: 'involvedActivities', desc: 'Array of strings representing community involvement types.' },
+            { key: 'impactStatements', desc: 'Record object storing answers to impact assessment questions.' },
+            { key: 'feedback', desc: 'User feedback on the grant program.' },
+            { key: 'additionalFeedback', desc: 'Any other closing thoughts from the user.' },
         ]
     },
     {
@@ -515,4 +550,15 @@ export const allSchemaConfigs = [
             { key: 'closingSection', desc: 'Concluding narrative.' }, { key: 'fullReportText', desc: 'Full report as an HTML string.' }
         ]
     }
+];
+
+
+export const schemaGroups = [
+    { moduleTitle: 'Core & Settings', configs: coreAndSettingsConfigs },
+    { moduleTitle: 'Projects & Members', configs: projectsAndMembersConfigs },
+    { moduleTitle: 'Tasks & Activities', configs: tasksAndActivitiesConfigs },
+    { moduleTitle: 'CRM & Media', configs: crmAndMediaConfigs },
+    { moduleTitle: 'Events & Venues', configs: eventsAndVenuesConfigs },
+    { moduleTitle: 'Sales & Marketplace', configs: salesAndMarketplaceConfigs },
+    { moduleTitle: 'Reporting', configs: reportingConfigs },
 ];

@@ -21,6 +21,20 @@ const WelcomePage: React.FC = () => {
           A key part of this vision is the deep integration of Artificial Intelligence. This work was made possible through early-stage support from the OpenAI Researcher Access Program, which allowed us to explore how AI can act as a creative co-pilot for artists. From generating first drafts to analyzing project strengths, the AI is designed to be a supportive partner, not just a tool, helping you articulate your vision with clarity and confidence.
       </p>
 
+      <h3>A Typical Workflow</h3>
+      <p>
+        While you can use the modules in any order, here is a common workflow for taking a project from concept to completion:
+      </p>
+      <ol>
+        <li><strong>Create a Project:</strong> Start in the <code>Projects</code> section by creating a new project. Fill out the core details in the Project Editor.</li>
+        <li><strong>Build Your Team:</strong> Go to <code>Members</code> and add profiles for everyone in your collective. Then, go back to your project, open the editor, and assign these members as collaborators.</li>
+        <li><strong>Plan the Work:</strong> In the <code>Tasks</code> section, select your project and create a workplan. Start by creating high-level <strong>Milestones</strong>, then add detailed, <strong>Time-Based Tasks</strong> under each milestone.</li>
+        <li><strong>Set the Budget:</strong> In your project's editor, navigate to the <code>Budget</code> tab. Create line items for your expected revenues and expenses. Link your time-based tasks to these expense items.</li>
+        <li><strong>Log Time:</strong> As work gets done, members can log their hours against their assigned tasks by creating <strong>Activities</strong>.</li>
+        <li><strong>Track Progress:</strong> Use the <code>Project Viewer</code> dashboard to see your budget vs. actuals update in real-time as activities are approved.</li>
+        <li><strong>Generate Reports:</strong> Once the project is complete, use the <code>Reporting & Archives</code> page to generate a final report for your funders, which automatically pulls in all your financial and community impact data.</li>
+      </ol>
+      
       <h3>Core Concepts</h3>
       <p>
         Understanding how data is connected in this application is key to using it effectively. Here are a few core relationships:

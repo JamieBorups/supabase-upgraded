@@ -1,3 +1,4 @@
+
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -44,7 +45,7 @@ const SalesGuide: React.FC = () => {
       </p>
       <ul>
         <li>Click on items from your session inventory to add them to the cart.</li>
-        <li>Adjust quantities or mark items as "Voucher" redemptions (which are tracked as a promotional cost).</li>
+        <li>Adjust quantities or mark items as "Voucher" redemptions. The voucher feature is perfect for tracking promotional giveaways, complimentary items for sponsors, or drink tickets. When an item is marked as a voucher, its sale price is not added to the revenue, but its cost price is still tracked as a "Promotional Cost" in the session report.</li>
         <li>Click "Complete Sale" to log the transaction. The system automatically calculates taxes based on your settings and updates your reports.</li>
       </ul>
 

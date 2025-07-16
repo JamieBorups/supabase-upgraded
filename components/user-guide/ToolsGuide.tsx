@@ -41,11 +41,17 @@ const ToolsGuide: React.FC = () => {
 
       <h3>Data Management</h3>
        <InfoBox type="warning">
-        <p>Use the data management tools with care, especially the "Restore from Backup" feature, as it can overwrite your existing data.</p>
+        <p>Use the data management tools with care, especially the "Restore from Backup" feature, as it can overwrite your entire workspace with the data from the backup file.</p>
        </InfoBox>
       <ul>
         <li>
-          <strong>Import / Export Data:</strong> This powerful page allows you to back up and restore your data. You can export your entire workspace, a single project, or just your contacts or AI settings. This is useful for backups, sharing a project with another group using the same software, or for migrating data.
+          <strong>Import / Export Data:</strong> This powerful page is central to the platform's philosophy of data sovereignty. It allows you to:
+          <ul>
+            <li><strong>Export Workspace:</strong> Create a full backup of all your data (projects, members, tasks, everything) into a single JSON file. It's highly recommended to do this regularly for your own records.</li>
+            <li><strong>Restore Workspace:</strong> A destructive action that completely replaces your current workspace with the data from a backup file.</li>
+            <li><strong>Export/Import Single Projects:</strong> This allows you to share a project with a collaborator who is also using the software, or to move a single project between different workspaces without affecting other data.</li>
+            <li><strong>Export/Import Other Data:</strong> You can also export and import specific data sets like your contacts list, AI settings, or event data, which is useful for setting up a new workspace quickly.</li>
+          </ul>
         </li>
       </ul>
 

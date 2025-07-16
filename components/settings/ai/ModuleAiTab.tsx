@@ -39,6 +39,7 @@ const ModuleAiTab: React.FC<ModuleAiTabProps> = ({
         sdgAlignment: "Configure the AI that analyzes a project's alignment with the UN Sustainable Development Goals.",
         recreation: "Configure the AI that helps align a project with the goals of the Framework for Recreation in Canada.",
         researchPlan: "Configure the AI that assists in drafting sections of a community-based research plan.",
+        otf: "Configure the AI assistant that helps draft sections of an Ontario Trillium Foundation (OTF) grant application.",
     };
 
   return (
