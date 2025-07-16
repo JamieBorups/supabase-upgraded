@@ -5,6 +5,7 @@ import { ProposalSnapshot, FormData as Project } from '../../types';
 import ProposalViewer from '../proposals/ProposalViewer';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import * as api from '../../services/api';
+import { generateProposalSnapshotPdf } from '../../utils/pdfGenerator';
 
 interface ProposalSnapshotsTabProps {
     selectedProject: Project | null;
@@ -12,7 +13,7 @@ interface ProposalSnapshotsTabProps {
 
 const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedProject }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { proposals } = state;
+    const { proposals, members, events, venues, eventTickets } = state;
     const [viewingSnapshot, setViewingSnapshot] = useState<ProposalSnapshot | null>(null);
     const [snapshotToDelete, setSnapshotToDelete] = useState<ProposalSnapshot | null>(null);
 
@@ -37,6 +38,16 @@ const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedPro
             notify(`Error deleting proposal: ${error.message}`, 'error');
         }
         setSnapshotToDelete(null);
+    };
+
+    const handleDownloadPdf = (snapshot: ProposalSnapshot) => {
+        try {
+            generateProposalSnapshotPdf(snapshot, members, events, venues, eventTickets);
+            notify('PDF generated successfully!', 'success');
+        } catch (error: any) {
+            console.error("PDF generation failed:", error);
+            notify(`Failed to generate PDF: ${error.message}`, 'error');
+        }
     };
 
     if (!selectedProject) {
@@ -87,6 +98,7 @@ const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedPro
                                         </div>
                                         <div className="flex-shrink-0 flex items-center gap-2">
                                             <button onClick={() => setViewingSnapshot(snapshot)} className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700">View</button>
+                                            <button onClick={() => handleDownloadPdf(snapshot)} className="px-3 py-1.5 text-sm font-medium text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700">PDF</button>
                                             <button onClick={() => handleDeleteClick(snapshot)} className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-100 rounded-md shadow-sm hover:bg-red-200">Delete</button>
                                         </div>
                                     </li>

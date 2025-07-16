@@ -1,7 +1,5 @@
 
 
-
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Page } from '../types.ts';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -216,8 +214,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
                                 {isToolsDropdownOpen && (
                                     <div className="origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                                         <div className="py-1" role="none">
+                                            <DropdownLink page="researchPlanGenerator" icon="fa-solid fa-book" label="Research Plan Generator" activePage={activePage} onNavigate={onNavigate} onClick={() => setIsToolsDropdownOpen(false)} />
                                             <DropdownLink page="aiProjectGenerator" icon="fa-solid fa-robot" label="AI Project Generator" activePage={activePage} onNavigate={onNavigate} onClick={() => setIsToolsDropdownOpen(false)} />
-                                            <DropdownLink page="kpiGenerator" icon="fa-solid fa-chart-line" label="KPI Generator" activePage={activePage} onNavigate={onNavigate} onClick={() => setIsToolsDropdownOpen(false)} />
                                             <DropdownLink page="ecoStarWorkshop" icon="fa-solid fa-seedling" label="ECO-STAR AI Workshop" activePage={activePage} onNavigate={onNavigate} onClick={() => setIsToolsDropdownOpen(false)} />
                                             <DropdownLink page="sdgAlignment" icon="fa-solid fa-earth-americas" label="SDG Alignment Report" activePage={activePage} onNavigate={onNavigate} onClick={() => setIsToolsDropdownOpen(false)} />
                                             <DropdownLink page="frameworkForRecreation" icon="fa-solid fa-people-roof" label="Framework for Recreation" activePage={activePage} onNavigate={onNavigate} onClick={() => setIsToolsDropdownOpen(false)} />

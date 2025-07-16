@@ -1,35 +1,22 @@
 
-
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { Select } from './ui/Select.tsx';
 import FormField from './ui/FormField.tsx';
 import FinalReportTab from './reports/FinalReportTab.tsx';
 import ProposalSnapshotsTab from './reports/ProposalSnapshotsTab.tsx';
 import SupplementalReportsTab from './reports/SupplementalReportsTab.tsx';
-import { FormData as Project, KpiReport } from '../types.ts';
+import { FormData as Project } from '../types.ts';
+import ProjectFilter from './ui/ProjectFilter.tsx';
 
 type ReportTab = 'final' | 'proposals' | 'supplemental';
 
 const ReportsPage: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const { projects, kpiReports } = state;
+    const { projects } = state;
     const [activeTab, setActiveTab] = useState<ReportTab>('final');
     
     // The core architectural change: manage the full project object, not just the ID.
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
-const projectOptions = useMemo(() => {
-    const allowedStatuses = ['Completed', 'Pending', 'Active'];
-    return projects
-        .filter(p => allowedStatuses.includes(p.status))
-        .map(p => ({
-            value: p.id,
-            label: p.projectTitle
-        }));
-}, [projects]);
 
     // This effect runs when the page loads or when a project is completed elsewhere.
     useEffect(() => {
@@ -54,7 +41,7 @@ const projectOptions = useMemo(() => {
             case 'proposals':
                 return <ProposalSnapshotsTab selectedProject={selectedProject} />;
             case 'supplemental':
-                return <SupplementalReportsTab selectedProject={selectedProject} kpiReports={kpiReports} />;
+                return <SupplementalReportsTab selectedProject={selectedProject} />;
             default:
                 return null;
         }
@@ -66,11 +53,11 @@ const projectOptions = useMemo(() => {
                 <h1 className="text-3xl font-bold text-slate-900">Reporting & Archives</h1>
                 <div className="w-full md:w-auto md:max-w-xs">
                      <FormField label="Filter by Project" htmlFor="report_project_select" className="mb-0">
-                        <Select
-                            id="report_project_select"
+                        <ProjectFilter
                             value={selectedProject?.id || ''}
-                            onChange={(e) => handleProjectSelectionChange(e.target.value)}
-                            options={[{ value: '', label: 'Select a project...' }, ...projectOptions]}
+                            onChange={handleProjectSelectionChange}
+                            allowAll={false}
+                            statusFilter={['Completed', 'Pending', 'Active']}
                         />
                     </FormField>
                 </div>
