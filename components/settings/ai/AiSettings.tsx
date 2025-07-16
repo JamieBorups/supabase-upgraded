@@ -1,14 +1,10 @@
 
 
-
-
-
-
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
 import { AppSettings, AiPersonaName, AiPersonaSettings, CommunicationTemplate, InterestCompatibilitySectionSettings } from '../../../types';
-import { initialSettings } from '../../../constants';
+import { initialSettings } from '../../../constants.ts';
 import MainAiTab from './MainAiTab';
 import ModuleAiTab from './ModuleAiTab';
 import PersonaTestModal from './PersonaTestModal';
@@ -16,6 +12,9 @@ import ConfirmationModal from '../../ui/ConfirmationModal';
 import * as api from '../../../services/api';
 import EcoStarSettingsEditor from './EcoStarSettingsEditor';
 import InterestCompatibilitySettingsEditor from './InterestCompatibilitySettingsEditor';
+import { Select } from '../../ui/Select';
+import FormField from '../../ui/FormField';
+import ResearchPlanSettingsEditor from './ResearchPlanSettingsEditor.tsx';
 
 const AiSettings: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
@@ -24,13 +23,10 @@ const AiSettings: React.FC = () => {
     const [activeTab, setActiveTab] = useState<AiPersonaName>('main');
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [testModalContext, setTestModalContext] = useState<AiPersonaName | null>(null);
-    
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const [showLeftArrow, setShowLeftArrow] = useState(false);
-    const [showRightArrow, setShowRightArrow] = useState(false);
 
     const tabs: { id: AiPersonaName, label: string }[] = [
         { id: 'main', label: 'Main' },
+        { id: 'researchPlan', label: 'Research Plan' },
         { id: 'ecostar', label: 'ECO-STAR' },
         { id: 'interestCompatibility', label: 'Interest Compatibility' },
         { id: 'sdgAlignment', label: 'SDG Alignment' },
@@ -44,47 +40,6 @@ const AiSettings: React.FC = () => {
         { id: 'reports', label: 'Reports' },
         { id: 'media', label: 'Media' },
     ];
-    
-    const checkArrows = useCallback(() => {
-        const container = scrollContainerRef.current;
-        if (!container) {
-            setShowLeftArrow(false);
-            setShowRightArrow(false);
-            return;
-        }
-        
-        const { scrollLeft, scrollWidth, clientWidth } = container;
-        const hasOverflow = scrollWidth > clientWidth;
-
-        setShowLeftArrow(hasOverflow && scrollLeft > 5);
-        // Use a 1px tolerance for floating point issues
-        setShowRightArrow(hasOverflow && scrollLeft < scrollWidth - clientWidth - 5);
-    }, []);
-
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-
-        checkArrows();
-        const resizeObserver = new ResizeObserver(checkArrows);
-        resizeObserver.observe(container);
-        container.addEventListener('scroll', checkArrows, { passive: true });
-
-        return () => {
-            resizeObserver.disconnect();
-            container.removeEventListener('scroll', checkArrows);
-        };
-    }, [checkArrows]);
-    
-    const handleScroll = (direction: 'left' | 'right') => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-        const scrollAmount = container.clientWidth * 0.8;
-        container.scrollBy({
-            left: direction === 'left' ? -scrollAmount : scrollAmount,
-            behavior: 'smooth',
-        });
-    };
     
     const handlePersonaChange = (personaName: AiPersonaName, field: keyof AiPersonaSettings, value: any) => {
         setSettings(prev => produce(prev, draft => {
@@ -211,6 +166,23 @@ const AiSettings: React.FC = () => {
             )
         }
         
+        if (activeTab === 'researchPlan') {
+            return (
+                 <ResearchPlanSettingsEditor
+                    persona={persona}
+                    onPersonaChange={(field, value) => handlePersonaChange(activeTab, field, value)}
+                    sectionSettings={settings.researchPlanSectionSettings}
+                    onSectionSettingsChange={(newSettings) => {
+                         setSettings(prev => produce(prev, draft => {
+                            draft.researchPlanSectionSettings = newSettings;
+                        }));
+                        setIsDirty(true);
+                    }}
+                    onTestPersona={() => setTestModalContext(activeTab)}
+                />
+            )
+        }
+        
         return (
             <ModuleAiTab
                 personaName={activeTab}
@@ -247,43 +219,15 @@ const AiSettings: React.FC = () => {
             <h2 className="text-2xl font-bold text-slate-900">AI Personas & Settings</h2>
             <p className="mt-1 text-sm text-slate-500">Configure the personality and behavior of specialized AI assistants for each part of the application.</p>
             
-            <div className="mt-6 border-b border-slate-200 relative">
-                {showLeftArrow && (
-                    <button 
-                        onClick={() => handleScroll('left')}
-                        className="absolute left-0 top-0 bottom-0 z-10 px-2 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent flex items-center"
-                        aria-label="Scroll left"
-                    >
-                        <i className="fa-solid fa-chevron-left text-slate-500 hover:text-slate-800"></i>
-                    </button>
-                )}
-              <div ref={scrollContainerRef} className="scrollbar-hide overflow-x-auto">
-                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                  {tabs.map((tab) => (
-                    <button
-                      type="button"
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`whitespace-nowrap py-3 px-3 border-b-2 font-semibold text-sm transition-all duration-200 rounded-t-md ${
-                        activeTab === tab.id
-                          ? 'border-teal-500 text-teal-600'
-                          : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-               {showRightArrow && (
-                    <button 
-                        onClick={() => handleScroll('right')}
-                        className="absolute right-0 top-0 bottom-0 z-10 px-2 bg-gradient-to-l from-slate-50 via-slate-50/80 to-transparent flex items-center"
-                        aria-label="Scroll right"
-                    >
-                        <i className="fa-solid fa-chevron-right text-slate-500 hover:text-slate-800"></i>
-                    </button>
-                )}
+            <div className="mt-6 border-b border-slate-200 pb-4">
+                <FormField label="Select Persona to Edit" htmlFor="ai-persona-select" className="mb-0 max-w-sm">
+                    <Select
+                        id="ai-persona-select"
+                        value={activeTab}
+                        onChange={(e) => setActiveTab(e.target.value as AiPersonaName)}
+                        options={tabs.map(tab => ({ value: tab.id, label: tab.label }))}
+                    />
+                </FormField>
             </div>
             
             <div className="mt-6">

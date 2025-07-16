@@ -38,7 +38,7 @@ const ModuleAiTab: React.FC<ModuleAiTabProps> = ({
         interestCompatibility: "Configure the AI that analyzes project data to assess compatibility between stakeholders.",
         sdgAlignment: "Configure the AI that analyzes a project's alignment with the UN Sustainable Development Goals.",
         recreation: "Configure the AI that helps align a project with the goals of the Framework for Recreation in Canada.",
-        kpiGenerator: "Configure the AI that generates Key Performance Indicators (KPIs) for projects."
+        researchPlan: "Configure the AI that assists in drafting sections of a community-based research plan.",
     };
 
   return (
