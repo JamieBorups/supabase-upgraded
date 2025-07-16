@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Page } from '../types.ts';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -173,6 +174,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
                                <NavLink page="members" label="Members" activePage={activePage} onNavigate={onNavigate} />
                                <NavLink page="events" label="Events" activePage={activePage} onNavigate={onNavigate} />
                                <NavLink page="sales" label="Marketplace" activePage={activePage} onNavigate={onNavigate} />
+                               <NavLink page="otf" label="OTF" activePage={activePage} onNavigate={onNavigate} />
                                
                                <div className="relative" ref={mediaDropdownRef}>
                                     <button
