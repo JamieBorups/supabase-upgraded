@@ -1,7 +1,6 @@
 
 
-
-export type Page = 'home' | 'projects' | 'members' | 'tasks' | 'reports' | 'highlights' | 'media' | 'contacts' | 'events' | 'proposals' | 'sales' | 'settings' | 'importExport' | 'taskAssessor' | 'projectAssessor' | 'aiWorkshop' | 'schemaReport' | 'ecoStarWorkshop' | 'aiProjectGenerator' | 'userGuide' | 'interestCompatibility' | 'dbTest' | 'communityReach' | 'impactAssessment' | 'sdgAlignment' | 'frameworkForRecreation' | 'about' | 'kpiGenerator';
+export type Page = 'home' | 'projects' | 'members' | 'tasks' | 'reports' | 'highlights' | 'media' | 'contacts' | 'events' | 'proposals' | 'sales' | 'settings' | 'importExport' | 'taskAssessor' | 'projectAssessor' | 'aiWorkshop' | 'schemaReport' | 'ecoStarWorkshop' | 'aiProjectGenerator' | 'userGuide' | 'interestCompatibility' | 'dbTest' | 'communityReach' | 'impactAssessment' | 'sdgAlignment' | 'frameworkForRecreation' | 'about' | 'researchPlanGenerator';
 export type TabId = 'projectInfo' | 'collaborators' | 'budget';
 export type ProjectViewTabId = 'info' | 'collaborators' | 'budget' | 'workplan' | 'insights' | 'externalContacts';
 export type TaskManagerView = 'workplan' | 'tasks' | 'timesheet';

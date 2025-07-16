@@ -64,6 +64,7 @@ export interface FormData {
     communityImpact: string;
     organizationalRationale: string;
     artisticDevelopment: string;
+    artisticAlignmentAndDevelopment?: string;
     additionalInfo: string;
     whoWillWork: string;
     howSelectionDetermined: string;

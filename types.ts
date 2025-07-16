@@ -1,4 +1,3 @@
-
 // This file re-exports all types from the modularized /types directory.
 // No other component in the app needs to change its imports.
 
@@ -18,4 +17,4 @@ export * from './types/ecostar.types';
 export * from './types/interestCompatibility.types';
 export * from './types/sdg.types';
 export * from './types/recreation.types';
-export * from './types/kpi.types.ts';
+export * from './types/research.types';
