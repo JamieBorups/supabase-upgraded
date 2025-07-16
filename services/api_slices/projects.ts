@@ -1,8 +1,9 @@
 
+
 import { supabase } from '../../supabase.ts';
 import { FormData as Project, DetailedBudget, BudgetItem, ProposalSnapshot, ProjectExportData } from '../../types.ts';
 import { mapObjectToSnakeCase, mapObjectToCamelCase, handleResponse } from './utils';
-import { getActivities, getContacts, getDirectExpenses, getEvents, getEventTickets, getHighlights, getMembers, getNewsReleases, getReports, getTasks, getTicketTypes, getVenues, getInteractions, getEcoStarReports, getInterestCompatibilityReports, getSdgAlignmentReports } from '../api';
+import { getActivities, getContacts, getDirectExpenses, getEvents, getEventTickets, getHighlights, getMembers, getNewsReleases, getRecreationFrameworkReports, getReports, getResearchPlans, getSdgAlignmentReports, getTasks, getTicketTypes, getVenues, getInteractions, getEcoStarReports, getInterestCompatibilityReports } from '../api';
 
 export const getProjects = async (): Promise<Project[]> => {
     const { data: projectsData, error } = await supabase
@@ -132,7 +133,7 @@ export const getProjectExportData = async (projectId: string): Promise<ProjectEx
     const allTasks = await getTasks();
     const projectTasks = allTasks.filter(task => task.projectId === projectId);
     
-    const [activities, directExpenses, reports, highlights, newsReleases, proposals, contacts, interactions, venues, events, ticketTypes, eventTickets, ecostarReports, interestCompatibilityReports, sdgAlignmentReports] = await Promise.all([
+    const [activities, directExpenses, reports, highlights, newsReleases, proposals, contacts, interactions, venues, events, ticketTypes, eventTickets, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans] = await Promise.all([
         getActivities().then(a => a.filter(act => projectTasks.some(t => t.id === act.taskId))),
         getDirectExpenses().then(d => d.filter(exp => exp.projectId === projectId)),
         getReports().then(r => r.filter(rep => rep.projectId === projectId)),
@@ -148,10 +149,12 @@ export const getProjectExportData = async (projectId: string): Promise<ProjectEx
         getEcoStarReports().then(esr => esr.filter(r => r.projectId === projectId)),
         getInterestCompatibilityReports().then(icr => icr.filter(r => r.projectId === projectId)),
         getSdgAlignmentReports().then(sdg => sdg.filter(r => r.projectId === projectId)),
+        getRecreationFrameworkReports().then(rfr => rfr.filter(r => r.projectId === projectId)),
+        getResearchPlans().then(rp => rp.filter(r => r.projectId === projectId)),
     ]);
 
     const memberIds = new Set(project.collaboratorDetails.map(c => c.memberId));
     const members = await getMembers().then(m => m.filter(mem => memberIds.has(mem.id)));
 
-    return { project, tasks: projectTasks, activities, directExpenses, members, newsReleases, reports, highlights, proposals, contacts, interactions, venues, events, ticketTypes, eventTickets, ecostarReports, interestCompatibilityReports, sdgAlignmentReports };
+    return { project, tasks: projectTasks, activities, directExpenses, members, newsReleases, reports, highlights, proposals, contacts, interactions, venues, events, ticketTypes, eventTickets, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans };
 };

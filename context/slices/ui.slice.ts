@@ -90,6 +90,8 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
                 ecostarReports: [...state.ecostarReports, ...(newProjectData.ecostarReports || [])],
                 interestCompatibilityReports: [...state.interestCompatibilityReports, ...(newProjectData.interestCompatibilityReports || [])],
                 sdgAlignmentReports: [...state.sdgAlignmentReports, ...(newProjectData.sdgAlignmentReports || [])],
+                recreationFrameworkReports: [...state.recreationFrameworkReports, ...(newProjectData.recreationFrameworkReports || [])],
+                researchPlans: [...state.researchPlans, ...(newProjectData.researchPlans || [])],
                 members: [...state.members, ...newMembers],
             };
         }

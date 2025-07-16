@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../context/AppContext.tsx';
-import { AppState, ProjectExportFile, WorkspaceExportFile, ProjectExportData, AiSettingsExportFile, FormData as ProjectData, Member, BudgetItem, Task, Activity, DirectExpense, NewsRelease, Contact, ContactsExportFile, Interaction, EventsAndVenuesExportFile, Venue, Event, TicketType, EventTicket, Report, Highlight, ProposalSnapshot, EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport } from '../types.ts';
+import { AppState, ProjectExportFile, WorkspaceExportFile, ProjectExportData, AiSettingsExportFile, FormData as ProjectData, Member, BudgetItem, Task, Activity, DirectExpense, NewsRelease, Contact, ContactsExportFile, Interaction, EventsAndVenuesExportFile, Venue, Event, TicketType, EventTicket, Report, Highlight, ProposalSnapshot, EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan } from '../types.ts';
 import ConfirmationModal from './ui/ConfirmationModal.tsx';
 import { Select } from './ui/Select.tsx';
 import { Input } from './ui/Input.tsx';
@@ -335,6 +335,18 @@ const ImportExportPage: React.FC = () => {
             projectId: idMap.get(report.projectId) || report.projectId,
         }));
 
+        const newRecreationFrameworkReports = (importData.recreationFrameworkReports || []).map(report => ({
+            ...report,
+            id: newId('rec'),
+            projectId: idMap.get(report.projectId) || report.projectId,
+        }));
+        
+        const newResearchPlans = (importData.researchPlans || []).map(report => ({
+            ...report,
+            id: newId('res'),
+            projectId: idMap.get(report.projectId) || report.projectId,
+        }));
+
         const newContacts = (importData.contacts || []).map(contact => {
             const newContactId = newId('contact');
             idMap.set(contact.id, newContactId);
@@ -395,6 +407,8 @@ const ImportExportPage: React.FC = () => {
             ecostarReports: newEcoStarReports,
             interestCompatibilityReports: newInterestCompatibilityReports,
             sdgAlignmentReports: newSdgAlignmentReports,
+            recreationFrameworkReports: newRecreationFrameworkReports,
+            researchPlans: newResearchPlans,
             contacts: newContacts,
             interactions: newInteractions,
             venues: newVenues,

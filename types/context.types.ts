@@ -36,6 +36,8 @@ export interface ProjectExportData {
   ecostarReports: EcoStarReport[];
   interestCompatibilityReports: InterestCompatibilityReport[];
   sdgAlignmentReports: SdgAlignmentReport[];
+  recreationFrameworkReports: RecreationFrameworkReport[];
+  researchPlans: ResearchPlan[];
 }
 
 export interface AppState {
