@@ -1,7 +1,6 @@
 
-
 import { produce } from 'immer';
-import { AppState, Action, ProjectExportData, Member, ResearchPlan } from '../../types';
+import { AppState, Action, ProjectExportData, Member, ResearchPlan, OtfApplication } from '../../types';
 
 export const uiInitialState = {
     loading: true,
@@ -9,6 +8,7 @@ export const uiInitialState = {
     currentUser: null,
     reportProjectIdToOpen: null,
     researchPlanToEdit: null,
+    otfApplicationToEdit: null,
     activeWorkshopItem: null,
 };
 
@@ -43,6 +43,8 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
                 ...uiInitialState,
                 ...otherInitialState,
                 saleSessions: [],
+                otfApplications: [],
+                programGuidelines: [],
                 settings: state.settings, // Preserve settings
                 loading: false,
                 currentUser: null,
@@ -53,6 +55,9 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
 
         case 'SET_RESEARCH_PLAN_TO_EDIT':
             return { researchPlanToEdit: action.payload };
+
+        case 'SET_OTF_APPLICATION_TO_EDIT':
+            return { otfApplicationToEdit: action.payload };
 
         case 'SET_ACTIVE_WORKSHOP_ITEM':
             return { activeWorkshopItem: action.payload };

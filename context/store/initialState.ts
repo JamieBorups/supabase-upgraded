@@ -1,6 +1,4 @@
 
-
-
 import { AppState } from '../../types.ts';
 import { projectsInitialState } from '../slices/projects.slice';
 import { membersInitialState } from '../slices/members.slice';
@@ -16,6 +14,7 @@ import { interestCompatibilityInitialState } from '../slices/interestCompatibili
 import { sdgInitialState } from '../slices/sdg.slice.ts';
 import { recreationInitialState } from '../slices/recreation.slice.ts';
 import { researchInitialState } from '../slices/research.slice.ts';
+import { otfInitialState } from '../slices/otf.slice.ts';
 
 export const initialState: AppState = {
     ...uiInitialState,
@@ -32,4 +31,7 @@ export const initialState: AppState = {
     ...sdgInitialState,
     ...recreationInitialState,
     ...researchInitialState,
+    ...otfInitialState,
+    programGuidelines: [],
+    otfApplicationToEdit: null,
 };

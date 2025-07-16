@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useAppContext } from './context/AppContext.tsx';
 import Layout from './components/Layout.tsx';
@@ -36,6 +33,7 @@ import AboutPage from './components/pages/AboutPage.tsx';
 import MarketplaceManager from './components/sales/SalesManager.tsx';
 import SetupWizard from './components/setup/SetupWizard.tsx';
 import ResearchPlanGeneratorPage from './components/tools/ResearchPlanGeneratorPage.tsx';
+import OtfPage from './components/otf/OtfPage.tsx';
 
 const AppContent: React.FC = () => {
     const { state } = useAppContext();
@@ -44,8 +42,10 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         if (state.researchPlanToEdit) {
             setActivePage('researchPlanGenerator');
+        } else if (state.otfApplicationToEdit) {
+            setActivePage('otf');
         }
-    }, [state.researchPlanToEdit]);
+    }, [state.researchPlanToEdit, state.otfApplicationToEdit]);
 
     const handleNavigate = (page: Page) => {
         setActivePage(page);
@@ -91,6 +91,7 @@ const AppContent: React.FC = () => {
             case 'sdgAlignment': return <SdgAlignmentPage />;
             case 'frameworkForRecreation': return <FrameworkForRecreationPage />;
             case 'researchPlanGenerator': return <ResearchPlanGeneratorPage />;
+            case 'otf': return <OtfPage />;
             case 'dbTest': return <DbTestPage />;
             case 'communityReach': return <CommunityReachPage />;
             case 'impactAssessment': return <ImpactAssessmentPage />;

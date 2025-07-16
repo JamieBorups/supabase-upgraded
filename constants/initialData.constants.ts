@@ -1,3 +1,4 @@
+
 // This is a barrel file. It re-exports all constants from the modularized files
 // in the /constants directory. This allows for better organization without
 // breaking any existing imports in the application.
@@ -21,4 +22,5 @@ export * from './models/task.initial';
 export * from './models/ticketType.initial';
 export * from './models/venue.initial';
 export * from './models/research.initial';
+export * from './models/otf.initial';
 export * from './ai/interestCompatibility.constants';
