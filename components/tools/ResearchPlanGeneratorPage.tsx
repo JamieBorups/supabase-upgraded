@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../context/AppContext';
+import { useAppContext } from '../../context/AppContext.tsx';
 import CreateReportTab from './research-plan-generator/CreateReportTab';
 import EditReportTab from './research-plan-generator/EditReportTab';
 import GenerateReportTab from './research-plan-generator/GenerateReportTab';
