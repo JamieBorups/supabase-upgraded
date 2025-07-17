@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
@@ -59,7 +57,7 @@ interface EditReportTabProps {
 
 const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, setDirty }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { projects, members, tasks, ecostarReports } = state;
+    const { projects, members, tasks, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, otfApplications } = state;
     const [localPlan, setLocalPlan] = useState(plan);
     const [loadingSection, setLoadingSection] = useState<ResearchPlanSection | null>(null);
 
@@ -79,17 +77,31 @@ const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, s
             return '';
         }
 
+        const getMostRecent = <T extends { createdAt?: string; updatedAt?: string; projectId: string | null; }>(items: T[]): T | undefined => {
+            return items
+                .filter(item => item.projectId === project.id)
+                .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime())[0];
+        };
+
         const projectTasks = tasks.filter(t => t.projectId === project.id);
         const projectMembers = project.collaboratorDetails.map(c => members.find(m => m.id === c.memberId)).filter(Boolean);
         
-        const latestEcoStarReport = ecostarReports.filter(r => r.projectId === project.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-        
-        let ecoStarContext = '';
-        if (latestEcoStarReport) {
-            if (latestEcoStarReport.environmentReport) ecoStarContext += `\n- Environment Summary: ${latestEcoStarReport.environmentReport.summary}`;
-            if (latestEcoStarReport.customerReport) ecoStarContext += `\n- Customer Summary: ${latestEcoStarReport.customerReport.summary}`;
-            if (latestEcoStarReport.opportunityReport) ecoStarContext += `\n- Opportunity Summary: ${latestEcoStarReport.opportunityReport.summary}`;
-        }
+        // Gather all supplementary context
+        const supplementaryDocsContext: any = {};
+        const latestEcoStar = getMostRecent(ecostarReports);
+        if (latestEcoStar) supplementaryDocsContext.ecoStar = { environmentSummary: latestEcoStar.environmentReport?.summary, customerSummary: latestEcoStar.customerReport?.summary };
+
+        const latestInterest = getMostRecent(interestCompatibilityReports);
+        if (latestInterest) supplementaryDocsContext.interestCompatibility = { executiveSummary: latestInterest.executiveSummary, highCompatibilityAreas: latestInterest.highCompatibilityAreas?.map(a => a.area).join(', ') };
+
+        const latestSdg = getMostRecent(sdgAlignmentReports);
+        if (latestSdg) supplementaryDocsContext.sdgAlignment = { executiveSummary: latestSdg.executiveSummary, alignedGoals: latestSdg.detailedAnalysis?.map(g => g.goalTitle).join(', ') };
+
+        const latestRecreation = getMostRecent(recreationFrameworkReports);
+        if (latestRecreation) supplementaryDocsContext.recreationFramework = { executiveSummary: latestRecreation.executiveSummary };
+
+        const latestOtf = getMostRecent(otfApplications);
+        if (latestOtf) supplementaryDocsContext.otfApplication = { title: latestOtf.title, objective: latestOtf.projObjective, fundingPriority: latestOtf.projFundingPriority };
 
         const additionalContextParts = [
             { label: 'Focus Areas', data: currentPlanState.researchTypes },
@@ -105,24 +117,23 @@ const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, s
             prompt = `You must integrate the principles of the following selected approaches into your response:\n${additionalContext}\n\n${prompt}`;
         }
         
-        const projectContext = { project, tasks: projectTasks, team: projectMembers };
+        const coreProjectContext = { project, tasks: projectTasks, team: projectMembers };
         
-        // Build context from already generated sections
         const generatedSectionsContext = RESEARCH_PLAN_SECTIONS
             .filter(sec => (currentPlanState as any)[sec.key] && sec.key !== sectionKey)
             .map(sec => `### ${sec.label} (Already Generated) ###\n${(currentPlanState as any)[sec.key]}`)
             .join('\n\n');
 
-        let finalPrompt = `${prompt}\n\n### PROJECT CONTEXT ###\n${JSON.stringify(projectContext, null, 2)}`;
-        if (ecoStarContext) {
-            finalPrompt += `\n\n### STRATEGIC ANALYSIS (from ECO-STAR Report) ###\n${ecoStarContext}`;
+        let finalPrompt = `${prompt}\n\n### CORE PROJECT CONTEXT ###\n${JSON.stringify(coreProjectContext, null, 2)}`;
+        if (Object.keys(supplementaryDocsContext).length > 0) {
+            finalPrompt += `\n\n### SUPPLEMENTARY REPORTS CONTEXT (For Strategic Alignment) ###\n${JSON.stringify(supplementaryDocsContext, null, 2)}`;
         }
         if (generatedSectionsContext) {
             finalPrompt += `\n\n### PREVIOUSLY GENERATED SECTIONS (For Context Only) ###\n${generatedSectionsContext}`;
         }
         
         return finalPrompt;
-    }, [project, state.settings.ai.researchPlanSectionSettings, tasks, members, ecostarReports, notify]);
+    }, [project, state.settings.ai.researchPlanSectionSettings, tasks, members, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, otfApplications, notify]);
 
     const handleGenerateSection = async (sectionKey: ResearchPlanSection, currentPlanForPrompt: ResearchPlan): Promise<string | null> => {
         setLoadingSection(sectionKey);
