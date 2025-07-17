@@ -1,9 +1,7 @@
 
-
 import React, { useMemo } from 'react';
 import { OtfApplication } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { generateOtfPdf } from '../../utils/pdfGenerator';
 
 interface OtfApplicationViewerProps {
     application: OtfApplication;
@@ -27,7 +25,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     </div>
 );
 
-export const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application, onBack }) => {
+const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application, onBack }) => {
     const { state } = useAppContext();
     const project = useMemo(() => application.projectId ? state.projects.find(p => p.id === application.projectId) : null, [state.projects, application.projectId]);
 
@@ -46,14 +44,9 @@ export const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ appl
                     <h1 className="text-3xl font-bold text-slate-900">{application.title || 'OTF Application'}</h1>
                     <p className="text-sm text-slate-500">Context Project: <span className="font-semibold text-teal-600">{project?.projectTitle || 'N/A'}</span></p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => generateOtfPdf(application)} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700">
-                        <i className="fa-solid fa-file-pdf mr-2"></i>Download PDF
-                    </button>
-                    <button onClick={onBack} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100">
-                        <i className="fa-solid fa-arrow-left mr-2"></i>Back to Reports
-                    </button>
-                </div>
+                <button onClick={onBack} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100">
+                    <i className="fa-solid fa-arrow-left mr-2"></i>Back to Reports
+                </button>
             </div>
             
             <Section title="Organization Information">
@@ -160,3 +153,5 @@ export const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ appl
         </div>
     );
 };
+
+export default OtfApplicationViewer;
