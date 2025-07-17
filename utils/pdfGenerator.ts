@@ -1,30 +1,14 @@
 
 import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { marked } from 'marked';
+import { marked, type Token } from 'marked';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan, OtfApplication, DetailedBudget } from '../types';
 import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES, REVENUE_FIELDS, EXPENSE_FIELDS, initialBudget } from '../constants';
 
-// Configure pdfmake
-// By using default imports, we get a mutable pdfMake object that we can configure.
-// The pdfFonts object contains the vfs data under its own pdfMake property.
-(pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
-
-// Define fonts
-(pdfMake as any).fonts = {
-  Roboto: {
-    normal: 'Roboto-Regular.ttf',
-    bold: 'Roboto-Medium.ttf',
-    italics: 'Roboto-Italic.ttf',
-    bolditalics: 'Roboto-MediumItalic.ttf'
-  },
-  Courier: {
-    normal: 'Courier.ttf',
-    bold: 'Courier-Bold.ttf',
-    italics: 'Courier-Oblique.ttf',
-    bolditalics: 'Courier-BoldOblique.ttf'
-  }
-};
+// DEPRECATED FONT LOADING: The following lines have been removed to fix the VFS error.
+// The library will now use its built-in system fonts (Helvetica), which is more reliable.
+// import pdfFonts from 'pdfmake/build/vfs_fonts';
+// pdfMake.vfs = pdfFonts.pdfMake.vfs;
+// (pdfMake as any).fonts = { ... };
 
 const formatCurrency = (value: number | null | undefined) => (value || 0).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
@@ -50,7 +34,7 @@ function decodeEntities(encodedString: string): string {
 
 // Handles inline elements like **bold**, *italic*, and `code`.
 // Returns an array of styled text fragments for pdfmake's `text` property.
-function parseInlineTokens(tokens: marked.Tokens.Generic[]): any[] {
+function parseInlineTokens(tokens: Token[]): any[] {
     const content: any[] = [];
     tokens.forEach(token => {
         switch (token.type) {
@@ -71,7 +55,7 @@ function parseInlineTokens(tokens: marked.Tokens.Generic[]): any[] {
                 break;
             default:
                 // Fallback for unhandled inline tokens
-                content.push({ text: token.raw });
+                content.push({ text: (token as any).raw });
                 break;
         }
     });
@@ -79,7 +63,7 @@ function parseInlineTokens(tokens: marked.Tokens.Generic[]): any[] {
 }
 
 // Recursively parses block-level tokens from `marked.lexer`.
-function parseBlockTokens(tokens: marked.Token[]): any[] {
+function parseBlockTokens(tokens: Token[]): any[] {
     const elements: any[] = [];
     tokens.forEach(token => {
         switch (token.type) {
@@ -157,15 +141,14 @@ class PdfBuilder {
                 p: { fontSize: 10, color: '#334155', lineHeight: 1.35, margin: [0, 0, 0, 10] },
                 link: { color: '#0d9488', decoration: 'underline' },
                 blockquote: { margin: [20, 5, 0, 5], color: '#475569' },
-                code_block: { font: 'Courier', fontSize: 9, color: '#334155', backgroundColor: '#f1f5f9', margin: [0, 5, 0, 10], preserveLeadingSpaces: true },
-                code_inline: { font: 'Courier', color: '#be123c', backgroundColor: '#f1f5f9' },
+                code_block: { fontSize: 9, color: '#334155', backgroundColor: '#f1f5f9', margin: [0, 5, 0, 10], preserveLeadingSpaces: true },
+                code_inline: { color: '#be123c', backgroundColor: '#f1f5f9' },
                 small: { fontSize: 8, color: '#64748b' },
                 italic: { italics: true, color: '#64748b' },
                 tableHeader: { bold: true, fontSize: 9, color: 'black', fillColor: '#f1f5f9' },
                 tableStyle: { margin: [0, 5, 0, 15], fontSize: 9 }
             },
             defaultStyle: {
-                font: 'Roboto',
                 fontSize: 10
             }
         };
