@@ -39,7 +39,6 @@ class PdfBuilder {
                 tableStyle: { margin: [0, 5, 0, 15], fontSize: 9 }
             },
             defaultStyle: {
-                font: 'Roboto',
                 fontSize: 10
             }
         };
