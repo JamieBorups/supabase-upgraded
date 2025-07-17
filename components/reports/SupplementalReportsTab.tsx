@@ -1,12 +1,12 @@
 
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, FormData as Project, ResearchPlan, OtfApplication } from '../../types';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import * as api from '../../services/api';
-import { generateEcoStarPdf, generateInterestCompatibilityPdf, generateSdgPdf, generateRecreationFrameworkPdf, generateResearchPlanPdf, generateOtfPdf } from '../../utils/pdfGenerator';
-import { OtfApplicationViewer } from '../otf/OtfApplicationViewer';
+import { generateEcoStarPdf, generateInterestCompatibilityPdf, generateSdgPdf, generateRecreationFrameworkPdf, generateResearchPlanPdf } from '../../utils/pdfGenerator';
+import { generateOtfPdf } from '../../utils/otfPdfGenerator';
+import OtfApplicationViewer from '../otf/OtfApplicationViewer';
 
 // --- Types & Interfaces ---
 type ReportType = 'research' | 'otf' | 'ecostar' | 'interest' | 'sdg' | 'recreation';

@@ -42,7 +42,7 @@ const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedPro
 
     const handleDownloadPdf = (snapshot: ProposalSnapshot) => {
         try {
-            generateProposalSnapshotPdf(snapshot, members);
+            generateProposalSnapshotPdf(snapshot, members, events, venues, eventTickets);
             notify('PDF generated successfully!', 'success');
         } catch (error: any) {
             console.error("PDF generation failed:", error);
