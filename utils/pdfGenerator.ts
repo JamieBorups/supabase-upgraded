@@ -1,126 +1,31 @@
 import pdfMake from 'pdfmake/build/pdfmake';
-import { marked, type Token } from 'marked';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan, OtfApplication, DetailedBudget } from '../types';
 import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES, REVENUE_FIELDS, EXPENSE_FIELDS, initialBudget } from '../constants';
 
-// DEPRECATED FONT LOADING: The following lines have been removed to fix the VFS error.
-// The library will now use its built-in system fonts (Helvetica), which is more reliable.
-// import pdfFonts from 'pdfmake/build/vfs_fonts';
-// pdfMake.vfs = pdfFonts.pdfMake.vfs;
-// (pdfMake as any).fonts = { ... };
+// Configure pdfmake
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+// Define fonts
+pdfMake.fonts = {
+  Roboto: {
+    normal: 'Roboto-Regular.ttf',
+    bold: 'Roboto-Medium.ttf',
+    italics: 'Roboto-Italic.ttf',
+    bolditalics: 'Roboto-MediumItalic.ttf'
+  }
+};
 
 const formatCurrency = (value: number | null | undefined) => (value || 0).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
 const PERFORMANCE_CATEGORIES = new Set([
-    'performance', 'concert', 'theatre', 'music', 'dance', 'public presentation'
+    'performance',
+    'concert',
+    'theatre',
+    'music',
+    'dance',
+    'public presentation'
 ]);
-
-
-// --- MARKDOWN TO PDFMAKE CONVERSION ---
-
-function decodeEntities(encodedString: string): string {
-    if (typeof document !== 'undefined') {
-        const textArea = document.createElement('textarea');
-        textArea.innerHTML = encodedString;
-        return textArea.value;
-    }
-    // Basic fallback for non-browser environments
-    return encodedString
-        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#32;/g, ' ').replace(/&nbsp;/g, '\u00A0');
-}
-
-
-// Handles inline elements like **bold**, *italic*, and `code`.
-// Returns an array of styled text fragments for pdfmake's `text` property.
-function parseInlineTokens(tokens: Token[]): any[] {
-    const content: any[] = [];
-    tokens.forEach(token => {
-        switch (token.type) {
-            case 'strong':
-                content.push({ text: decodeEntities(token.text), bold: true });
-                break;
-            case 'em':
-                content.push({ text: decodeEntities(token.text), italics: true });
-                break;
-            case 'link':
-                content.push({ text: decodeEntities(token.text), link: token.href, style: 'link' });
-                break;
-            case 'codespan':
-                content.push({ text: decodeEntities(token.text), style: 'code_inline' });
-                break;
-            case 'text':
-                content.push({ text: decodeEntities(token.text) });
-                break;
-            default:
-                // Fallback for unhandled inline tokens
-                content.push({ text: (token as any).raw });
-                break;
-        }
-    });
-    return content;
-}
-
-// Recursively parses block-level tokens from `marked.lexer`.
-function parseBlockTokens(tokens: Token[]): any[] {
-    const elements: any[] = [];
-    tokens.forEach(token => {
-        switch (token.type) {
-            case 'paragraph':
-                elements.push({ text: parseInlineTokens(token.tokens), style: 'p' });
-                break;
-            case 'heading':
-                elements.push({ text: parseInlineTokens(token.tokens), style: `h${token.depth + 1}` });
-                break;
-            case 'list':
-                elements.push({
-                    [token.ordered ? 'ol' : 'ul']: token.items.map(item => parseBlockTokens(item.tokens)),
-                    style: 'p',
-                    margin: [10, 5, 0, 5]
-                });
-                break;
-            case 'blockquote':
-                elements.push({
-                    stack: parseBlockTokens(token.tokens),
-                    style: 'blockquote'
-                });
-                break;
-            case 'hr':
-                elements.push({ canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 0.5, lineColor: '#cbd5e1' }], margin: [0, 10, 0, 10] });
-                break;
-            case 'code':
-                elements.push({ text: token.text, style: 'code_block' });
-                break;
-            case 'text':
-                // A 'text' token at the block level usually means it's part of a "loose" list item.
-                if (token.tokens) {
-                    elements.push({ text: parseInlineTokens(token.tokens), style: 'p' });
-                } else {
-                    elements.push({ text: decodeEntities(token.text), style: 'p' });
-                }
-                break;
-            case 'space':
-                // ignore
-                break;
-            default:
-                console.warn('Unhandled markdown token type:', token.type);
-                elements.push({ text: token.raw, style: 'p' });
-                break;
-        }
-    });
-    return elements;
-}
-
-
-// Main entry function for converting markdown.
-function markdownToPdfmake(markdownText: string | null | undefined): any[] {
-    if (!markdownText || typeof markdownText !== 'string' || markdownText.trim() === '') {
-        return [{ text: 'N/A', style: 'italic', margin: [0, 0, 0, 10] }];
-    }
-    const tokens = marked.lexer(markdownText);
-    return parseBlockTokens(tokens);
-}
-
 
 /**
  * A builder class that creates a pdfmake document definition object.
@@ -138,16 +43,13 @@ class PdfBuilder {
                 h3: { fontSize: 13, bold: true, color: '#475569', margin: [0, 12, 0, 4] },
                 h4: { fontSize: 11, bold: true, color: '#475569', margin: [0, 10, 0, 2] },
                 p: { fontSize: 10, color: '#334155', lineHeight: 1.35, margin: [0, 0, 0, 10] },
-                link: { color: '#0d9488', decoration: 'underline' },
-                blockquote: { margin: [20, 5, 0, 5], color: '#475569' },
-                code_block: { fontSize: 9, color: '#334155', backgroundColor: '#f1f5f9', margin: [0, 5, 0, 10], preserveLeadingSpaces: true },
-                code_inline: { color: '#be123c', backgroundColor: '#f1f5f9' },
                 small: { fontSize: 8, color: '#64748b' },
                 italic: { italics: true, color: '#64748b' },
                 tableHeader: { bold: true, fontSize: 9, color: 'black', fillColor: '#f1f5f9' },
                 tableStyle: { margin: [0, 5, 0, 15], fontSize: 9 }
             },
             defaultStyle: {
+                font: 'Roboto',
                 fontSize: 10
             }
         };
@@ -181,11 +83,6 @@ class PdfBuilder {
             return;
         }
         this.docDefinition.content.push({ text: text.trim(), style: 'p' });
-    }
-
-    addMarkdown(markdownText: string | null | undefined) {
-        const content = markdownToPdfmake(markdownText);
-        this.docDefinition.content.push(...content);
     }
 
     addList(items: string[]) {
@@ -284,20 +181,20 @@ export const generateResearchPlanPdf = (plan: ResearchPlan, projectTitle: string
     if (!plan) throw new Error("Research Plan data is missing.");
     const builder = new PdfBuilder('Community-Based Research Plan', projectTitle);
     
-    builder.addSectionTitle('Overview'); builder.addMarkdown(plan.titleAndOverview);
+    builder.addSectionTitle('Overview'); builder.addParagraph(plan.titleAndOverview);
     if (plan.communities && plan.communities.length > 0) {
         builder.addSectionTitle('Participating Communities');
         builder.addTable(['Community', 'Region', 'Country', 'Organization'], plan.communities.map(c => [c.communityName, c.provinceState, c.country, c.organization || 'N/A']));
     }
-    builder.addSectionTitle('Research Questions and Objectives'); builder.addMarkdown(plan.researchQuestions);
-    builder.addSectionTitle('Community Engagement and Context'); builder.addMarkdown(plan.communityEngagement);
-    builder.addSectionTitle('Research Design and Methodology'); builder.addMarkdown(plan.designAndMethodology);
-    if (plan.artisticAlignmentAndDevelopment) { builder.addSectionTitle('Artistic Alignment & Development'); builder.addMarkdown(plan.artisticAlignmentAndDevelopment); }
-    builder.addSectionTitle('Ethical Considerations and Protocols'); builder.addMarkdown(plan.ethicalConsiderations);
-    builder.addSectionTitle('Knowledge Mobilization and Dissemination'); builder.addMarkdown(plan.knowledgeMobilization);
-    builder.addSectionTitle('Project Management and Timeline'); builder.addMarkdown(plan.projectManagement);
-    if (plan.sustainability) { builder.addSectionTitle('Sustainability'); builder.addMarkdown(plan.sustainability); }
-    builder.addSectionTitle('Project Evaluation'); builder.addMarkdown(plan.projectEvaluation);
+    builder.addSectionTitle('Research Questions and Objectives'); builder.addParagraph(plan.researchQuestions);
+    builder.addSectionTitle('Community Engagement and Context'); builder.addParagraph(plan.communityEngagement);
+    builder.addSectionTitle('Research Design and Methodology'); builder.addParagraph(plan.designAndMethodology);
+    if (plan.artisticAlignmentAndDevelopment) { builder.addSectionTitle('Artistic Alignment & Development'); builder.addParagraph(plan.artisticAlignmentAndDevelopment); }
+    builder.addSectionTitle('Ethical Considerations and Protocols'); builder.addParagraph(plan.ethicalConsiderations);
+    builder.addSectionTitle('Knowledge Mobilization and Dissemination'); builder.addParagraph(plan.knowledgeMobilization);
+    builder.addSectionTitle('Project Management and Timeline'); builder.addParagraph(plan.projectManagement);
+    if (plan.sustainability) { builder.addSectionTitle('Sustainability'); builder.addParagraph(plan.sustainability); }
+    builder.addSectionTitle('Project Evaluation'); builder.addParagraph(plan.projectEvaluation);
 
     const safeFileName = projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 30);
     builder.save(`Research-Plan-${safeFileName}-${new Date().toISOString().split('T')[0]}.pdf`);
@@ -315,11 +212,11 @@ export const generateEcoStarPdf = (report: EcoStarReport, projectTitle: string) 
         const content = report[section.key] as ReportSectionContent | null;
         if (content) {
             builder.addSectionTitle(section.label);
-            builder.addSubSectionTitle('Summary'); builder.addMarkdown(content.summary);
-            builder.addSubSectionTitle('Key Considerations'); builder.addMarkdown(content.keyConsiderations.map(c => `* ${c}`).join('\n'));
+            builder.addSubSectionTitle('Summary'); builder.addParagraph(content.summary);
+            builder.addSubSectionTitle('Key Considerations'); builder.addList(content.keyConsiderations);
             builder.addSubSectionTitle('Follow-up Questions');
             if (Array.isArray(content.followUpQuestions) && content.followUpQuestions.length > 0) {
-                content.followUpQuestions.forEach(qa => { builder.addMinorSectionTitle(qa.question); builder.addMarkdown(qa.sampleAnswer); });
+                content.followUpQuestions.forEach(qa => { builder.addMinorSectionTitle(qa.question); builder.addParagraph(qa.sampleAnswer); });
             } else { builder.addParagraph('N/A'); }
         }
     });
@@ -330,20 +227,20 @@ export const generateInterestCompatibilityPdf = (report: InterestCompatibilityRe
     if (!report || typeof report !== 'object') throw new Error("Report data is missing or corrupted.");
     const builder = new PdfBuilder('Interest Compatibility Report', projectTitle);
     
-    if (report.executiveSummary) { builder.addSectionTitle('Executive Summary'); builder.addMarkdown(report.executiveSummary); }
+    if (report.executiveSummary) { builder.addSectionTitle('Executive Summary'); builder.addParagraph(report.executiveSummary); }
     if (Array.isArray(report.stakeholderAnalysis)) {
         builder.addSectionTitle('Stakeholder Analysis');
-        report.stakeholderAnalysis.forEach(s => { builder.addSubSectionTitle(`${s.name} - (${s.role})`); builder.addMarkdown(s.interests.map(i => `* ${i}`).join('\n')); });
+        report.stakeholderAnalysis.forEach(s => { builder.addSubSectionTitle(`${s.name} - (${s.role})`); builder.addList(s.interests); });
     }
     if (Array.isArray(report.highCompatibilityAreas)) {
         builder.addSectionTitle('High Compatibility Areas');
-        report.highCompatibilityAreas.forEach(item => { builder.addSubSectionTitle(item.area); builder.addMinorSectionTitle(`Stakeholders: ${(item.stakeholders || []).join(', ')}`); builder.addMarkdown(item.insight); builder.addMinorSectionTitle('Follow-up Questions'); builder.addMarkdown(item.followUpQuestions.map(q => `* ${q}`).join('\n')); });
+        report.highCompatibilityAreas.forEach(item => { builder.addSubSectionTitle(item.area); builder.addMinorSectionTitle(`Stakeholders: ${(item.stakeholders || []).join(', ')}`); builder.addParagraph(item.insight); builder.addMinorSectionTitle('Follow-up Questions'); builder.addList(item.followUpQuestions); });
     }
     if (Array.isArray(report.potentialConflicts)) {
         builder.addSectionTitle('Potential Conflicts');
-        report.potentialConflicts.forEach(item => { builder.addSubSectionTitle(item.area); builder.addMinorSectionTitle(`Stakeholders: ${(item.stakeholders || []).join(', ')}`); builder.addMarkdown(item.insight); builder.addMinorSectionTitle('Mitigation'); builder.addMarkdown(item.mitigation); builder.addMinorSectionTitle('Follow-up Questions'); builder.addMarkdown(item.followUpQuestions.map(q => `* ${q}`).join('\n')); });
+        report.potentialConflicts.forEach(item => { builder.addSubSectionTitle(item.area); builder.addMinorSectionTitle(`Stakeholders: ${(item.stakeholders || []).join(', ')}`); builder.addParagraph(item.insight); builder.addMinorSectionTitle('Mitigation'); builder.addParagraph(item.mitigation); builder.addMinorSectionTitle('Follow-up Questions'); builder.addList(item.followUpQuestions); });
     }
-    if (Array.isArray(report.actionableRecommendations)) { builder.addSectionTitle('Actionable Recommendations'); builder.addMarkdown(report.actionableRecommendations.map(r => `* ${r}`).join('\n')); }
+    if (Array.isArray(report.actionableRecommendations)) { builder.addSectionTitle('Actionable Recommendations'); builder.addList(report.actionableRecommendations); }
     
     builder.save(`Interest-Compatibility-Report-${projectTitle.slice(0, 15)}-${new Date().toISOString().split('T')[0]}.pdf`);
 };
@@ -352,14 +249,14 @@ export const generateSdgPdf = (report: SdgAlignmentReport, projectTitle: string)
     if (!report || typeof report !== 'object') throw new Error("Report data is missing or corrupted.");
     const builder = new PdfBuilder('SDG Alignment Report', projectTitle);
     
-    if (report.executiveSummary) { builder.addSectionTitle('Executive Summary'); builder.addMarkdown(report.executiveSummary); }
+    if (report.executiveSummary) { builder.addSectionTitle('Executive Summary'); builder.addParagraph(report.executiveSummary); }
     const analysisItems = report.detailedAnalysis;
     if (Array.isArray(analysisItems) && analysisItems.length > 0) {
         builder.addSectionTitle('Detailed SDG Analysis');
-        analysisItems.forEach(goal => { builder.addSubSectionTitle(`Goal ${goal.goalNumber || 'N/A'}: ${goal.goalTitle || 'Untitled Goal'}`); builder.addMinorSectionTitle('Alignment Narrative'); builder.addMarkdown(goal.alignmentNarrative); builder.addMinorSectionTitle('Strategic Value'); builder.addMarkdown(goal.strategicValue); builder.addMinorSectionTitle('Challenges & Mitigation'); builder.addMarkdown(goal.challengesAndMitigation); });
+        analysisItems.forEach(goal => { builder.addSubSectionTitle(`Goal ${goal.goalNumber || 'N/A'}: ${goal.goalTitle || 'Untitled Goal'}`); builder.addMinorSectionTitle('Alignment Narrative'); builder.addParagraph(goal.alignmentNarrative); builder.addMinorSectionTitle('Strategic Value'); builder.addParagraph(goal.strategicValue); builder.addMinorSectionTitle('Challenges & Mitigation'); builder.addParagraph(goal.challengesAndMitigation); });
     }
     if (Array.isArray(report.strategicRecommendations) && report.strategicRecommendations.length > 0) {
-        builder.addSectionTitle('Strategic Recommendations'); builder.addMarkdown(report.strategicRecommendations.map(rec => `* ${rec}`).join('\n'));
+        builder.addSectionTitle('Strategic Recommendations'); report.strategicRecommendations.forEach(rec => builder.addParagraph(`• ${rec}`));
     }
     builder.save(`SDG-Alignment-Report-${projectTitle.slice(0, 15)}-${new Date().toISOString().split('T')[0]}.pdf`);
 };
@@ -372,8 +269,8 @@ export const generateRecreationFrameworkPdf = (report: RecreationFrameworkReport
         { key: 'inclusionAndAccess' as const, label: 'Inclusion and Access' }, { key: 'connectingPeopleWithNature' as const, label: 'Connecting People with Nature' },
         { key: 'supportiveEnvironments' as const, label: 'Supportive Environments' }, { key: 'recreationCapacity' as const, label: 'Recreation Capacity' }, { key: 'closingSection' as const, label: 'Closing Section' },
     ];
-    if (report.notes) { builder.addSectionTitle('Notes'); builder.addMarkdown(report.notes); }
-    sections.forEach(section => { const content = report[section.key]; if (content) { builder.addSectionTitle(section.label); builder.addMarkdown(content); } });
+    if (report.notes) { builder.addSectionTitle('Notes'); builder.addParagraph(report.notes); }
+    sections.forEach(section => { const content = report[section.key]; if (content) { builder.addSectionTitle(section.label); builder.addParagraph(content); } });
     builder.save(`Recreation-Framework-Report-${projectTitle.slice(0, 15)}-${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
@@ -383,26 +280,26 @@ export const generateProposalSnapshotPdf = (snapshot: ProposalSnapshot, members:
     builder.addSubSectionTitle('Snapshot Details');
     builder.addParagraph(`Created On: ${new Date(snapshot.createdAt).toLocaleString()}`);
     if (snapshot.updatedAt) builder.addParagraph(`Updated On: ${new Date(snapshot.updatedAt).toLocaleString()}`);
-    builder.addMarkdown(`**Notes:** ${snapshot.notes || 'N/A'}`);
+    builder.addParagraph(`Notes: ${snapshot.notes || 'N/A'}`);
     
     // Project Info
     builder.addSectionTitle('Project Information');
-    builder.addMinorSectionTitle('Project Title'); builder.addMarkdown(snapshot.projectData.projectTitle);
+    builder.addMinorSectionTitle('Project Title'); builder.addParagraph(snapshot.projectData.projectTitle);
     builder.addMinorSectionTitle('Activity Type'); builder.addParagraph(ACTIVITY_TYPES.find(a => a.value === snapshot.projectData.activityType)?.label || snapshot.projectData.activityType);
     builder.addMinorSectionTitle('Artistic Disciplines'); builder.addParagraph((snapshot.projectData.artisticDisciplines.map(d => ARTISTIC_DISCIPLINES.find(ad => ad.value === d)?.label || d)).join(', '));
-    builder.addMinorSectionTitle('Background'); builder.addMarkdown(snapshot.projectData.background);
-    builder.addMinorSectionTitle('Project Description'); builder.addMarkdown(snapshot.projectData.projectDescription);
+    builder.addMinorSectionTitle('Background'); builder.addParagraph(snapshot.projectData.background);
+    builder.addMinorSectionTitle('Project Description'); builder.addParagraph(snapshot.projectData.projectDescription);
     
     // Collaborators
     builder.addSectionTitle('Collaborators');
-    builder.addMinorSectionTitle('Collaboration Rationale'); builder.addMarkdown(snapshot.projectData.whoWillWork);
+    builder.addMinorSectionTitle('Collaboration Rationale'); builder.addParagraph(snapshot.projectData.whoWillWork);
     if (snapshot.projectData.collaboratorDetails && snapshot.projectData.collaboratorDetails.length > 0) {
         builder.addMinorSectionTitle('Assigned Collaborators');
         snapshot.projectData.collaboratorDetails.forEach(c => {
             const member = members.find(mem => mem.id === c.memberId);
             if (member) {
                 builder.addSubSectionTitle(`${member.firstName} ${member.lastName} (${c.role})`);
-                builder.addMarkdown(member.shortBio || member.artistBio || 'No bio provided.');
+                builder.addParagraph(member.shortBio || member.artistBio || 'No bio provided.');
             }
         });
     }
@@ -421,7 +318,7 @@ export const generateProposalSnapshotPdf = (snapshot: ProposalSnapshot, members:
     builder.addSectionTitle('Workplan');
     snapshot.tasks.filter(t => t.taskType === 'Milestone').forEach(milestone => {
         builder.addSubSectionTitle(`${milestone.title} (Due: ${milestone.dueDate || 'N/A'})`);
-        builder.addMarkdown(milestone.description);
+        builder.addParagraph(milestone.description);
     });
 
     builder.save(`Proposal-Snapshot-${snapshot.projectData.projectTitle.slice(0, 15)}-${new Date(snapshot.createdAt).toISOString().split('T')[0]}.pdf`);
@@ -433,8 +330,8 @@ export const generateReportPdf = (
 ) => {
     const builder = new PdfBuilder('Final Report', project.projectTitle);
     
-    builder.addSectionTitle("Project Description"); builder.addMarkdown(report.projectResults);
-    builder.addSectionTitle("Financial Report"); builder.addMarkdown(report.grantSpendingDescription);
+    builder.addSectionTitle("Project Description"); builder.addParagraph(report.projectResults);
+    builder.addSectionTitle("Financial Report"); builder.addParagraph(report.grantSpendingDescription);
 
     const budgetTotals = calculateBudgetTotals(project.budget);
     const ticketCalcs = calculateTicketRevenue(project.id, events, venues, eventTickets);
@@ -444,7 +341,7 @@ export const generateReportPdf = (
     builder.addSubSectionTitle("Budget Summary");
     builder.addTable(['', 'Projected', 'Actual'], [['Total Revenue', formatCurrency(totalProjectedRevenue), formatCurrency(budgetTotals.totalActualRevenue)], ['Total Expenses', formatCurrency(budgetTotals.totalExpenses), formatCurrency(totalActualExpenses)], ['Balance', formatCurrency(totalProjectedRevenue - budgetTotals.totalExpenses), formatCurrency(budgetTotals.totalActualRevenue - totalActualExpenses)]]);
     
-    builder.addSectionTitle("Workplan"); builder.addMarkdown(report.workplanAdjustments);
+    builder.addSectionTitle("Workplan"); builder.addParagraph(report.workplanAdjustments);
     builder.addSectionTitle("Community Reach"); builder.addList(report.involvedPeople.map(val => options.PEOPLE_INVOLVED_OPTIONS.find((opt: any) => opt.value === val)?.label.replace('... ', '') || val));
 
     const safeFileName = project.projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 30);
@@ -482,11 +379,11 @@ export const generateOtfPdf = (app: OtfApplication) => {
     
     builder.addSectionTitle('Organization Information');
     builder.addSubSectionTitle('Mission Statement');
-    builder.addMarkdown(app.missionStatement);
+    builder.addParagraph(app.missionStatement);
     
     builder.addSectionTitle('Project Information');
     builder.addSubSectionTitle('Project Description');
-    builder.addMarkdown(app.projDescription);
+    builder.addParagraph(app.projDescription);
     
     builder.addSectionTitle('Project Plan');
     if (app.projectPlan && app.projectPlan.length > 0) {
