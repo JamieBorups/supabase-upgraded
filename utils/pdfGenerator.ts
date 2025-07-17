@@ -6,16 +6,6 @@ import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES, REVENUE_FIELDS, EXPENSE_FIELDS, i
 // Configure pdfmake
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-// Define fonts
-pdfMake.fonts = {
-  Roboto: {
-    normal: 'Roboto-Regular.ttf',
-    bold: 'Roboto-Medium.ttf',
-    italics: 'Roboto-Italic.ttf',
-    bolditalics: 'Roboto-MediumItalic.ttf'
-  }
-};
-
 const formatCurrency = (value: number | null | undefined) => (value || 0).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
 const PERFORMANCE_CATEGORIES = new Set([
