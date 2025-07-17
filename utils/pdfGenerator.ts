@@ -1,4 +1,3 @@
-
 import pdfMake from 'pdfmake/build/pdfmake';
 import { marked, type Token } from 'marked';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan, OtfApplication, DetailedBudget } from '../types';
