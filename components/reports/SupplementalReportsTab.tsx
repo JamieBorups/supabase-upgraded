@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, FormData as Project, ResearchPlan, OtfApplication } from '../../types';
@@ -32,7 +33,7 @@ const ReportList: React.FC<{
     onDelete: (report: any) => void;
     onEdit?: (report: any) => void;
     onView?: (report: any) => void;
-    onDownloadPdf: (report: any) => void;
+    onDownloadPdf: (report: ReportItem) => void;
     onCopy: (htmlContent: string) => void;
     title: string;
     noReportsMessage: string;
@@ -72,7 +73,7 @@ const ReportList: React.FC<{
                             {onView && <button onClick={(e) => { e.stopPropagation(); onView(report.originalReport); }} className="px-3 py-1 text-xs font-semibold text-white bg-sky-600 rounded-md shadow-sm hover:bg-sky-700" title="View Report"><i className="fa-solid fa-eye sm:mr-1"></i><span className="hidden sm:inline">View</span></button>}
                             {onEdit && <button onClick={(e) => { e.stopPropagation(); onEdit(report.originalReport); }} className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700" title="Edit Report"><i className="fa-solid fa-pencil sm:mr-1"></i><span className="hidden sm:inline">Edit</span></button>}
                             <button onClick={(e) => { e.stopPropagation(); onCopy(report.fullReportHtml || ''); }} className="px-3 py-1 text-xs font-semibold text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300" title="Copy content to clipboard"><i className="fa-solid fa-copy sm:mr-1"></i><span className="hidden sm:inline">Copy</span></button>
-                            <button onClick={(e) => { e.stopPropagation(); onDownloadPdf(report.originalReport); }} className="px-3 py-1 text-xs font-semibold text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700" title="Download as PDF"><i className="fa-solid fa-file-pdf sm:mr-1"></i><span className="hidden sm:inline">PDF</span></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDownloadPdf(report); }} className="px-3 py-1 text-xs font-semibold text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700" title="Download as PDF"><i className="fa-solid fa-file-pdf sm:mr-1"></i><span className="hidden sm:inline">PDF</span></button>
                             <button onClick={(e) => { e.stopPropagation(); onDelete(report.originalReport); }} className="px-3 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-md hover:bg-red-200" title="Delete Report"><i className="fa-solid fa-trash sm:mr-1"></i><span className="hidden sm:inline">Delete</span></button>
                             <span className="p-2 text-slate-500 hover:text-slate-700" title={expandedReportId === report.id ? 'Collapse' : 'Expand'}>
                                 <i className={`fa-solid fa-chevron-down transition-transform ${expandedReportId === report.id ? 'rotate-180' : ''}`}></i>
@@ -231,16 +232,17 @@ const SupplementalReportsTab: React.FC<SupplementalReportsTabProps> = ({ selecte
         }
     };
     
-    const handleDownloadPdf = (report: any, type: ReportType) => {
+    const handleDownloadPdf = (reportItem: ReportItem, type: ReportType) => {
         if (!selectedProject) { notify("A project must be selected.", "error"); return; }
+        const { originalReport, fullReportHtml, title } = reportItem;
         try {
             switch(type) {
-                case 'ecostar': generateEcoStarPdf(report, selectedProject.projectTitle); break;
-                case 'interest': generateInterestCompatibilityPdf(report, selectedProject.projectTitle); break;
-                case 'sdg': generateSdgPdf(report, selectedProject.projectTitle); break;
-                case 'recreation': generateRecreationFrameworkPdf(report, selectedProject.projectTitle); break;
-                case 'research': generateResearchPlanPdf(report, selectedProject.projectTitle); break;
-                case 'otf': generateOtfPdf(report); break;
+                case 'ecostar': generateEcoStarPdf(originalReport, selectedProject.projectTitle); break;
+                case 'interest': generateInterestCompatibilityPdf(originalReport, selectedProject.projectTitle); break;
+                case 'sdg': generateSdgPdf(originalReport, selectedProject.projectTitle); break;
+                case 'recreation': generateRecreationFrameworkPdf(originalReport, selectedProject.projectTitle); break;
+                case 'research': generateResearchPlanPdf(originalReport, selectedProject.projectTitle); break;
+                case 'otf': generateOtfPdf(fullReportHtml, title); break;
             }
         } catch (e: any) {
             notify(`Could not generate PDF: ${e.message}`, "error");
