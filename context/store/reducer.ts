@@ -1,7 +1,5 @@
 
 
-
-
 import { AppState, Action } from '../../types.ts';
 import { projectsReducer } from '../slices/projects.slice';
 import { membersReducer } from '../slices/members.slice';
@@ -19,6 +17,7 @@ import { recreationReducer } from '../slices/recreation.slice';
 import { researchReducer } from '../slices/research.slice.ts';
 import { otfReducer } from '../slices/otf.slice.ts';
 import { guidelinesReducer } from '../slices/guidelines.slice.ts';
+import { experienceReducer } from '../slices/experience.slice.ts';
 
 export const appReducer = (state: AppState, action: Action): AppState => {
     // Each reducer is responsible for its own slice of the state.
@@ -41,6 +40,7 @@ export const appReducer = (state: AppState, action: Action): AppState => {
         ...researchReducer(state, action),
         ...otfReducer(state, action),
         ...guidelinesReducer(state, action),
+        ...experienceReducer(state, action),
     };
     return newState;
 };

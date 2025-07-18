@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useAppContext } from './context/AppContext.tsx';
 import Layout from './components/Layout.tsx';
@@ -33,6 +32,7 @@ import MarketplaceManager from './components/sales/SalesManager.tsx';
 import SetupWizard from './components/setup/SetupWizard.tsx';
 import ResearchPlanGeneratorPage from './components/tools/ResearchPlanGeneratorPage.tsx';
 import OtfPage from './components/otf/OtfPage.tsx';
+import ExperienceHubManager from './ExperienceHubManager.tsx';
 
 const AppContent: React.FC = () => {
     const { state } = useAppContext();
@@ -98,6 +98,7 @@ const AppContent: React.FC = () => {
             case 'events': return <EventManager />;
             case 'proposals': return <ProposalManager />;
             case 'sales': return <MarketplaceManager />;
+            case 'experienceHub': return <ExperienceHubManager />;
             default: return <HomePage onNavigate={handleNavigate} />;
         }
     };

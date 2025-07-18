@@ -1,3 +1,4 @@
+
 import { AppSettings } from '../../types.ts';
 import { AI_PERSONAS } from './personas.constants.ts';
 import { PROJECT_GENERATOR_FIELD_INSTRUCTIONS } from './projectGeneratorField.instructions.ts';
@@ -102,7 +103,7 @@ export const initialSettings: AppSettings = {
   },
   ai: {
     enabled: true,
-    plainTextMode: false,
+    plainTextMode: true,
     personas: AI_PERSONAS,
     projectGeneratorFieldInstructions: PROJECT_GENERATOR_FIELD_INSTRUCTIONS,
     otfFieldSettings: OTF_FIELD_INSTRUCTIONS,
@@ -112,7 +113,7 @@ export const initialSettings: AppSettings = {
     personaTemplates: {
       main: [], projects: [], members: [], tasks: [], budget: [], reports: [], media: [],
       ecostar: [], projectGenerator: [], interestCompatibility: [], sdgAlignment: [], recreation: [],
-      taskGenerator: [], researchPlan: [], otf: []
+      taskGenerator: [], researchPlan: [], otf: [], experienceHub: []
     }
   },
   media: {

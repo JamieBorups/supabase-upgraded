@@ -1,4 +1,5 @@
 
+
 import { AppState } from '../../types.ts';
 import { projectsInitialState } from '../slices/projects.slice';
 import { membersInitialState } from '../slices/members.slice';
@@ -15,6 +16,7 @@ import { sdgInitialState } from '../slices/sdg.slice.ts';
 import { recreationInitialState } from '../slices/recreation.slice.ts';
 import { researchInitialState } from '../slices/research.slice.ts';
 import { otfInitialState } from '../slices/otf.slice.ts';
+import { experienceInitialState } from '../slices/experience.slice.ts';
 
 export const initialState: AppState = {
     ...uiInitialState,
@@ -32,6 +34,7 @@ export const initialState: AppState = {
     ...recreationInitialState,
     ...researchInitialState,
     ...otfInitialState,
+    ...experienceInitialState,
     programGuidelines: [],
     otfApplicationToEdit: null,
 };
