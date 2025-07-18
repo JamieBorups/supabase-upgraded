@@ -1,5 +1,4 @@
 
-
 import React, { useMemo, useState } from 'react';
 import { useAppContext } from '../../context/AppContext.tsx';
 import { SaleSession, SalesTransaction, InventoryItem } from '../../types.ts';
@@ -43,6 +42,7 @@ const SalesReport: React.FC<SalesReportProps> = ({ saleSession }) => {
     const { state, notify } = useAppContext();
     const { salesTransactions, inventoryItems, saleSessions } = state;
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     const itemMap = useMemo(() => new Map(inventoryItems.map(i => [i.id, i])), [inventoryItems]);
     const sessionMap = useMemo(() => new Map(saleSessions.map(s => [s.id, s])), [saleSessions]);
@@ -131,12 +131,13 @@ const SalesReport: React.FC<SalesReportProps> = ({ saleSession }) => {
         };
     }, [saleSession, salesTransactions, itemMap]);
     
-    const handleGeneratePdf = (type: 'summary' | 'full') => {
+    const handleGeneratePdf = async (type: 'summary' | 'full') => {
         setIsPdfModalOpen(false);
         if (!reportData || !saleSession) {
             notify('No data available to generate a report.', 'warning');
             return;
         }
+        setIsGeneratingPdf(true);
         notify('Generating PDF...', 'info');
 
         const summary = [
@@ -148,18 +149,19 @@ const SalesReport: React.FC<SalesReportProps> = ({ saleSession }) => {
         ];
         
         try {
-            generateSalesPdf({
+            await generateSalesPdf({
                 title: `Sales Report: ${saleSession.name}`,
                 summary: summary,
                 itemBreakdown: reportData.itemsSold,
                 vouchersBreakdown: reportData.vouchersBreakdown,
                 transactions: type === 'full' ? reportData.transactions : undefined,
-                itemMap,
-                sessionMap
+                itemMap
             });
         } catch (error: any) {
             console.error("PDF generation failed:", error);
             notify(`Failed to generate PDF: ${error.message}`, 'error');
+        } finally {
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -173,9 +175,11 @@ const SalesReport: React.FC<SalesReportProps> = ({ saleSession }) => {
              <div className="flex justify-end mb-4">
                  <button
                     onClick={() => setIsPdfModalOpen(true)}
+                    disabled={isGeneratingPdf}
                     className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700 disabled:bg-slate-400"
                 >
-                    <i className="fa-solid fa-file-pdf mr-2"></i>Generate PDF
+                    <i className={`fa-solid ${isGeneratingPdf ? 'fa-spinner fa-spin' : 'fa-file-pdf'} mr-2`}></i>
+                    {isGeneratingPdf ? 'Generating...' : 'Generate PDF'}
                 </button>
              </div>
             
@@ -219,38 +223,6 @@ const SalesReport: React.FC<SalesReportProps> = ({ saleSession }) => {
                                         <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold text-right ${item.profit >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{formatCurrency(item.profit)}</td>
                                     </tr>
                                 ))}
-                                {reportData.itemsSold.length === 0 && (
-                                    <tr><td colSpan={7} className="text-center py-10 text-slate-500 italic">No items sold for revenue in this session.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                 <div>
-                    <h3 className="text-lg font-semibold text-slate-700 mb-4">Voucher Redemptions</h3>
-                    <div className="overflow-x-auto border border-slate-200 rounded-lg">
-                        <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-slate-100">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Item</th>
-                                    <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Qty Redeemed</th>
-                                    <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Cost/Unit</th>
-                                    <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Total Promotional Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-slate-200">
-                                {reportData.vouchersBreakdown.map(item => (
-                                    <tr key={item.name}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800">{item.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 text-right">{item.quantity}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 text-right">{formatCurrency(item.costPrice)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-rose-700 text-right">{formatCurrency(item.totalCost)}</td>
-                                    </tr>
-                                ))}
-                                 {reportData.vouchersBreakdown.length === 0 && (
-                                    <tr><td colSpan={4} className="text-center py-10 text-slate-500 italic">No vouchers were redeemed in this session.</td></tr>
-                                 )}
                             </tbody>
                         </table>
                     </div>

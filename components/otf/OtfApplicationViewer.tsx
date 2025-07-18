@@ -2,13 +2,7 @@
 import React, { useMemo } from 'react';
 import { OtfApplication } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { generateOtfPdf } from '../../utils/otfPdfGenerator';
-
-interface OtfApplicationViewerProps {
-    application: OtfApplication;
-    onBack: () => void;
-    isEmbedded?: boolean;
-}
+import { generateOtfPdf } from '../../utils/pdfGenerator';
 
 const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
@@ -27,6 +21,12 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     </div>
 );
 
+interface OtfApplicationViewerProps {
+    application: OtfApplication;
+    onBack: () => void;
+    isEmbedded?: boolean;
+}
+
 const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application, onBack, isEmbedded = false }) => {
     const { state } = useAppContext();
     const project = useMemo(() => application.projectId ? state.projects.find(p => p.id === application.projectId) : null, [state.projects, application.projectId]);
@@ -38,6 +38,14 @@ const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application
         const grandTotal = sub + fee;
         return { subtotal: sub, adminFee: fee, total: grandTotal };
     }, [application.budgetItems]);
+    
+    const handleDownloadPdf = async () => {
+        try {
+            await generateOtfPdf(application, project?.projectTitle || 'Project');
+        } catch (error) {
+            console.error("PDF generation failed", error);
+        }
+    }
 
     const content = (
          <>
@@ -48,10 +56,10 @@ const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application
                         <p className="text-sm text-slate-500">Context Project: <span className="font-semibold text-teal-600">{project?.projectTitle || 'N/A'}</span></p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={() => generateOtfPdf(application)} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700">
-                            <i className="fa-solid fa-file-pdf mr-2"></i>Download PDF
+                        <button onClick={handleDownloadPdf} className="btn btn-secondary">
+                            <i className="fa-solid fa-file-pdf mr-2"></i>Generate PDF
                         </button>
-                        <button onClick={onBack} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100">
+                        <button onClick={onBack} className="btn btn-secondary">
                             <i className="fa-solid fa-arrow-left mr-2"></i>Back to Reports
                         </button>
                     </div>
@@ -162,7 +170,7 @@ const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application
         </>
     );
     
-    return isEmbedded ? <div className="p-4">{content}</div> : <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">{content}</div>;
+    return isEmbedded ? <div className="p-4" id="printable-otf">{content}</div> : <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">{content}</div>;
 };
 
 export default OtfApplicationViewer;

@@ -1,4 +1,8 @@
 
+
+
+
+
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { ProposalSnapshot, FormData as Project } from '../../types';
@@ -13,9 +17,11 @@ interface ProposalSnapshotsTabProps {
 
 const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedProject }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { proposals, members, events, venues, eventTickets } = state;
+    const { proposals } = state;
     const [viewingSnapshot, setViewingSnapshot] = useState<ProposalSnapshot | null>(null);
     const [snapshotToDelete, setSnapshotToDelete] = useState<ProposalSnapshot | null>(null);
+
+    const contextValue = { state, dispatch, notify };
 
     const projectProposals = useMemo(() => {
         if (!selectedProject) return [];
@@ -40,9 +46,9 @@ const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedPro
         setSnapshotToDelete(null);
     };
 
-    const handleDownloadPdf = (snapshot: ProposalSnapshot) => {
+    const handleDownloadPdf = async (snapshot: ProposalSnapshot) => {
         try {
-            generateProposalSnapshotPdf(snapshot, members);
+            await generateProposalSnapshotPdf(snapshot, contextValue);
             notify('PDF generated successfully!', 'success');
         } catch (error: any) {
             console.error("PDF generation failed:", error);

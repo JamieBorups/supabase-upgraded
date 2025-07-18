@@ -1,6 +1,8 @@
 
 
 
+
+
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { ProposalSnapshot, FormData as Project } from '../../types';
@@ -15,9 +17,11 @@ interface ProposalSnapshotsTabProps {
 
 const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedProject }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { proposals, members } = state;
+    const { proposals } = state;
     const [viewingSnapshot, setViewingSnapshot] = useState<ProposalSnapshot | null>(null);
     const [snapshotToDelete, setSnapshotToDelete] = useState<ProposalSnapshot | null>(null);
+    
+    const contextValue = { state, dispatch, notify };
 
     const projectProposals = useMemo(() => {
         if (!selectedProject) return [];
@@ -42,9 +46,9 @@ const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedPro
         setSnapshotToDelete(null);
     };
 
-    const handleDownloadPdf = (snapshot: ProposalSnapshot) => {
+    const handleDownloadPdf = async (snapshot: ProposalSnapshot) => {
         try {
-            generateProposalSnapshotPdf(snapshot, members);
+            await generateProposalSnapshotPdf(snapshot, contextValue);
             notify('PDF generated successfully!', 'success');
         } catch (error: any) {
             console.error("PDF generation failed:", error);
@@ -74,39 +78,42 @@ const ProposalSnapshotsTab: React.FC<ProposalSnapshotsTabProps> = ({ selectedPro
             <div>
                  <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800">Proposal Snapshots</h2>
-                        <p className="text-sm text-slate-500">View and manage point-in-time snapshots for this project.</p>
+                        <h2 className="report-section-heading">Proposal Snapshots</h2>
+                         <p className="text-base mb-6 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                            Proposal Snapshots are point-in-time, read-only copies of your project's data, essential for grant submissions or versioning at key milestones. Create snapshots from the 'View Project' page.
+                        </p>
                     </div>
                 </div>
 
                 {projectProposals.length === 0 ? (
-                     <div className="text-center py-20">
-                        <i className="fa-solid fa-camera-retro text-7xl text-slate-300"></i>
-                        <h3 className="mt-6 text-xl font-medium text-slate-800">No Snapshots Created</h3>
-                        <p className="text-slate-500 mt-2 text-base">Go to this project's detail view to create a snapshot of its current state for your records.</p>
+                     <div className="text-center py-10 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                        <p style={{ color: 'var(--color-text-muted)' }}>No snapshots have been created for this project.</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        <div className="bg-slate-50/70 p-4 rounded-lg border border-slate-200">
-                            <ul className="divide-y divide-slate-200">
-                                {projectProposals.map(snapshot => (
-                                    <li key={snapshot.id} className="p-3 hover:bg-slate-100 flex flex-col md:flex-row justify-between md:items-center gap-3">
-                                        <div>
-                                            <p className="font-semibold text-slate-800">
-                                                Snapshot from {new Date(snapshot.createdAt).toLocaleString()}
-                                                {snapshot.updatedAt && <span className="text-xs text-slate-500 ml-2">(updated {new Date(snapshot.updatedAt).toLocaleDateString()})</span>}
-                                            </p>
-                                            <p className="text-sm text-slate-600 italic whitespace-pre-wrap">Notes: {snapshot.notes || "No notes"}</p>
-                                        </div>
-                                        <div className="flex-shrink-0 flex items-center gap-2">
-                                            <button onClick={() => setViewingSnapshot(snapshot)} className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700">View</button>
-                                            <button onClick={() => handleDownloadPdf(snapshot)} className="px-3 py-1.5 text-sm font-medium text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700">PDF</button>
-                                            <button onClick={() => handleDeleteClick(snapshot)} className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-100 rounded-md shadow-sm hover:bg-red-200">Delete</button>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                    <div className="space-y-3">
+                        {projectProposals.map(snapshot => (
+                            <details key={snapshot.id} className="group border rounded-lg bg-white overflow-hidden transition-shadow hover:shadow-md" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                <summary className="w-full text-left p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 cursor-pointer hover:bg-slate-50 list-none">
+                                    <div className="flex-grow">
+                                        <p className="font-semibold" style={{ color: 'var(--color-text-heading)' }}>
+                                            Snapshot from {new Date(snapshot.createdAt).toLocaleString()}
+                                            {snapshot.updatedAt && <span className="text-xs ml-2" style={{ color: 'var(--color-text-muted)' }}>(updated {new Date(snapshot.updatedAt).toLocaleDateString()})</span>}
+                                        </p>
+                                        <p className="text-sm italic whitespace-pre-wrap" style={{ color: 'var(--color-text-muted)' }}>Notes: {snapshot.notes || "No notes"}</p>
+                                    </div>
+                                    <div className="flex-shrink-0 flex items-center gap-2 self-end sm:self-center">
+                                        <button onClick={(e) => { e.stopPropagation(); handleDownloadPdf(snapshot); }} className="btn btn-secondary">PDF</button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(snapshot); }} className="btn btn-danger">Delete</button>
+                                        <span className="p-2 text-slate-500 hover:text-slate-700">
+                                            <i className="fa-solid fa-chevron-down transition-transform group-open:rotate-180"></i>
+                                        </span>
+                                    </div>
+                                </summary>
+                                <div className="border-t bg-slate-50/50" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                    <ProposalViewer snapshot={snapshot} onBack={() => {}} isEmbedded={true} />
+                                </div>
+                            </details>
+                        ))}
                     </div>
                 )}
             </div>

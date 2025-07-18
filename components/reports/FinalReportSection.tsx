@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { produce } from 'immer';
 import { FormData as Project, Report } from '../../types';
@@ -131,18 +132,22 @@ const FinalReportSection: React.FC<FinalReportSectionProps> = ({ selectedProject
   };
   
   const handleGeneratePdf = async () => {
-    if (!reportData) return;
+    if (!selectedProject || !reportData) {
+        notify("Please select a project with a report to generate a PDF.", 'warning');
+        return;
+    }
     setIsGeneratingPdf(true);
     notify('Generating PDF...', 'info');
     try {
-        await generateReportPdf(selectedProject, reportData, members, tasks, highlights, newsReleases, actuals, { IMPACT_QUESTIONS, IMPACT_OPTIONS, PEOPLE_INVOLVED_OPTIONS, GRANT_ACTIVITIES_OPTIONS }, settings, events, eventTickets, venues);
+        await generateReportPdf(selectedProject, reportData, members, tasks, highlights, newsReleases, actuals, settings, events, eventTickets, venues);
     } catch (error: any) {
-        notify(`PDF Error: ${error.message}`, 'error');
+        console.error("Failed to generate PDF:", error);
+        notify("An error occurred while generating the PDF. Please try again.", 'error');
     } finally {
         setIsGeneratingPdf(false);
     }
   };
-  
+
   return (
     <div>
         <div className="flex justify-between items-center mb-6">

@@ -70,16 +70,24 @@ const DropdownLink: React.FC<{
     );
 }
 
-const useOutsideAlerter = (ref: React.RefObject<any>, close: () => void) => {
+const useOutsideAlerter = (ref: React.RefObject<any>, close: () => void, ignoreRef?: React.RefObject<any>) => {
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
+            // If the click is on the ignoreRef element (e.g., the toggle button), do nothing.
+            if (ignoreRef?.current && ignoreRef.current.contains(event.target as Node)) {
+                return;
+            }
+
+            // If the click is outside the main ref element, close it.
             if (ref.current && !ref.current.contains(event.target as Node)) {
                 close();
             }
         }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [ref, close]);
+        
+        // Use 'click' event to avoid race condition on close, and rely on ignoreRef to handle the toggle button.
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, [ref, close, ignoreRef]);
 }
 
 // --- Type Definitions for a clearer and more robust navigation structure ---
@@ -116,6 +124,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
     
     const menuRef = useRef<HTMLDivElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const mobileButtonRef = useRef<HTMLButtonElement>(null);
 
     const { state, dispatch, notify } = useAppContext();
     const { settings, currentUser, members } = state;
@@ -129,7 +138,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
     }, [currentUser, members]);
     
     useOutsideAlerter(menuRef, () => setOpenDropdown(null));
-    useOutsideAlerter(mobileMenuRef, () => setIsMobileMenuOpen(false));
+    useOutsideAlerter(mobileMenuRef, () => setIsMobileMenuOpen(false), mobileButtonRef);
     
     const handleLogout = () => {
         dispatch({ type: 'LOGOUT' });
@@ -247,7 +256,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
                         </div>
                     </div>
                      <div className="-mr-2 flex md:hidden">
-                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} type="button" className="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                        <button ref={mobileButtonRef} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} type="button" className="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
                             <span className="sr-only">Open main menu</span>
                             <i className={`fa-solid ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
                         </button>
