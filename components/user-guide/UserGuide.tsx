@@ -21,6 +21,7 @@ import EmpoweringTheArtsGuide from './EmpoweringTheArtsGuide';
 import SetupGuide from './SetupGuide';
 import ResearchPlanGeneratorGuide from './ResearchPlanGeneratorGuide.tsx';
 import ResearchApproachesGuide from './ResearchApproachesGuide.tsx';
+import ExperienceHubGuide from './ExperienceHubGuide.tsx';
 
 
 import './guide.css';
@@ -28,7 +29,7 @@ import './guide.css';
 type GuideTopic = 
   | 'welcome' | 'setup' | 'acknowledgements' | 'empowering' | 'projects' | 'members' | 'tasks' | 'events' | 'sales' | 'media' 
   | 'reports' | 'communityImpact' | 'supplementalReports' | 'tools' | 'settings'
-  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches';
+  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches' | 'experienceHub';
 
 interface MenuItem {
     id: GuideTopic;
@@ -57,7 +58,15 @@ const menuStructure: MenuSection[] = [
         items: [
             { id: 'projects', label: 'Projects & Proposals', icon: 'fa-solid fa-briefcase' },
             { id: 'tasks', label: 'Tasks & Activities', icon: 'fa-solid fa-list-check' },
-            { id: 'members', label: 'Members', icon: 'fa-solid fa-users' },
+            { 
+                id: 'members', 
+                label: 'Members & Experience', 
+                icon: 'fa-solid fa-users',
+                children: [
+                    { id: 'members', label: 'Member Profiles', icon: 'fa-solid fa-id-card' },
+                    { id: 'experienceHub', label: 'Experience Hub', icon: 'fa-solid fa-award' },
+                ]
+            },
             { id: 'events', label: 'Events & Venues', icon: 'fa-solid fa-calendar-days' },
             { id: 'sales', label: 'Marketplace', icon: 'fa-solid fa-cash-register' },
             { id: 'media', label: 'Media & Contacts', icon: 'fa-solid fa-bullhorn' },
@@ -124,6 +133,7 @@ const UserGuide: React.FC = () => {
             case 'interest': return <InterestCompatibilityGuide />;
             case 'researchPlanGenerator': return <ResearchPlanGeneratorGuide />;
             case 'researchPlanApproaches': return <ResearchApproachesGuide />;
+            case 'experienceHub': return <ExperienceHubGuide />;
             default: return <WelcomePage />;
         }
     };
@@ -145,11 +155,13 @@ const UserGuide: React.FC = () => {
                                 <div className="mt-2 space-y-1">
                                     {section.items.map(item => {
                                         if (item.children && item.children.length > 0) {
+                                            const isParentActive = item.id === activeTopic;
+                                            const isChildActive = isTopicInChildren(item.children, activeTopic);
                                             return (
-                                                <details key={item.id} className="group" open={item.id === activeTopic || isTopicInChildren(item.children, activeTopic)}>
+                                                <details key={item.id} className="group" open={isParentActive || isChildActive}>
                                                     <summary 
                                                         className={`flex items-center w-full text-left p-3 rounded-lg text-sm font-semibold transition-colors duration-150 cursor-pointer list-none ${
-                                                            activeTopic === item.id || isTopicInChildren(item.children, activeTopic) ? 'bg-slate-200 text-slate-800' : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                                                            isParentActive || isChildActive ? 'bg-slate-200 text-slate-800' : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
                                                         }`}
                                                         onClick={(e) => { e.preventDefault(); setActiveTopic(item.id); }}
                                                     >
