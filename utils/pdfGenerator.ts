@@ -1,4 +1,3 @@
-
 import { 
     AppSettings, FormData as Project, Member, Task, Report, Highlight, NewsRelease, 
     SalesTransaction, ProposalSnapshot, Event, Venue, EventTicket, AppContextType, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan, EcoStarReport, OtfApplication, JobDescription
@@ -34,15 +33,22 @@ class PdfBuilder {
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h1);
         this.doc.setTextColor('#1e293b'); // slate-800
-        this.doc.text(docTitle, this.margin, this.y);
-        this.y += this.fontSizes.h1 * this.lineHeightRatio;
+        const docTitleLines = this.doc.splitTextToSize(docTitle, this.pageWidth - this.margin * 2);
+        docTitleLines.forEach((line: string) => {
+            this.doc.text(line, this.margin, this.y);
+            this.y += this.fontSizes.h1 * this.lineHeightRatio;
+        });
+
 
         if (projectTitle) {
             this.doc.setFont('helvetica', 'normal');
             this.doc.setFontSize(this.fontSizes.h2);
             this.doc.setTextColor('#475569'); // slate-600
-            this.doc.text(projectTitle, this.margin, this.y);
-            this.y += this.fontSizes.h2 * this.lineHeightRatio;
+            const projectTitleLines = this.doc.splitTextToSize(projectTitle, this.pageWidth - this.margin * 2);
+            projectTitleLines.forEach((line: string) => {
+                this.doc.text(line, this.margin, this.y);
+                this.y += this.fontSizes.h2 * this.lineHeightRatio;
+            });
         }
 
         this.doc.setFontSize(this.fontSizes.small);
@@ -60,42 +66,50 @@ class PdfBuilder {
     }
     
     addSectionTitle(title: string) {
-        const titleHeight = this.fontSizes.h2 * this.lineHeightRatio;
-        this.checkPageBreak(titleHeight + 30); 
-
-        this.y += 15;
+        // 1. Calculate required dimensions
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h2);
-        this.doc.setTextColor('#1e293b');
-        this.doc.text(title, this.margin, this.y);
+        const lines = this.doc.splitTextToSize(title, this.pageWidth - this.margin * 2);
+        const lineHeight = this.fontSizes.h2 * this.lineHeightRatio;
+        const textHeight = lines.length * lineHeight;
         
-        this.y += (this.fontSizes.h2 * this.lineHeightRatio) * 0.5;
+        // Total height: top margin + text block height + space to line + line width + bottom margin
+        const requiredHeight = 15 + textHeight + 3 + 1.5 + 15;
+        
+        // 2. Check for page break
+        this.checkPageBreak(requiredHeight);
+
+        // 3. Draw elements
+        this.y += 15; // Top margin
+        
+        this.doc.setTextColor('#1e293b');
+        lines.forEach((line: string) => {
+            this.doc.text(line, this.margin, this.y);
+            this.y += lineHeight;
+        });
+        
+        const lastLineBaselineY = this.y - lineHeight;
+        const underlineY = lastLineBaselineY + 3; // 3pt below the baseline
+        
         this.doc.setDrawColor('#0d9488'); // teal-600
         this.doc.setLineWidth(1.5);
-        this.doc.line(this.margin, this.y, this.pageWidth - this.margin, this.y);
-        this.y += 15;
+        this.doc.line(this.margin, underlineY, this.pageWidth - this.margin, underlineY);
+        
+        this.y = underlineY + 15;
     }
 
     addSubSectionTitle(title: string) {
-        const titleHeight = this.fontSizes.h3 * this.lineHeightRatio;
-        this.checkPageBreak(titleHeight + 20); 
-        this.y += 12;
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h3);
         this.doc.setTextColor('#334155');
-        this.doc.text(title, this.margin, this.y);
-        this.y += (this.fontSizes.h3 * this.lineHeightRatio);
+        this.addText(title, this.fontSizes.h3, 'bold', {top: 12, bottom: 0});
     }
     
     addMinorSectionTitle(title: string) {
-        const titleHeight = this.fontSizes.h4 * this.lineHeightRatio;
-        this.checkPageBreak(titleHeight + 15);
-        this.y += 10;
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(this.fontSizes.h4);
         this.doc.setTextColor('#475569');
-        this.doc.text(title, this.margin, this.y);
-        this.y += (this.fontSizes.h4 * this.lineHeightRatio)
+        this.addText(title, this.fontSizes.h4, 'bold', {top: 10, bottom: 0});
     }
 
     addParagraph(text: string | null | undefined) {
@@ -113,24 +127,28 @@ class PdfBuilder {
     }
 
     private addText(text: string, fontSize: number, fontStyle: 'normal' | 'bold' | 'italic', spacing: { top: number, bottom: number }) {
-        this.y += spacing.top;
         this.doc.setFont('helvetica', fontStyle);
         this.doc.setFontSize(fontSize);
-        
         const lines = this.doc.splitTextToSize(text, this.pageWidth - this.margin * 2);
         const lineHeight = fontSize * this.lineHeightRatio;
-
+        const textHeight = lines.length * lineHeight;
+        
+        // This is the core logic that prevents text from being split awkwardly.
+        // It checks line by line if a page break is needed.
+        this.y += spacing.top;
         lines.forEach((line: string) => {
             this.checkPageBreak(lineHeight);
             this.doc.text(line, this.margin, this.y);
             this.y += lineHeight;
         });
-
         this.y += spacing.bottom;
     }
 
     addList(items: (string | null | undefined)[]) {
-        if (!items || items.length === 0) return;
+        if (!items || items.length === 0) {
+            this.addParagraph('N/A');
+            return;
+        };
         const listContent = items.filter(Boolean).map(item => `•  ${item}`).join('\n');
         this.addParagraph(listContent);
     }
@@ -166,8 +184,10 @@ export const generateEcoStarPdf = async (report: EcoStarReport, projectTitle: st
             builder.addSectionTitle(section.label);
             builder.addSubSectionTitle('Summary');
             builder.addParagraph(content.summary);
+
             builder.addSubSectionTitle('Key Considerations');
             builder.addList(content.keyConsiderations);
+            
             builder.addSubSectionTitle('Follow-up Questions');
             if (Array.isArray(content.followUpQuestions) && content.followUpQuestions.length > 0) {
                 content.followUpQuestions.forEach((qa: any) => {
@@ -359,8 +379,9 @@ export const generateJobDescriptionsPdf = async (jobDescriptions: JobDescription
     const builder = new PdfBuilder('Project Job Descriptions', projectTitle);
 
     jobDescriptions.forEach(jd => {
+        const seniorityText = `Seniority: ${jd.seniorityLevel}`;
         builder.addSectionTitle(jd.title);
-        builder.addSubSectionTitle(`Seniority: ${jd.seniorityLevel}`);
+        builder.addSubSectionTitle(seniorityText);
         
         builder.addMinorSectionTitle('Summary');
         builder.addParagraph(jd.summary);
@@ -401,6 +422,7 @@ export const generateReportPdf = async (
     builder.addSectionTitle('Community Reach');
     builder.addSubSectionTitle('Individuals Involved');
     builder.addList(report.involvedPeople.map(p => PEOPLE_INVOLVED_OPTIONS.find(o => o.value === p)?.label || p));
+    
     builder.addSubSectionTitle('Activities Involved');
     builder.addList(report.involvedActivities.map(a => GRANT_ACTIVITIES_OPTIONS.find(o => o.value === a)?.label || a));
     
