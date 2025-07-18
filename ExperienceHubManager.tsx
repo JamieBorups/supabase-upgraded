@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { produce } from 'immer';
 import { Type } from '@google/genai';
@@ -133,7 +132,7 @@ const GenerationForm: React.FC<GenerationFormProps> = ({ onCancel, onGenerate, p
                 <div className="space-y-6 max-w-2xl mx-auto">
                     <FormField label="Role Title" htmlFor="role_title" required><Input id="role_title" value={config.title} onChange={e => setConfig(p => ({...p, title: e.target.value}))} /></FormField>
                     <FormField label="Seniority Level" htmlFor="seniority"><Select id="seniority" value={config.seniorityLevel} onChange={e => setConfig(p => ({...p, seniorityLevel: e.target.value}))} options={SENIORITY_LEVELS} /></FormField>
-                    <FormField label="Assign to Member (Optional)" htmlFor="member" instructions="AI will use their bio as context."><Select id="member" value={config.memberId} onChange={e => setConfig(p => ({...p, memberId: e.target.value}))} options={[{value: '', label: 'Generic Role'}, ...availableMembers.map(m => ({value: m.id, label: `${m.firstName} ${m.lastName}`))]} /></FormField>
+                    <FormField label="Assign to Member (Optional)" htmlFor="member" instructions="AI will use their bio as context."><Select id="member" value={config.memberId} onChange={e => setConfig(p => ({...p, memberId: e.target.value}))} options={[{value: '', label: 'Generic Role'}, ...availableMembers.map(m => ({value: m.id, label: `${m.firstName} ${m.lastName}`}))]} /></FormField>
                     <FormField label="Tailor Description" htmlFor="tags" instructions="Select skills to emphasize."><CheckboxGroup name="tags" options={TAILORING_TAGS} selectedValues={config.tailoringTags} onChange={v => setConfig(p => ({...p, tailoringTags: v}))} columns={2} /></FormField>
                 </div>
                 <div className="mt-8 flex justify-end space-x-3 pt-5 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
