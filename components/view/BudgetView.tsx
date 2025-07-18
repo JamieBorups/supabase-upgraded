@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { produce } from 'immer';
 import { DetailedBudget, BudgetItem, Task, Activity, DirectExpense, ExpenseCategoryType, FormData, BudgetItemStatus, Venue, ProposalSnapshot, Event, EventTicket } from '../../types';
@@ -23,29 +21,23 @@ interface BudgetViewProps {
 
 const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
-const ViewField: React.FC<{ label: string; value?: React.ReactNode; children?: React.ReactNode }> = ({ label, value, children }) => (
-    <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{label}</h3>
-        {value && <div className="mt-1 text-slate-900">{value}</div>}
-        {children && <div className="mt-1 text-slate-900">{children}</div>}
-    </div>
-);
-
 const StatusBadge: React.FC<{ status: BudgetItemStatus }> = ({ status }) => {
-    const statusClasses: Record<BudgetItemStatus, string> = {
-        Pending: 'bg-yellow-100 text-yellow-800',
-        Approved: 'bg-green-100 text-green-800',
-        Denied: 'bg-red-100 text-red-800',
+    const { state: { settings: { theme } } } = useAppContext();
+    const statusStyles: Record<BudgetItemStatus, { bg: string; text: string }> = {
+        Pending: { bg: theme.statusWarningBg, text: theme.statusWarningText },
+        Approved: { bg: theme.statusSuccessBg, text: theme.statusSuccessText },
+        Denied: { bg: theme.statusErrorBg, text: theme.statusErrorText },
     };
+    const style = statusStyles[status];
     return (
-        <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[status]}`}>
+        <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full`} style={{ backgroundColor: style.bg, color: style.text }}>
             {status}
         </span>
     );
 };
 
 const ReadOnlyField: React.FC<{value: string | number | React.ReactNode}> = ({ value }) => (
-    <div className="mt-1 p-2 bg-slate-100 border border-slate-300 rounded-md text-sm text-slate-700 min-h-[38px] flex items-center">
+    <div className="mt-1 p-2 rounded-md text-sm min-h-[38px] flex items-center" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-default)' }}>
         {value}
     </div>
 );
@@ -58,18 +50,18 @@ const RevenueSection: React.FC<{
     actualTotal?: number;
     isProposalView?: boolean;
 }> = ({title, children, budgetTotal, actualTotal, isProposalView = false}) => (
-     <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-6">
-        <h3 className="text-xl font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">{title}</h3>
+     <div className="p-4 rounded-lg border shadow-sm mt-6" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
+        <h3 className="text-xl font-bold border-b pb-2 mb-3" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-border-subtle)'}}>{title}</h3>
         {children}
-        <div className={`grid ${isProposalView ? 'grid-cols-1' : 'grid-cols-2'} gap-4 text-right font-bold mt-3 pt-3 border-t-2 border-slate-200 text-base`}>
+        <div className={`grid ${isProposalView ? 'grid-cols-1' : 'grid-cols-2'} gap-4 text-right font-bold mt-3 pt-3 border-t-2 text-base`} style={{ borderColor: 'var(--color-border-default)'}}>
             <div>
-                <span className="text-xs text-slate-500 font-semibold uppercase block">Budgeted</span>
-                {formatCurrency(budgetTotal)}
+                <span className="text-xs font-semibold uppercase block" style={{ color: 'var(--color-text-muted)'}}>Budgeted</span>
+                <span style={{ color: 'var(--color-text-heading)' }}>{formatCurrency(budgetTotal)}</span>
             </div>
             {!isProposalView && (
              <div>
-                <span className="text-xs text-teal-600 font-semibold uppercase block">Actual</span>
-                {formatCurrency(actualTotal || 0)}
+                <span className="text-xs font-semibold uppercase block" style={{ color: 'var(--color-primary)'}}>Actual</span>
+                <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(actualTotal || 0)}</span>
             </div>
             )}
         </div>
@@ -86,12 +78,12 @@ const RevenueCategoryItemsView: React.FC<{
     isProposalView: boolean,
 }> = ({ items, categoryPath, onUpdateRevenue, onSetEditingRevenueId, editingRevenueId, fieldMap, isProposalView }) => {
     if (!items || items.length === 0) {
-        return <p className="text-sm text-slate-400 italic py-2">No items in this category.</p>;
+        return <p className="text-sm italic py-2" style={{ color: 'var(--color-text-muted)' }}>No items in this category.</p>;
     }
     
     return (
         <div className="space-y-1">
-             <div className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-12'} gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 py-1`}>
+             <div className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-12'} gap-2 text-xs font-semibold uppercase tracking-wider px-2 py-1`} style={{ color: 'var(--color-text-muted)' }}>
                 <div className="col-span-7">Item</div>
                 <div className="col-span-2 text-right">Budgeted</div>
                 {!isProposalView && <div className="col-span-3 text-right">Actual</div>}
@@ -101,17 +93,17 @@ const RevenueCategoryItemsView: React.FC<{
                 const isEditing = editingRevenueId === item.id;
                 const isDenied = item.status === 'Denied';
                 return (
-                    <div key={item.id} className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-12'} gap-2 items-center hover:bg-slate-100 rounded p-2 group ${isDenied ? 'opacity-50' : ''}`}>
+                    <div key={item.id} className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-12'} gap-2 items-center rounded p-2 group ${isDenied ? 'opacity-50' : 'hover:bg-slate-50'}`}>
                          <div className="col-span-7 text-sm">
                             <div className="flex items-center gap-2">
                               <StatusBadge status={item.status || 'Pending'} />
-                              <p className={`text-slate-800 font-medium ${isDenied ? 'line-through' : ''}`}>{label}</p>
+                              <p className={`font-medium ${isDenied ? 'line-through' : ''}`} style={{ color: 'var(--color-text-heading)'}}>{label}</p>
                             </div>
-                            <p className="text-xs text-slate-500 pl-8">{item.description}</p>
+                            <p className="text-xs pl-8" style={{ color: 'var(--color-text-muted)'}}>{item.description}</p>
                         </div>
-                        <div className={`col-span-2 text-right text-sm text-slate-600 ${isDenied ? 'line-through' : ''}`}>{formatCurrency(item.amount)}</div>
+                        <div className={`col-span-2 text-right text-sm ${isDenied ? 'line-through' : ''}`} style={{ color: 'var(--color-text-default)'}}>{formatCurrency(item.amount)}</div>
                         {!isProposalView && (
-                            <div className="col-span-3 text-right text-sm font-semibold text-teal-700 cursor-pointer" onClick={() => !isDenied && onSetEditingRevenueId(item.id)}>
+                            <div className="col-span-3 text-right text-sm font-semibold cursor-pointer" style={{ color: 'var(--color-primary)'}} onClick={() => !isDenied && onSetEditingRevenueId(item.id)}>
                                 {isEditing ? (
                                     <Input 
                                         type="number" 
@@ -150,11 +142,11 @@ const ExpenseCategoryItemsView: React.FC<{
     isProposalView: boolean,
 }> = ({ items, actualsByBudgetItem, fieldMap, isProposalView }) => {
      if (!items || items.length === 0) {
-        return <p className="text-sm text-slate-400 italic py-2">No items budgeted for this category.</p>;
+        return <p className="text-sm italic py-2" style={{ color: 'var(--color-text-muted)' }}>No items budgeted for this category.</p>;
     }
     return (
         <div className="space-y-1">
-            <div className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-10'} gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 py-1`}>
+            <div className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-10'} gap-2 text-xs font-semibold uppercase tracking-wider px-2 py-1`} style={{ color: 'var(--color-text-muted)' }}>
                 <div className="col-span-5">Item</div>
                 <div className="col-span-2 text-right">Budgeted</div>
                 {!isProposalView && <div className="col-span-3 text-right">Actual Paid</div>}
@@ -162,13 +154,13 @@ const ExpenseCategoryItemsView: React.FC<{
             {items.map(item => {
                  const actuals = actualsByBudgetItem.get(item.id) || { cost: 0, contributedValue: 0 };
                  return (
-                    <div key={item.id} className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-10'} gap-2 items-center hover:bg-slate-100 rounded p-2 group`}>
+                    <div key={item.id} className={`grid ${isProposalView ? 'grid-cols-7' : 'grid-cols-10'} gap-2 items-center hover:bg-slate-50 rounded p-2 group`}>
                         <div className="col-span-5 text-sm">
-                            <p className="text-slate-800 font-medium">{fieldMap.get(item.source) || item.source}</p>
-                            <p className="text-xs text-slate-500">{item.description}</p>
+                            <p className="font-medium" style={{ color: 'var(--color-text-heading)'}}>{fieldMap.get(item.source) || item.source}</p>
+                            <p className="text-xs" style={{ color: 'var(--color-text-muted)'}}>{item.description}</p>
                         </div>
-                        <div className="col-span-2 text-right text-sm text-slate-600">{formatCurrency(item.amount)}</div>
-                        {!isProposalView && <div className="col-span-3 text-right text-sm font-semibold text-blue-700">{formatCurrency(actuals.cost)}</div>}
+                        <div className="col-span-2 text-right text-sm" style={{ color: 'var(--color-text-default)'}}>{formatCurrency(item.amount)}</div>
+                        {!isProposalView && <div className="col-span-3 text-right text-sm font-semibold" style={{ color: 'var(--color-status-info-text)'}}>{formatCurrency(actuals.cost)}</div>}
                     </div>
                  )
             })}
@@ -374,24 +366,24 @@ const BudgetView: React.FC<BudgetViewProps> = ({ project, onSave, tasks, activit
 
     return (
         <section>
-            <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-teal-500 pb-2 mb-6">Budget vs. Actuals</h2>
+            <h2 className="text-2xl font-bold border-b-2 pb-2 mb-6" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-primary)'}}>Budget vs. Actuals</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* REVENUE */}
                 <div>
-                    <h3 className="text-xl font-bold text-slate-800 mb-3 mt-6">Revenue</h3>
+                    <h3 className="text-xl font-bold mb-3 mt-6" style={{ color: 'var(--color-text-heading)'}}>Revenue</h3>
                     
                     <RevenueSection title="Revenue: Grants" budgetTotal={budgetCalculations.totalGrants} actualTotal={budget.revenues.grants.reduce((sum, item) => sum + (item.actualAmount || 0), 0)} isProposalView={isProposalView}>
                        <RevenueCategoryItemsView items={budget.revenues.grants} categoryPath={['revenues', 'grants']} onUpdateRevenue={handleUpdateRevenueItem} onSetEditingRevenueId={setEditingRevenueId} editingRevenueId={editingRevenueId} fieldMap={revenueFieldMap} isProposalView={isProposalView} />
                     </RevenueSection>
 
-                    <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-6">
-                        <h3 className="text-xl font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">Revenue: Tickets & Box Office</h3>
-                        <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 p-2 bg-slate-200/50 rounded-md">
-                                <div className="font-semibold text-sm text-slate-600">Number of presentations</div>
-                                <div className="font-semibold text-sm text-slate-600">Average % of venue sold out</div>
-                                <div className="font-semibold text-sm text-slate-600">Average venue capacity</div>
+                    <div className="p-4 rounded-lg border shadow-sm mt-6" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
+                        <h3 className="text-xl font-bold border-b pb-2 mb-3" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-border-subtle)'}}>Revenue: Tickets & Box Office</h3>
+                        <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 p-2 rounded-md" style={{ backgroundColor: 'rgba(0,0,0,0.05)' }}>
+                                <div className="font-semibold text-sm" style={{ color: 'var(--color-text-muted)'}}>Number of presentations</div>
+                                <div className="font-semibold text-sm" style={{ color: 'var(--color-text-muted)'}}>Average % of venue sold out</div>
+                                <div className="font-semibold text-sm" style={{ color: 'var(--color-text-muted)'}}>Average venue capacity</div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <ReadOnlyField value={ticketCalcs.numberOfPresentations.toLocaleString()} />
@@ -400,31 +392,31 @@ const BudgetView: React.FC<BudgetViewProps> = ({ project, onSave, tasks, activit
                             </div>
                         </div>
 
-                        <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
+                        <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                              <div className="flex items-end justify-between">
-                                 <div className="font-semibold text-slate-700">Projected total audience</div>
-                                 <div className="p-2 bg-white border border-slate-300 rounded-md text-slate-800 font-bold min-w-[120px] text-right">{ticketCalcs.projectedAudience.toLocaleString()}</div>
+                                 <div className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Projected total audience</div>
+                                 <div className="p-2 border rounded-md font-bold min-w-[120px] text-right" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-heading)'}}>{ticketCalcs.projectedAudience.toLocaleString()}</div>
                             </div>
                         </div>
                         
-                        <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
+                        <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                              <div className="flex items-end justify-between">
-                                 <div className="font-semibold text-slate-700">Average ticket price</div>
-                                 <div className="p-2 bg-white border border-slate-300 rounded-md text-slate-800 font-bold min-w-[120px] text-right">{formatCurrency(ticketCalcs.averageTicketPrice)}</div>
+                                 <div className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Average ticket price</div>
+                                 <div className="p-2 border rounded-md font-bold min-w-[120px] text-right" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-heading)'}}>{formatCurrency(ticketCalcs.averageTicketPrice)}</div>
                             </div>
                         </div>
                         
-                        <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
+                        <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                              <div className="flex items-end justify-between">
-                                 <div className="font-semibold text-slate-700">Total tickets or box office</div>
-                                 <div className="p-2 bg-white border border-slate-300 rounded-md text-slate-800 font-bold min-w-[120px] text-right">{formatCurrency(ticketCalcs.projectedRevenue)}</div>
+                                 <div className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Total tickets or box office</div>
+                                 <div className="p-2 border rounded-md font-bold min-w-[120px] text-right" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-heading)'}}>{formatCurrency(ticketCalcs.projectedRevenue)}</div>
                             </div>
                         </div>
                         
                         {!isProposalView && (
                             <div className="py-2.5 grid grid-cols-2 gap-4 mt-2">
-                                <div className="text-sm font-bold text-slate-600">Actual Ticket Revenue</div>
-                                <div className="text-sm text-slate-800 font-medium text-right cursor-pointer" onClick={() => setIsEditingActualRevenue(true)}>
+                                <div className="text-sm font-bold" style={{ color: 'var(--color-text-heading)'}}>Actual Ticket Revenue</div>
+                                <div className="text-sm font-medium text-right cursor-pointer" style={{ color: 'var(--color-text-default)'}} onClick={() => setIsEditingActualRevenue(true)}>
                                     {isEditingActualRevenue ? (
                                         <Input
                                             type="number"
@@ -443,31 +435,31 @@ const BudgetView: React.FC<BudgetViewProps> = ({ project, onSave, tasks, activit
                             </div>
                         )}
 
-                         <div className={`grid ${isProposalView ? 'grid-cols-1' : 'grid-cols-2'} gap-4 text-right font-bold mt-3 pt-3 border-t-2 border-slate-200 text-base`}>
+                         <div className={`grid ${isProposalView ? 'grid-cols-1' : 'grid-cols-2'} gap-4 text-right font-bold mt-3 pt-3 border-t-2 text-base`} style={{ borderColor: 'var(--color-border-default)' }}>
                             <div>
-                                <span className="text-xs text-slate-500 font-semibold uppercase block">Budgeted</span>
-                                {formatCurrency(ticketCalcs.projectedRevenue)}
+                                <span className="text-xs font-semibold uppercase block" style={{ color: 'var(--color-text-muted)' }}>Budgeted</span>
+                                <span style={{ color: 'var(--color-text-heading)' }}>{formatCurrency(ticketCalcs.projectedRevenue)}</span>
                             </div>
                             {!isProposalView && (
                              <div>
-                                <span className="text-xs text-teal-600 font-semibold uppercase block">Actual</span>
-                                {formatCurrency(budget.revenues.tickets?.actualRevenue || 0)}
+                                <span className="text-xs font-semibold uppercase block" style={{ color: 'var(--color-primary)' }}>Actual</span>
+                                <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(budget.revenues.tickets?.actualRevenue || 0)}</span>
                             </div>
                             )}
                          </div>
                     </div>
 
                     <RevenueSection title="Revenue: Sales" budgetTotal={salesData.totalEstimatedRevenue} actualTotal={salesData.totalActualRevenue} isProposalView={isProposalView} >
-                        <p className="text-sm text-slate-600">This data is automatically calculated from the <span className="font-semibold">Sales & Inventory</span> module.</p>
+                        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>This data is automatically calculated from the <span className="font-semibold">Sales & Inventory</span> module.</p>
                         {salesData.breakdown.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-slate-200">
-                                <h4 className="text-md font-semibold text-slate-700 mb-2">Breakdown by Sales Event:</h4>
+                            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                <h4 className="text-md font-semibold mb-2" style={{ color: 'var(--color-text-heading)' }}>Breakdown by Sales Event:</h4>
                                 <div className="space-y-2">
                                     {salesData.breakdown.map(item => (
-                                        <div key={item.id} className="grid grid-cols-3 gap-4 text-sm p-2 bg-slate-100 rounded-md">
+                                        <div key={item.id} className="grid grid-cols-3 gap-4 text-sm p-2 rounded-md" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
                                             <div className="col-span-1 font-medium">{item.name}</div>
                                             <div className="col-span-1 text-right">Expected: <span className="font-semibold">{formatCurrency(item.estimatedRevenue)}</span></div>
-                                            <div className="col-span-1 text-right">Actual: <span className="font-semibold text-teal-600">{formatCurrency(item.actualRevenue)}</span></div>
+                                            <div className="col-span-1 text-right">Actual: <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>{formatCurrency(item.actualRevenue)}</span></div>
                                         </div>
                                     ))}
                                 </div>
@@ -483,7 +475,7 @@ const BudgetView: React.FC<BudgetViewProps> = ({ project, onSave, tasks, activit
                 </div>
                 {/* EXPENSES */}
                 <div>
-                     <h3 className="text-xl font-bold text-slate-800 mb-3 mt-6">Expenses</h3>
+                     <h3 className="text-xl font-bold mb-3 mt-6" style={{ color: 'var(--color-text-heading)' }}>Expenses</h3>
                      <div className="space-y-4">
                         {(Object.keys(EXPENSE_FIELDS) as ExpenseCategoryType[]).map(categoryKey => {
                             const title = `Expenses: ${categoryKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}`;
@@ -499,39 +491,39 @@ const BudgetView: React.FC<BudgetViewProps> = ({ project, onSave, tasks, activit
                                 </RevenueSection>
                             )
                         })}
-                         <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-6">
-                            <h3 className="text-xl font-bold text-slate-700">Expenses: Venue Rentals (Cash Only)</h3>
+                         <div className="p-4 rounded-lg border shadow-sm mt-6" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
+                            <h3 className="text-xl font-bold" style={{ color: 'var(--color-text-heading)' }}>Expenses: Venue Rentals (Cash Only)</h3>
                             <div className="grid grid-cols-2 gap-4 text-right font-bold mt-3 pt-3 text-base">
-                                <div><span className="text-xs text-slate-500 font-semibold uppercase block">Projected</span>{formatCurrency(projectedVenueCosts.cash)}</div>
-                                <div><span className="text-xs text-teal-600 font-semibold uppercase block">Actual</span>N/A</div>
+                                <div><span className="text-xs font-semibold uppercase block" style={{ color: 'var(--color-text-muted)' }}>Projected</span>{formatCurrency(projectedVenueCosts.cash)}</div>
+                                <div><span className="text-xs font-semibold uppercase block" style={{ color: 'var(--color-primary)' }}>Actual</span>N/A</div>
                             </div>
                         </div>
                      </div>
                 </div>
             </div>
             
-            <div className="mt-12 bg-slate-100 p-6 rounded-lg border border-slate-200 shadow-inner">
-                <h3 className="text-2xl font-bold text-slate-800">Budget Summary</h3>
+            <div className="mt-12 p-6 rounded-lg border shadow-inner" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
+                <h3 className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Budget Summary</h3>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Projected */}
-                    <div className="bg-white p-4 rounded-lg border">
-                        <h4 className="font-bold text-lg text-slate-700 text-center mb-3">Projected</h4>
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)' }}>
+                        <h4 className="font-bold text-lg text-center mb-3" style={{ color: 'var(--color-text-heading)' }}>Projected</h4>
                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between items-center text-green-700"><span className="font-semibold">Total Revenue</span><strong>{formatCurrency(totalProjectedRevenue)}</strong></div>
-                            <div className="flex justify-between items-center text-red-700"><span className="font-semibold">Total Expenses</span><strong>{formatCurrency(totalProjectedExpenses)}</strong></div>
-                            <div className={`flex justify-between items-center pt-2 border-t mt-2 font-bold text-lg ${projectedBalance >= 0 ? 'text-blue-800' : 'text-orange-600'}`}><span>Balance</span><span>{formatCurrency(projectedBalance)}</span></div>
+                            <div className="flex justify-between items-center" style={{ color: 'var(--color-status-success-text)'}}><span className="font-semibold">Total Revenue</span><strong>{formatCurrency(totalProjectedRevenue)}</strong></div>
+                            <div className="flex justify-between items-center" style={{ color: 'var(--color-status-error-text)' }}><span className="font-semibold">Total Expenses</span><strong>{formatCurrency(totalProjectedExpenses)}</strong></div>
+                            <div className={`flex justify-between items-center pt-2 border-t mt-2 font-bold text-lg ${projectedBalance >= 0 ? '' : 'text-orange-600'}`} style={{ borderColor: 'var(--color-border-default)', color: projectedBalance >= 0 ? 'var(--color-status-info-text)' : '' }}><span>Balance</span><span>{formatCurrency(projectedBalance)}</span></div>
                         </div>
                     </div>
                      {/* Actual */}
                     {!isProposalView && (
-                        <div className="bg-white p-4 rounded-lg border">
-                            <h4 className="font-bold text-lg text-slate-700 text-center mb-3">Actual</h4>
+                        <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)' }}>
+                            <h4 className="font-bold text-lg text-center mb-3" style={{ color: 'var(--color-text-heading)' }}>Actual</h4>
                             <div className="space-y-2 text-sm">
-                                <div className="flex justify-between items-center text-green-700"><span className="font-semibold">Total Revenue</span><strong>{formatCurrency(totalActualRevenue)}</strong></div>
-                                <div className="flex justify-between items-center text-red-700"><span className="font-semibold">Total Expenses</span><strong>{formatCurrency(totalActualExpenses)}</strong></div>
-                                <div className={`flex justify-between items-center pt-2 border-t mt-2 font-bold text-lg ${actualBalance >= 0 ? 'text-blue-800' : 'text-orange-600'}`}><span>Balance</span><span>{formatCurrency(actualBalance)}</span></div>
+                                <div className="flex justify-between items-center" style={{ color: 'var(--color-status-success-text)'}}><span className="font-semibold">Total Revenue</span><strong>{formatCurrency(totalActualRevenue)}</strong></div>
+                                <div className="flex justify-between items-center" style={{ color: 'var(--color-status-error-text)' }}><span className="font-semibold">Total Expenses</span><strong>{formatCurrency(totalActualExpenses)}</strong></div>
+                                <div className={`flex justify-between items-center pt-2 border-t mt-2 font-bold text-lg ${actualBalance >= 0 ? '' : 'text-orange-600'}`} style={{ borderColor: 'var(--color-border-default)', color: actualBalance >= 0 ? 'var(--color-status-info-text)' : '' }}><span>Balance</span><span>{formatCurrency(actualBalance)}</span></div>
                             </div>
-                             <p className="text-xs text-center text-slate-500 mt-2">In-Kind / Volunteer Contribution Value: {formatCurrency(totalContributedValue + projectedVenueCosts.inKind)}</p>
+                             <p className="text-xs text-center mt-2" style={{ color: 'var(--color-text-muted)'}}>In-Kind / Volunteer Contribution Value: {formatCurrency(totalContributedValue + projectedVenueCosts.inKind)}</p>
                         </div>
                     )}
                 </div>

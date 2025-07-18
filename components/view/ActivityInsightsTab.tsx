@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useState } from 'react';
 import { FormData, Activity, DirectExpense, DateRangeFilter, Member, Task } from '../../types';
 import { useAppContext } from '../../context/AppContext';
@@ -13,28 +11,28 @@ interface ActivityInsightsTabProps {
 const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
 const StatCard: React.FC<{ icon: string; value: number | string; label: string; color: string }> = ({ icon, value, label, color }) => (
-    <div className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-4 border-l-4" style={{ borderLeftColor: color }}>
+    <div className="p-4 rounded-lg shadow-sm flex items-center gap-4 border-l-4" style={{ backgroundColor: 'var(--color-surface-card)', borderLeftColor: color }}>
         <div className="w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
             <i className={`${icon} text-xl`} style={{ color }}></i>
         </div>
         <div>
-            <div className="text-2xl font-bold text-slate-800">{value}</div>
-            <div className="text-sm font-medium text-slate-500">{label}</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)'}}>{value}</div>
+            <div className="text-sm font-medium" style={{ color: 'var(--color-text-muted)'}}>{label}</div>
         </div>
     </div>
 );
 
-const ProgressBar: React.FC<{ value: number; max: number; color?: string; height?: string }> = ({ value, max, color = 'bg-teal-500', height = 'h-2' }) => {
+const ProgressBar: React.FC<{ value: number; max: number; color?: string; height?: string }> = ({ value, max, color = 'var(--color-primary)', height = 'h-2' }) => {
     const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
     return (
-        <div className={`w-full bg-slate-200 rounded-full ${height}`}>
-            <div className={`${color} ${height} rounded-full transition-all duration-500`} style={{ width: `${percentage}%` }}></div>
+        <div className={`w-full rounded-full ${height}`} style={{ backgroundColor: 'var(--color-surface-muted)'}}>
+            <div className={`${height} rounded-full transition-all duration-500`} style={{ width: `${percentage}%`, backgroundColor: color }}></div>
         </div>
     );
 };
 
 const ActivityInsightsTab: React.FC<ActivityInsightsTabProps> = ({ project }) => {
-    const { state: { activities, directExpenses, members, tasks } } = useAppContext();
+    const { state: { activities, directExpenses, members, tasks, settings: { theme } } } = useAppContext();
     const [dateRange, setDateRange] = useState<DateRangeFilter>('all');
     
     const memberMap = useMemo(() => new Map(members.map(m => [m.id, m])), [members]);
@@ -171,34 +169,34 @@ const ActivityInsightsTab: React.FC<ActivityInsightsTabProps> = ({ project }) =>
     return (
         <section>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Activity & Insights</h2>
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Activity & Insights</h2>
                 <div className="w-56">
                     <Select options={DATE_RANGE_FILTER_OPTIONS} value={dateRange} onChange={e => setDateRange(e.target.value as DateRangeFilter)} />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <StatCard icon="fa-solid fa-clock" value={stats.totalHours.toFixed(1) + 'h'} label="Hours Logged" color="#14b8a6" />
-                <StatCard icon="fa-solid fa-hand-holding-dollar" value={formatCurrency(stats.totalPaidExpenses)} label="Paid Expenses" color="#3b82f6" />
-                <StatCard icon="fa-solid fa-users" value={stats.activeMembersCount} label="Active Members" color="#8b5cf6" />
+                <StatCard icon="fa-solid fa-clock" value={stats.totalHours.toFixed(1) + 'h'} label="Hours Logged" color={theme.primary} />
+                <StatCard icon="fa-solid fa-hand-holding-dollar" value={formatCurrency(stats.totalPaidExpenses)} label="Paid Expenses" color={theme.statusInfoText} />
+                <StatCard icon="fa-solid fa-users" value={stats.activeMembersCount} label="Active Members" color={theme.buttonSpecialBg} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                  {/* Left Column: Activity Feed */}
                 <div>
-                    <h3 className="text-xl font-semibold text-slate-700 mb-4">Detailed Activity Feed</h3>
-                    <div className="bg-white border border-slate-200 rounded-lg shadow-sm max-h-[600px] overflow-y-auto">
+                    <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-text-heading)'}}>Detailed Activity Feed</h3>
+                    <div className="border rounded-lg shadow-sm max-h-[600px] overflow-y-auto" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
                         {combinedFeed.length === 0 ? (
-                            <p className="text-center text-slate-500 py-12 italic">No activities or expenses in this period.</p>
+                            <p className="text-center py-12 italic" style={{ color: 'var(--color-text-muted)'}}>No activities or expenses in this period.</p>
                         ) : (
-                            <ul className="divide-y divide-slate-200">
+                            <ul className="divide-y" style={{ borderColor: 'var(--color-border-subtle)'}}>
                             {combinedFeed.map((feedItem, index) => (
                                 <li key={index} className="p-4 flex items-start gap-4">
                                     <div className="flex-shrink-0 w-12 text-center">
-                                        <div className="text-lg font-bold text-slate-700">{feedItem.date.toLocaleDateString(undefined, { day: 'numeric'})}</div>
-                                        <div className="text-xs text-slate-500 uppercase">{feedItem.date.toLocaleDateString(undefined, { month: 'short'})}</div>
+                                        <div className="text-lg font-bold" style={{ color: 'var(--color-text-heading)'}}>{feedItem.date.toLocaleDateString(undefined, { day: 'numeric'})}</div>
+                                        <div className="text-xs uppercase" style={{ color: 'var(--color-text-muted)'}}>{feedItem.date.toLocaleDateString(undefined, { month: 'short'})}</div>
                                     </div>
-                                    <div className="flex-grow border-l border-slate-200 pl-4">
+                                    <div className="flex-grow border-l pl-4" style={{ borderColor: 'var(--color-border-subtle)'}}>
                                         {feedItem.type === 'activity' ? (() => {
                                             const task = taskMap.get(feedItem.item.taskId);
                                             const isPaid = task?.workType === 'Paid';
@@ -207,23 +205,23 @@ const ActivityInsightsTab: React.FC<ActivityInsightsTabProps> = ({ project }) =>
                                             return (
                                                 <>
                                                     <div className="flex justify-between items-center">
-                                                        <p className="font-semibold text-slate-800">{task?.title}</p>
-                                                        <span className="text-lg font-bold text-teal-600">
+                                                        <p className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>{task?.title}</p>
+                                                        <span className="text-lg font-bold" style={{ color: 'var(--color-primary)'}}>
                                                             {feedItem.item.hours}h
-                                                            {isPaid && cost > 0 && <span className="text-sm font-normal text-slate-500 ml-2">({formatCurrency(cost)})</span>}
+                                                            {isPaid && cost > 0 && <span className="text-sm font-normal ml-2" style={{ color: 'var(--color-text-muted)'}}>({formatCurrency(cost)})</span>}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm text-slate-600">{feedItem.item.description}</p>
-                                                    <p className="text-xs text-slate-400 mt-1">Logged by: {member?.firstName}</p>
+                                                    <p className="text-sm" style={{ color: 'var(--color-text-default)'}}>{feedItem.item.description}</p>
+                                                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)'}}>Logged by: {member?.firstName}</p>
                                                 </>
                                             )
                                         })() : (
                                                 <>
                                                     <div className="flex justify-between items-center">
-                                                        <p className="font-semibold text-slate-800">Direct Expense</p>
-                                                        <span className="text-lg font-bold text-blue-600">{formatCurrency(feedItem.item.amount)}</span>
+                                                        <p className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Direct Expense</p>
+                                                        <span className="text-lg font-bold" style={{ color: 'var(--color-status-info-text)'}}>{formatCurrency(feedItem.item.amount)}</span>
                                                     </div>
-                                                    <p className="text-sm text-slate-600">{feedItem.item.description}</p>
+                                                    <p className="text-sm" style={{ color: 'var(--color-text-default)'}}>{feedItem.item.description}</p>
                                                 </>
                                         )}
                                     </div>
@@ -236,34 +234,34 @@ const ActivityInsightsTab: React.FC<ActivityInsightsTabProps> = ({ project }) =>
 
                 {/* Right Column: Contributor Breakdown */}
                 <div>
-                    <h3 className="text-xl font-semibold text-slate-700 mb-4">Contributor Breakdown</h3>
-                     <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 space-y-4">
+                    <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-text-heading)'}}>Contributor Breakdown</h3>
+                     <div className="border rounded-lg shadow-sm p-4 space-y-4" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
                         {contributorStats.length === 0 ? (
-                             <p className="text-center text-slate-500 py-12 italic">No collaborators found for this project.</p>
+                             <p className="text-center py-12 italic" style={{ color: 'var(--color-text-muted)'}}>No collaborators found for this project.</p>
                         ) : (
                             contributorStats.map(stat => (
-                                <div key={stat.memberId} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <div key={stat.memberId} className="p-3 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                                     <div className="flex items-center gap-3 mb-3">
                                         <img className="h-10 w-10 rounded-full object-cover" src={stat.imageUrl || `https://ui-avatars.com/api/?name=${stat.name}&background=random`} alt="" />
                                         <div>
-                                            <p className="font-bold text-slate-800">{stat.name}</p>
-                                            <p className="text-xs text-slate-500 font-semibold">{stat.totalLoggedHours.toFixed(1)} Total Hours Logged</p>
+                                            <p className="font-bold" style={{ color: 'var(--color-text-heading)'}}>{stat.name}</p>
+                                            <p className="text-xs font-semibold" style={{ color: 'var(--color-text-muted)'}}>{stat.totalLoggedHours.toFixed(1)} Total Hours Logged</p>
                                         </div>
                                     </div>
                                     
                                     <div className="grid grid-cols-2 gap-3 text-center text-xs mb-3">
-                                        <div className="bg-blue-100 text-blue-800 p-1.5 rounded">
+                                        <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--color-status-info-bg)', color: 'var(--color-status-info-text)'}}>
                                             <div className="font-bold">{stat.paidHours.toFixed(1)}h</div>
                                             <div>Paid</div>
                                         </div>
-                                        <div className="bg-purple-100 text-purple-800 p-1.5 rounded">
+                                        <div className="p-1.5 rounded" style={{ backgroundColor: 'var(--color-button-special-bg)', color: 'var(--color-button-special-text)'}}>
                                             <div className="font-bold">{stat.inKindHours.toFixed(1)}h</div>
                                             <div>In-Kind</div>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <div className="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                                        <div className="flex justify-between text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)'}}>
                                             <span>Effort vs Estimate</span>
                                             <span>{stat.totalLoggedHours.toFixed(1)}h / {stat.totalEstimatedHours.toFixed(1)}h</span>
                                         </div>

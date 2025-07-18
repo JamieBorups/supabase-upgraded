@@ -1,26 +1,26 @@
-
 import React, { useState, useMemo } from 'react';
 import { FormData, Task, Event, Venue, TaskStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
-const getStatusBadge = (status: TaskStatus | string) => {
+const getStatusBadge = (status: TaskStatus | string, theme: any) => {
     const baseClasses = "px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full";
-    const statusMap: Record<string, string> = {
-        'Done': "bg-green-100 text-green-800",
-        'In Progress': "bg-blue-100 text-blue-800",
-        'To Do': "bg-yellow-100 text-yellow-800",
-        'Backlog': "bg-slate-100 text-slate-800",
+    const statusMap: Record<string, { bg: string; text: string }> = {
+        'Done': { bg: theme.statusSuccessBg, text: theme.statusSuccessText },
+        'In Progress': { bg: theme.statusInfoBg, text: theme.statusInfoText },
+        'To Do': { bg: theme.statusWarningBg, text: theme.statusWarningText },
+        'Backlog': { bg: theme.surfaceMuted, text: theme.textDefault },
     };
-    return `${baseClasses} ${statusMap[status] || statusMap['Backlog']}`;
+    const style = statusMap[status] || statusMap['Backlog'];
+    return <span className={baseClasses} style={{ backgroundColor: style.bg, color: style.text }}>{status}</span>;
 };
 
-const TaskCard: React.FC<{ task: Task }> = ({ task }) => (
-    <div className="bg-white border border-slate-200 rounded-md p-3 flex justify-between items-center shadow-sm">
+const TaskCard: React.FC<{ task: Task; theme: any }> = ({ task, theme }) => (
+    <div className="border p-3 flex justify-between items-center shadow-sm" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)', borderRadius: '0.375rem' }}>
         <div>
-            <p className="font-semibold text-slate-800 text-sm">{task.title}</p>
-            <p className="text-xs text-slate-500">Due: {task.dueDate || 'N/A'}</p>
+            <p className="font-semibold text-sm" style={{ color: 'var(--color-text-heading)'}}>{task.title}</p>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)'}}>Due: {task.dueDate || 'N/A'}</p>
         </div>
-        <span className={getStatusBadge(task.status)}>{task.status}</span>
+        {getStatusBadge(task.status, theme)}
     </div>
 );
 
@@ -34,7 +34,7 @@ interface WorkplanTabProps {
 
 const WorkplanTab: React.FC<WorkplanTabProps> = ({ project, isSnapshot = false, tasks: tasksFromProps, events, venues }) => {
     const { state } = useAppContext();
-    const { tasks: globalTasks } = state;
+    const { tasks: globalTasks, settings: { theme } } = state;
 
     const projectTasks = useMemo(() => tasksFromProps ?? globalTasks.filter(t => t.projectId === project.id), [globalTasks, tasksFromProps, project.id]);
     
@@ -70,38 +70,38 @@ const WorkplanTab: React.FC<WorkplanTabProps> = ({ project, isSnapshot = false, 
     return (
         <section>
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-800">Project Workplan</h3>
+                <h3 className="text-xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Project Workplan</h3>
             </div>
 
             {projectTasks.length === 0 ? (
-                <div className="text-center py-16 bg-slate-50 rounded-lg">
-                    <i className="fa-solid fa-calendar-alt text-6xl text-slate-300"></i>
-                    <h3 className="mt-4 text-lg font-medium text-slate-800">No tasks for this project yet.</h3>
+                <div className="text-center py-16 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)'}}>
+                    <i className="fa-solid fa-calendar-alt text-6xl" style={{ color: 'var(--color-border-default)'}}></i>
+                    <h3 className="mt-4 text-lg font-medium" style={{ color: 'var(--color-text-heading)'}}>No tasks for this project yet.</h3>
                 </div>
             ) : (
                 <div className="space-y-6">
                     {milestoneGroups.map(({ milestone, tasks: childTasks }) => (
-                         <details key={milestone.id} className="bg-slate-100 border border-slate-200 rounded-lg open:shadow-lg" open>
-                            <summary className="p-4 font-bold text-lg text-slate-800 cursor-pointer flex justify-between items-center hover:bg-slate-200/70 transition-colors">
+                         <details key={milestone.id} className="border rounded-lg open:shadow-lg" open style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
+                            <summary className="p-4 font-bold text-lg cursor-pointer flex justify-between items-center list-none" style={{ color: 'var(--color-text-heading)'}}>
                                 <div className="flex items-center gap-3">
-                                    <i className="fa-solid fa-flag-checkered text-teal-600"></i>
+                                    <i className="fa-solid fa-flag-checkered" style={{ color: 'var(--color-primary)'}}></i>
                                     {milestone.title}
                                 </div>
                                 <div className="flex items-center gap-4">
-                                     <span className={getStatusBadge(milestone.status)}>{milestone.status}</span>
+                                     {getStatusBadge(milestone.status, theme)}
                                      <i className="fa-solid fa-chevron-down transform transition-transform details-arrow"></i>
                                 </div>
                             </summary>
-                            <div className="p-4 border-t border-slate-200 bg-white">
-                                <p className="text-sm text-slate-600 mb-4">{milestone.description || 'No description for this milestone.'}</p>
+                            <div className="p-4 border-t" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
+                                <p className="text-sm mb-4" style={{ color: 'var(--color-text-default)'}}>{milestone.description || 'No description for this milestone.'}</p>
                                 {childTasks.length > 0 ? (
                                     <div className="space-y-2">
                                         {childTasks.map(task => (
-                                           <TaskCard key={task.id} task={task} />
+                                           <TaskCard key={task.id} task={task} theme={theme} />
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm italic text-slate-500">No tasks are assigned to this milestone.</p>
+                                    <p className="text-sm italic" style={{ color: 'var(--color-text-muted)'}}>No tasks are assigned to this milestone.</p>
                                 )}
                             </div>
                         </details>
@@ -109,10 +109,10 @@ const WorkplanTab: React.FC<WorkplanTabProps> = ({ project, isSnapshot = false, 
                     
                     {unparentedTasks.length > 0 && (
                         <div className="mt-8">
-                            <h3 className="text-lg font-semibold text-slate-700 border-t pt-4">Top-Level Tasks (Not in a Milestone)</h3>
+                            <h3 className="text-lg font-semibold border-t pt-4" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-border-subtle)'}}>Top-Level Tasks (Not in a Milestone)</h3>
                             <div className="space-y-2 mt-2">
                                {unparentedTasks.map(task => (
-                                   <TaskCard key={task.id} task={task} />
+                                   <TaskCard key={task.id} task={task} theme={theme} />
                                ))}
                            </div>
                         </div>

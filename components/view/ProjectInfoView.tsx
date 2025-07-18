@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { FormData, ProjectStatus } from '../../types';
 import { 
@@ -22,33 +20,40 @@ interface ProjectInfoViewProps {
 
 const ViewField: React.FC<{ label: string; value?: React.ReactNode; children?: React.ReactNode }> = ({ label, value, children }) => (
     <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{label}</h3>
-        {value && <div className="mt-1 text-slate-900">{value}</div>}
-        {children && <div className="mt-1 text-slate-900">{children}</div>}
+        <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)'}}>{label}</h3>
+        {value && <div className="mt-1" style={{ color: 'var(--color-text-default)'}}>{value}</div>}
+        {children && <div className="mt-1" style={{ color: 'var(--color-text-default)'}}>{children}</div>}
     </div>
 );
 
 const StatusBadge: React.FC<{ status: ProjectStatus | string }> = ({ status }) => {
     const { state } = useAppContext();
-    const defaultStatusStyles: Record<ProjectStatus, string> = {
-        'Active': 'bg-green-100 text-green-800',
-        'On Hold': 'bg-yellow-100 text-yellow-800',
-        'Completed': 'bg-blue-100 text-blue-800',
-        'Pending': 'bg-slate-100 text-slate-800',
-        'Terminated': 'bg-rose-100 text-rose-800',
+    const { theme } = state.settings;
+
+    const defaultStatusStyles: Record<ProjectStatus, { bg: string; text: string }> = {
+        'Active': { bg: theme.statusSuccessBg, text: theme.statusSuccessText },
+        'On Hold': { bg: theme.statusWarningBg, text: theme.statusWarningText },
+        'Completed': { bg: theme.statusInfoBg, text: theme.statusInfoText },
+        'Pending': { bg: theme.surfaceMuted, text: theme.textDefault },
+        'Terminated': { bg: theme.statusErrorBg, text: theme.statusErrorText },
     };
     
+    let style = defaultStatusStyles['Pending']; // Default fallback
     const customStatus = state.settings.projects.statuses.find(s => s.label === status);
-    
-    let style = 'bg-gray-100 text-gray-800'; // Default fallback
+
     if (customStatus) {
-        style = customStatus.color;
+        // This is a workaround since custom statuses store Tailwind classes not colors
+        // A better long term solution is to store hex colors in settings
+        return <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${customStatus.color}`}>{status}</span>;
     } else if (status in defaultStatusStyles) {
         style = defaultStatusStyles[status as ProjectStatus];
     }
     
     return (
-        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${style}`}>
+        <span 
+            className="px-2 py-0.5 text-xs font-semibold rounded-full"
+            style={{ backgroundColor: style.bg, color: style.text }}
+        >
             {status}
         </span>
     );
@@ -98,7 +103,7 @@ const ProjectInfoView: React.FC<ProjectInfoViewProps> = ({ project, hideTitle = 
 
     return (
         <section>
-            {!hideTitle && <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-teal-500 pb-2 mb-6">Project Information</h2>}
+            {!hideTitle && <h2 className="text-2xl font-bold border-b-2 pb-2 mb-6" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-primary)'}}>Project Information</h2>}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
                  <ViewField label="Project Status">

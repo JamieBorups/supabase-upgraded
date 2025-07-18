@@ -1,5 +1,3 @@
-
-
 import React, { useMemo } from 'react';
 import { AppSettings, FormData, BudgetItem, Event, EventTicket, Venue } from '../../types';
 import { useBudgetCalculations, useTicketRevenueCalculations } from '../../hooks/useBudgetCalculations';
@@ -20,17 +18,20 @@ interface ReportBudgetViewProps {
 }
 
 const ReportSection: React.FC<{title: string, className?: string}> = ({title, className=""}) => (
-    <div className={`bg-slate-700 text-white font-semibold p-1.5 mt-4 text-sm ${className}`}></div>
+    <div className={`font-semibold p-1.5 mt-4 text-sm ${className}`} style={{ backgroundColor: 'var(--color-surface-muted)', color: 'var(--color-text-heading)' }}>
+        {title}
+    </div>
 );
 
 const GenericTable: React.FC<{headers: string[], rows: (string|number|React.ReactNode)[][], isTotal?: boolean }> = ({headers, rows, isTotal=false}) => (
      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm border-collapse border border-slate-300">
+        <table className="min-w-full text-sm border-collapse" style={{ borderColor: 'var(--color-border-subtle)' }}>
             {!isTotal && (
                 <thead>
                     <tr>
                         {headers.map((h, i) => (
-                            <th key={i} className={`p-2 border border-slate-300 bg-slate-100 font-semibold text-slate-600 text-left ${h.toLowerCase().includes('projected') || h.toLowerCase().includes('actual') || h.toLowerCase().includes('requested') || h.toLowerCase().includes('awarded') || h.toLowerCase().includes('capacity') || h.toLowerCase().includes('price') || h.toLowerCase().includes('audience') ? 'text-right' : ''}`}>
+                            <th key={i} className={`p-2 font-semibold text-left ${h.toLowerCase().includes('projected') || h.toLowerCase().includes('actual') || h.toLowerCase().includes('requested') || h.toLowerCase().includes('awarded') || h.toLowerCase().includes('capacity') || h.toLowerCase().includes('price') || h.toLowerCase().includes('audience') ? 'text-right' : ''}`}
+                            style={{ backgroundColor: 'var(--color-surface-muted)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border-subtle)' }}>
                                 {h}
                             </th>
                         ))}
@@ -39,9 +40,10 @@ const GenericTable: React.FC<{headers: string[], rows: (string|number|React.Reac
             )}
             <tbody>
                 {rows.map((row, i) => (
-                    <tr key={i} className="border-t border-slate-300 bg-white hover:bg-slate-50">
+                    <tr key={i} className="hover:bg-slate-50" style={{ backgroundColor: 'var(--color-surface-card)', borderTop: '1px solid var(--color-border-subtle)' }}>
                         {row.map((cell, j) => (
-                            <td key={j} className={`p-2 border-b border-slate-300 ${isTotal ? 'font-bold' : ''} ${typeof cell === 'number' || (typeof cell === 'string' && cell.startsWith('$')) ? 'text-right' : ''}`}>
+                            <td key={j} className={`p-2 ${isTotal ? 'font-bold' : ''} ${typeof cell === 'number' || (typeof cell === 'string' && cell.startsWith('$')) ? 'text-right' : ''}`}
+                            style={{ borderBottom: '1px solid var(--color-border-subtle)', color: 'var(--color-text-default)' }}>
                                 {cell}
                             </td>
                         ))}
@@ -93,8 +95,8 @@ const ReportBudgetView: React.FC<ReportBudgetViewProps> = ({ project, actuals, s
     
     return (
       <section>
-          <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-teal-500 pb-2 mb-6">Budget Report</h2>
-          <div className="bg-slate-50 border p-4 rounded-md mt-6">
+          <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--color-text-heading)' }}>Budget Report</h3>
+          <div className="p-4 rounded-md mt-6" style={{ backgroundColor: 'var(--color-surface-muted)', border: '1px solid var(--color-border-subtle)' }}>
                 <ReportSection title="Total budget" />
                 <GenericTable
                     headers={["", "Projected revenues", "Actual revenues", "Projected expenses", "Actual expenses"]}
