@@ -1,5 +1,7 @@
 
 
+
+
 import React, { createContext, useReducer, useEffect, useContext, ReactNode, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { AppState, AppContextType, NotificationType } from '../types.ts';
@@ -8,7 +10,7 @@ import * as api from '../services/api.ts';
 import { initialState, appReducer } from './store';
 import { settingsInitialState } from './slices/settings.slice.ts';
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(appReducer, initialState, (init) => {
