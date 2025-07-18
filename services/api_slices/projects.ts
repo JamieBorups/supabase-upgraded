@@ -130,28 +130,76 @@ export const getProjectExportData = async (projectId: string): Promise<ProjectEx
     const project = await getProjects().then(projects => projects.find(p => p.id === projectId));
     if (!project) throw new Error("Project not found");
 
-    const allTasks = await getTasks();
-    const projectTasks = allTasks.filter(task => task.projectId === projectId);
-    
-    const [activities, directExpenses, reports, highlights, newsReleases, proposals, contacts, interactions, venues, events, ticketTypes, eventTickets, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans] = await Promise.all([
-        getActivities().then(a => a.filter(act => projectTasks.some(t => t.id === act.taskId))),
-        getDirectExpenses().then(d => d.filter(exp => exp.projectId === projectId)),
-        getReports().then(r => r.filter(rep => rep.projectId === projectId)),
-        getHighlights().then(h => h.filter(hl => hl.projectId === projectId)),
-        getNewsReleases().then(nr => nr.filter(n => n.projectId === projectId)),
-        getProposals().then(p => p.filter(prop => prop.projectId === projectId)),
-        getContacts().then(c => c.filter(con => con.associatedProjectIds.includes(projectId))),
-        getInteractions().then(i => i.filter(inter => contacts.some(c => c.id === inter.contactId && c.associatedProjectIds.includes(projectId)))),
-        getVenues(),
-        getEvents().then(e => e.filter(evt => evt.projectId === projectId)),
-        getTicketTypes(),
-        getEventTickets().then(et => et.filter(t => events.some(e => e.id === t.eventId && e.projectId === projectId))),
-        getEcoStarReports().then(esr => esr.filter(r => r.projectId === projectId)),
-        getInterestCompatibilityReports().then(icr => icr.filter(r => r.projectId === projectId)),
-        getSdgAlignmentReports().then(sdg => sdg.filter(r => r.projectId === projectId)),
-        getRecreationFrameworkReports().then(rfr => rfr.filter(r => r.projectId === projectId)),
-        getResearchPlans().then(rp => rp.filter(r => r.projectId === projectId)),
+    // Independent fetches
+    const allTasksPromise = getTasks();
+    const allActivitiesPromise = getActivities();
+    const directExpensesPromise = getDirectExpenses().then(d => d.filter(exp => exp.projectId === projectId));
+    const reportsPromise = getReports().then(r => r.filter(rep => rep.projectId === projectId));
+    const highlightsPromise = getHighlights().then(h => h.filter(hl => hl.projectId === projectId));
+    const newsReleasesPromise = getNewsReleases().then(nr => nr.filter(n => n.projectId === projectId));
+    const proposalsPromise = getProposals().then(p => p.filter(prop => prop.projectId === projectId));
+    const contactsPromise = getContacts().then(c => c.filter(con => con.associatedProjectIds.includes(projectId)));
+    const allInteractionsPromise = getInteractions();
+    const venuesPromise = getVenues();
+    const eventsPromise = getEvents().then(e => e.filter(evt => evt.projectId === projectId));
+    const ticketTypesPromise = getTicketTypes();
+    const allEventTicketsPromise = getEventTickets();
+    const ecostarReportsPromise = getEcoStarReports().then(esr => esr.filter(r => r.projectId === projectId));
+    const interestCompatibilityReportsPromise = getInterestCompatibilityReports().then(icr => icr.filter(r => r.projectId === projectId));
+    const sdgAlignmentReportsPromise = getSdgAlignmentReports().then(sdg => sdg.filter(r => r.projectId === projectId));
+    const recreationFrameworkReportsPromise = getRecreationFrameworkReports().then(rfr => rfr.filter(r => r.projectId === projectId));
+    const researchPlansPromise = getResearchPlans().then(rp => rp.filter(r => r.projectId === projectId));
+
+    const [
+        allTasks,
+        allActivities,
+        directExpenses,
+        reports,
+        highlights,
+        newsReleases,
+        proposals,
+        contacts,
+        allInteractions,
+        venues,
+        events,
+        ticketTypes,
+        allEventTickets,
+        ecostarReports,
+        interestCompatibilityReports,
+        sdgAlignmentReports,
+        recreationFrameworkReports,
+        researchPlans
+    ] = await Promise.all([
+        allTasksPromise,
+        allActivitiesPromise,
+        directExpensesPromise,
+        reportsPromise,
+        highlightsPromise,
+        newsReleasesPromise,
+        proposalsPromise,
+        contactsPromise,
+        allInteractionsPromise,
+        venuesPromise,
+        eventsPromise,
+        ticketTypesPromise,
+        allEventTicketsPromise,
+        ecostarReportsPromise,
+        interestCompatibilityReportsPromise,
+        sdgAlignmentReportsPromise,
+        recreationFrameworkReportsPromise,
+        researchPlansPromise,
     ]);
+
+    // Dependent filtering
+    const projectTasks = allTasks.filter(task => task.projectId === projectId);
+    const projectTaskIds = new Set(projectTasks.map(t => t.id));
+    const activities = allActivities.filter(act => projectTaskIds.has(act.taskId));
+
+    const contactIds = new Set(contacts.map(c => c.id));
+    const interactions = allInteractions.filter(i => contactIds.has(i.contactId));
+    
+    const eventIds = new Set(events.map(e => e.id));
+    const eventTickets = allEventTickets.filter(t => eventIds.has(t.eventId));
 
     const memberIds = new Set(project.collaboratorDetails.map(c => c.memberId));
     const members = await getMembers().then(m => m.filter(mem => memberIds.has(mem.id)));

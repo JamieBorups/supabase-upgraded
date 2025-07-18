@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import TaskList from './components/task/TaskList.tsx';
 import TaskEditor from './components/task/TaskEditor.tsx';
@@ -33,6 +32,12 @@ const TaskManager: React.FC = () => {
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [isActivityDeleteModalOpen, setIsActivityDeleteModalOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<string | null>(null);
+  
+  // Loading states
+  const [isTaskSaving, setIsTaskSaving] = useState(false);
+  const [isTaskDeleting, setIsTaskDeleting] = useState(false);
+  const [isActivitySaving, setIsActivitySaving] = useState(false);
+  const [isActivityDeleting, setIsActivityDeleting] = useState(false);
 
   // --- Task Handlers ---
   const handleAddTask = () => {
@@ -79,6 +84,7 @@ const TaskManager: React.FC = () => {
   };
 
   const handleSaveTask = async (taskToSave: Task) => {
+    setIsTaskSaving(true);
     const isNew = taskToSave.id.startsWith('new_');
     const finalTask = { ...taskToSave, updatedAt: new Date().toISOString() };
     try {
@@ -94,6 +100,8 @@ const TaskManager: React.FC = () => {
         setCurrentTask(null);
     } catch(error: any) {
         notify(`Error saving task: ${error.message}`, 'error');
+    } finally {
+        setIsTaskSaving(false);
     }
   };
 
@@ -104,15 +112,18 @@ const TaskManager: React.FC = () => {
 
   const confirmDeleteTask = async () => {
     if (!taskToDelete) return;
+    setIsTaskDeleting(true);
     try {
         await api.deleteTask(taskToDelete);
         dispatch({ type: 'DELETE_TASK', payload: taskToDelete });
         notify('Task and associated activities deleted.', 'success');
     } catch (error: any) {
         notify(`Error deleting task: ${error.message}`, 'error');
+    } finally {
+        setIsTaskDeleting(false);
+        setIsTaskDeleteModalOpen(false);
+        setTaskToDelete(null);
     }
-    setIsTaskDeleteModalOpen(false);
-    setTaskToDelete(null);
   };
   
   const handleToggleTaskComplete = async (taskId: string) => {
@@ -161,6 +172,7 @@ const TaskManager: React.FC = () => {
   };
 
   const handleSaveActivity = async (activityToSave: Activity & { memberIds?: string[] }) => {
+    setIsActivitySaving(true);
     const { memberIds, ...baseActivity } = activityToSave;
     const isNew = baseActivity.id.startsWith('new_');
     const now = new Date().toISOString();
@@ -188,6 +200,8 @@ const TaskManager: React.FC = () => {
         setCurrentActivity(null);
     } catch (error: any) {
         notify(`Error saving activity: ${error.message}`, 'error');
+    } finally {
+        setIsActivitySaving(false);
     }
   };
 
@@ -198,15 +212,18 @@ const TaskManager: React.FC = () => {
   
   const confirmDeleteActivity = async () => {
     if (!activityToDelete) return;
+    setIsActivityDeleting(true);
     try {
         await api.deleteActivity(activityToDelete);
         dispatch({ type: 'DELETE_ACTIVITY', payload: activityToDelete });
         notify('Activity deleted successfully.', 'success');
     } catch(error: any) {
         notify(`Error deleting activity: ${error.message}`, 'error');
+    } finally {
+        setIsActivityDeleting(false);
+        setIsActivityDeleteModalOpen(false);
+        setActivityToDelete(null);
     }
-    setIsActivityDeleteModalOpen(false);
-    setActivityToDelete(null);
   };
   
   const renderContent = () => {
@@ -244,10 +261,10 @@ const TaskManager: React.FC = () => {
 
   return (
     <div className="bg-white shadow-lg rounded-xl p-6 sm:p-8">
-      {isTaskEditorOpen && currentTask && <TaskEditor task={currentTask} onSave={handleSaveTask} onCancel={() => setIsTaskEditorOpen(false)} />}
-      {isActivityEditorOpen && currentActivity && <ActivityEditor activity={currentActivity} selectedProjectId={selectedProjectId} onSave={handleSaveActivity} onCancel={() => setIsActivityEditorOpen(false)} />}
-      {isTaskDeleteModalOpen && <ConfirmationModal isOpen={isTaskDeleteModalOpen} onClose={() => setIsTaskDeleteModalOpen(false)} onConfirm={confirmDeleteTask} title="Delete Task" message="Are you sure you want to delete this task? All associated time logs will also be deleted." confirmButtonText="Delete Task" />}
-      {isActivityDeleteModalOpen && <ConfirmationModal isOpen={isActivityDeleteModalOpen} onClose={() => setIsActivityDeleteModalOpen(false)} onConfirm={confirmDeleteActivity} title="Delete Activity" message="Are you sure you want to delete this activity log?" confirmButtonText="Delete Activity" />}
+      {isTaskEditorOpen && currentTask && <TaskEditor task={currentTask} onSave={handleSaveTask} onCancel={() => setIsTaskEditorOpen(false)} isSaving={isTaskSaving} />}
+      {isActivityEditorOpen && currentActivity && <ActivityEditor activity={currentActivity} selectedProjectId={selectedProjectId} onSave={handleSaveActivity} onCancel={() => setIsActivityEditorOpen(false)} isSaving={isActivitySaving} />}
+      {isTaskDeleteModalOpen && <ConfirmationModal isOpen={isTaskDeleteModalOpen} onClose={() => setIsTaskDeleteModalOpen(false)} onConfirm={confirmDeleteTask} title="Delete Task" message="Are you sure you want to delete this task? All associated time logs will also be deleted." confirmButtonText="Delete Task" isConfirming={isTaskDeleting} />}
+      {isActivityDeleteModalOpen && <ConfirmationModal isOpen={isActivityDeleteModalOpen} onClose={() => setIsActivityDeleteModalOpen(false)} onConfirm={confirmDeleteActivity} title="Delete Activity" message="Are you sure you want to delete this activity log?" confirmButtonText="Delete Activity" isConfirming={isActivityDeleting} />}
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-200 pb-4 gap-4">
         <h1 className="text-3xl font-bold text-slate-900">Tasks & Timesheets</h1>

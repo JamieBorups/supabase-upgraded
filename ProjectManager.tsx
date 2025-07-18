@@ -24,6 +24,8 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onNavigate }) => {
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [projectToComplete, setProjectToComplete] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // This dynamic key forces the editor/viewer to remount when underlying data changes, solving the refresh issue.
   const componentKey = useMemo(() => {
@@ -79,19 +81,22 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onNavigate }) => {
   const confirmDeleteProject = async () => {
     if (!projectToDelete) return;
     
+    setIsDeleting(true);
     try {
         await api.deleteProject(projectToDelete);
         dispatch({ type: 'DELETE_PROJECT', payload: projectToDelete });
         notify('Project and all associated data deleted.', 'success');
+        
+        // Reset state after successful deletion
+        setViewMode('list');
+        setCurrentProject(null);
+        setProjectToDelete(null);
     } catch (error: any) {
         notify(`Error deleting project: ${error.message}`, 'error');
+    } finally {
+        setIsDeleting(false);
+        setIsDeleteModalOpen(false);
     }
-
-    // Reset state
-    setViewMode('list');
-    setCurrentProject(null);
-    setIsDeleteModalOpen(false);
-    setProjectToDelete(null);
   };
 
 
@@ -99,6 +104,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onNavigate }) => {
     const isNewProject = !projects.some(p => p.id === projectToSave.id);
     const originalProject = projects.find(p => p.id === projectToSave.id);
 
+    setIsSaving(true);
     try {
         let savedProject: FormData_type;
         if (isNewProject) {
@@ -124,6 +130,8 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onNavigate }) => {
         }
     } catch (error: any) {
         notify(`Error saving project: ${error.message}`, 'error');
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -166,6 +174,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onNavigate }) => {
                 project={currentProject}
                 onSave={handleSaveProject}
                 onCancel={handleBackToList}
+                isSaving={isSaving}
               />;
           case 'view':
               return currentProject && <ProjectViewer 
@@ -205,6 +214,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ onNavigate }) => {
                 </>
             }
             confirmButtonText="Delete Project"
+            isConfirming={isDeleting}
             />
         )}
         {isReportModalOpen && (
