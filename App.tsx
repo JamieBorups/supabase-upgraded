@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useAppContext } from './context/AppContext.tsx';
 import Layout from './components/Layout.tsx';
@@ -19,8 +20,6 @@ import AiProjectGeneratorPage from './components/tools/AiProjectGeneratorPage.ts
 import UserGuide from './components/user-guide/UserGuide.tsx';
 import InterestCompatibilityPage from './components/tools/InterestCompatibilityPage.tsx';
 import DbTestPage from './components/tools/DbTestPage.tsx';
-import CommunityReachPage from './components/CommunityReachPage.tsx';
-import ImpactAssessmentPage from './components/ImpactAssessmentPage.tsx';
 import HighlightsManager from './HighlightsManager.tsx';
 import MediaManager from './components/media/MediaManager.tsx';
 import ContactManager from './components/contacts/ContactManager.tsx';
@@ -93,8 +92,6 @@ const AppContent: React.FC = () => {
             case 'researchPlanGenerator': return <ResearchPlanGeneratorPage />;
             case 'otf': return <OtfPage />;
             case 'dbTest': return <DbTestPage />;
-            case 'communityReach': return <CommunityReachPage />;
-            case 'impactAssessment': return <ImpactAssessmentPage />;
             case 'highlights': return <HighlightsManager />;
             case 'media': return <MediaManager />;
             case 'contacts': return <ContactManager />;

@@ -1,8 +1,3 @@
-
-
-
-
-
 import { AppSettings } from '../../types.ts';
 import { AI_PERSONAS } from './personas.constants.ts';
 import { PROJECT_GENERATOR_FIELD_INSTRUCTIONS } from './projectGeneratorField.instructions.ts';
@@ -18,6 +13,61 @@ export const initialSettings: AppSettings = {
     dateFormat: 'YYYY-MM-DD',
     supabaseUrl: 'https://vfbmiuyamdbquhvhuifb.supabase.co',
     supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmYm1pdXlhbWRicXVodmh1aWZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMjc2OTksImV4cCI6MjA2NzYwMzY5OX0.Fv1YUVAhPmTNxoJ9G05sTyQeig0qnD26q1ES6ChsiY8',
+  },
+  theme: {
+    // Brand
+    primary: '#0d9488', // teal-600
+    primaryHover: '#0f766e', // teal-700
+    
+    // Surfaces
+    surfacePage: '#f8fafc', // slate-50
+    surfaceCard: '#ffffff', // white
+    surfaceMuted: '#f1f5f9', // slate-100
+
+    // Header
+    headerBg: '#1e293b', // slate-800
+    headerText: '#ffffff', // white
+    headerTextHover: '#e2e8f0', // slate-200
+    headerNavText: '#cbd5e1', // slate-300
+    headerNavTextHover: '#ffffff', // white
+    headerNavTextActive: '#ffffff', // white
+    headerNavBorderActive: '#5eead4', // teal-300
+
+    // Text
+    textDefault: '#334155', // slate-700
+    textMuted: '#64748b', // slate-500
+    textHeading: '#0f172a', // slate-900
+    textOnPrimary: '#ffffff', // white
+    textLink: '#0d9488', // teal-600
+
+    // Borders
+    borderSubtle: '#e2e8f0', // slate-200
+    borderDefault: '#cbd5e1', // slate-300
+    borderFocus: '#2dd4bf', // teal-400
+
+    // UI Elements
+    buttonPrimaryBg: '#0d9488', // teal-600
+    buttonPrimaryBgHover: '#0f766e', // teal-700
+    buttonPrimaryText: '#ffffff', // white
+    
+    buttonSecondaryBg: '#ffffff', // white
+    buttonSecondaryBgHover: '#f1f5f9', // slate-100
+    buttonSecondaryText: '#334155', // slate-700
+    buttonSecondaryBorder: '#cbd5e1', // slate-300
+
+    buttonSpecialBg: '#8b5cf6', // violet-500
+    buttonSpecialBgHover: '#7c3aed', // violet-600
+    buttonSpecialText: '#ffffff', // white,
+
+    // Semantic Colors (using Tailwind colors for reference)
+    statusSuccessBg: '#ecfdf5', // green-50
+    statusSuccessText: '#065f46', // green-800
+    statusWarningBg: '#fffbeb', // yellow-50
+    statusWarningText: '#b45309', // amber-700
+    statusErrorBg: '#fef2f2', // red-50
+    statusErrorText: '#991b1b', // red-800
+    statusInfoBg: '#eff6ff', // blue-50
+    statusInfoText: '#1e40af', // blue-800
   },
   projects: {
     statuses: [

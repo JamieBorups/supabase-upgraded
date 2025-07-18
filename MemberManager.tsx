@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo } from 'react';
 import MemberList from './components/MemberList';
 import MemberEditor from './components/MemberEditor';
@@ -19,6 +18,8 @@ const MemberManager: React.FC = () => {
   const [currentMember, setCurrentMember] = useState<Member | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const sortedMembers = useMemo(() => {
     return [...members].sort((a, b) => {
@@ -61,24 +62,28 @@ const MemberManager: React.FC = () => {
   const confirmDeleteMember = async () => {
     if (!memberToDelete) return;
 
+    setIsDeleting(true);
     try {
         await api.deleteMember(memberToDelete);
         dispatch({ type: 'DELETE_MEMBER', payload: memberToDelete });
         notify('Member deleted and unassigned from all projects and tasks.', 'success');
+        
+        // Reset state
+        setViewMode('list');
+        setCurrentMember(null);
+        setMemberToDelete(null);
     } catch (error: any) {
         notify(`Error deleting member: ${error.message}`, 'error');
+    } finally {
+        setIsDeleting(false);
+        setIsDeleteModalOpen(false);
     }
-
-    // Reset state
-    setViewMode('list');
-    setCurrentMember(null);
-    setIsDeleteModalOpen(false);
-    setMemberToDelete(null);
   };
 
   const handleSaveMember = async (memberToSave: Member) => {
     const isNew = !members.some(m => m.id === memberToSave.id);
 
+    setIsSaving(true);
     try {
         if (isNew) {
             const newMember = await api.addMember(memberToSave);
@@ -92,6 +97,8 @@ const MemberManager: React.FC = () => {
         setCurrentMember(null);
     } catch (error: any) {
         notify(`Error saving member: ${error.message}`, 'error');
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -108,6 +115,7 @@ const MemberManager: React.FC = () => {
                 member={currentMember}
                 onSave={handleSaveMember}
                 onCancel={handleBackToList}
+                isSaving={isSaving}
               />;
           case 'view':
               return currentMember && <MemberViewer member={currentMember} onBack={handleBackToList} />;
@@ -142,6 +150,7 @@ const MemberManager: React.FC = () => {
                 </>
             }
             confirmButtonText="Delete Member"
+            isConfirming={isDeleting}
             />
         )}
       </main>
