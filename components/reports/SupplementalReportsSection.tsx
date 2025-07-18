@@ -146,10 +146,9 @@ const SupplementalReportsSection: React.FC<SupplementalReportsSectionProps> = ({
                         <h2 className="report-section-heading">{category.title}</h2>
                         <ReportList
                             reports={category.reports}
-                            onDelete={handleDeleteClick}
-                            onEdit={category.onEdit ? handleEditReport : undefined}
-                            onDownloadPdf={handleDownloadPdf}
-                            onCopy={()=>{}}
+                            onDelete={(r) => handleDeleteClick(r, category.type)}
+                            onEdit={category.onEdit ? (r) => handleEditReport(r, category.type) : undefined}
+                            onDownloadPdf={(r) => handleDownloadPdf(r, category.type)}
                         />
                     </div>
                 )

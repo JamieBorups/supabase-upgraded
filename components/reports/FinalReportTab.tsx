@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { produce } from 'immer';
 import { FormData as Project, Report } from '../../types';
@@ -164,12 +162,7 @@ const FinalReportTab: React.FC<FinalReportTabProps> = ({ selectedProject }) => {
     setIsGeneratingPdf(true);
     notify('Generating PDF...', 'info');
     try {
-        await generateReportPdf(selectedProject, reportData, members, projectTasks, projectHighlights, projectNewsReleases, actuals, {
-            IMPACT_QUESTIONS,
-            IMPACT_OPTIONS,
-            PEOPLE_INVOLVED_OPTIONS,
-            GRANT_ACTIVITIES_OPTIONS,
-        }, settings, events, eventTickets, venues);
+        await generateReportPdf(selectedProject, reportData, members, projectTasks, projectHighlights, projectNewsReleases, actuals, settings, events, eventTickets, venues);
     } catch (error: any) {
         console.error("Failed to generate PDF:", error);
         notify("An error occurred while generating the PDF. Please try again.", 'error');

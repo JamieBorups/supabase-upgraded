@@ -164,7 +164,10 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
             { type: 'divider' },
             { page: 'reports', icon: 'fa-solid fa-file-invoice', label: 'Reporting & Archives' },
         ]},
-        { page: 'members', label: 'Members' },
+        { name: 'members', label: 'Members', pages: ['members', 'experienceHub'], items: [
+            { page: 'members', icon: 'fa-solid fa-users', label: 'Member Profiles' },
+            { page: 'experienceHub', icon: 'fa-solid fa-award', label: 'Experience Hub' },
+        ]},
         { page: 'events', label: 'Events' },
         { page: 'sales', label: 'Marketplace' },
         { page: 'otf', label: 'OTF' },

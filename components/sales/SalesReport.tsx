@@ -1,8 +1,8 @@
 
 import React, { useMemo, useState } from 'react';
 import { useAppContext } from '../../context/AppContext.tsx';
-import { SaleSession, SalesTransaction, InventoryItem } from '../../types.ts';
 import { generateSalesPdf } from '../../utils/pdfGenerator.ts';
+import { SaleSession, SalesTransaction, InventoryItem } from '../../types.ts';
 
 const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
@@ -155,7 +155,8 @@ const SalesReport: React.FC<SalesReportProps> = ({ saleSession }) => {
                 itemBreakdown: reportData.itemsSold,
                 vouchersBreakdown: reportData.vouchersBreakdown,
                 transactions: type === 'full' ? reportData.transactions : undefined,
-                itemMap
+                itemMap,
+                sessionMap
             });
         } catch (error: any) {
             console.error("PDF generation failed:", error);

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import FormField from './ui/FormField.tsx';
@@ -8,6 +9,7 @@ import FinalReportSection from './reports/FinalReportSection.tsx';
 import ProposalSnapshotsSection from './reports/ProposalSnapshotsSection.tsx';
 import SupplementalReportsSection from './reports/SupplementalReportsSection.tsx';
 import ProjectReportCard from './reports/ProjectReportCard.tsx';
+import JobDescriptionsSection from './reports/JobDescriptionsSection.tsx';
 
 const ReportsPage: React.FC = () => {
     const { state, dispatch } = useAppContext();
@@ -82,6 +84,7 @@ const ReportsPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-12">
+                        <JobDescriptionsSection selectedProject={selectedProject} />
                         <ProposalSnapshotsSection selectedProject={selectedProject} />
                         <SupplementalReportsSection selectedProject={selectedProject} />
                         <FinalReportSection selectedProject={selectedProject} />
