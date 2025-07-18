@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { FormData } from './project.types';
 import { Member, User } from './member.types';
@@ -16,6 +17,7 @@ import { SdgAlignmentReport } from './sdg.types';
 import { RecreationFrameworkReport } from './recreation.types';
 import { ResearchPlan } from './research.types.ts';
 import { OtfApplication, ProgramGuideline } from './otf.types.ts';
+import { JobDescription } from './experience.types.ts';
 
 export interface ProjectExportData {
   project: FormData;
@@ -73,6 +75,7 @@ export interface AppState {
     researchPlans: ResearchPlan[];
     otfApplications: OtfApplication[];
     programGuidelines: ProgramGuideline[];
+    jobDescriptions: JobDescription[];
     currentUser: User | null;
     reportProjectIdToOpen: string | null;
     researchPlanToEdit: ResearchPlan | null;
@@ -209,7 +212,11 @@ export type Action =
   | { type: 'DELETE_OTF_APPLICATION'; payload: string }
   | { type: 'SET_PROGRAM_GUIDELINES'; payload: ProgramGuideline[] }
   | { type: 'ADD_PROGRAM_GUIDELINE'; payload: ProgramGuideline }
-  | { type: 'UPDATE_PROGRAM_GUIDELINE'; payload: ProgramGuideline };
+  | { type: 'UPDATE_PROGRAM_GUIDELINE'; payload: ProgramGuideline }
+  | { type: 'SET_JOB_DESCRIPTIONS'; payload: JobDescription[] }
+  | { type: 'ADD_JOB_DESCRIPTION'; payload: JobDescription }
+  | { type: 'UPDATE_JOB_DESCRIPTION'; payload: JobDescription }
+  | { type: 'DELETE_JOB_DESCRIPTION'; payload: string };
 
 
 export interface AppContextType {

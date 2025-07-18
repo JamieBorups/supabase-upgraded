@@ -1,3 +1,5 @@
+
+
 import { SalesSettings } from './sales.types';
 import { EcoStarFieldSettings } from './ecostar.types';
 import { ResearchPlanSectionSettings } from './research.types.ts';
@@ -8,7 +10,7 @@ export interface CustomDiscipline { id: string; name: string; genres: { id: stri
 export interface CustomRole { id: string; name: string; }
 export interface CustomTaskStatus { id: string; name: string; color: string; }
 
-export type AiPersonaName = 'main' | 'projects' | 'members' | 'tasks' | 'budget' | 'reports' | 'media' | 'ecostar' | 'projectGenerator' | 'interestCompatibility' | 'sdgAlignment' | 'recreation' | 'taskGenerator' | 'researchPlan' | 'otf';
+export type AiPersonaName = 'main' | 'projects' | 'members' | 'tasks' | 'budget' | 'reports' | 'media' | 'ecostar' | 'projectGenerator' | 'interestCompatibility' | 'sdgAlignment' | 'recreation' | 'taskGenerator' | 'researchPlan' | 'otf' | 'experienceHub';
 
 export interface AiPersonaSettings {
   instructions: string;

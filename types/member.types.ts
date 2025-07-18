@@ -22,3 +22,5 @@ export interface User {
     role: UserRole;
     memberId: string | null;
 }
+
+export type MemberViewTabId = 'profile' | 'activity' | 'experience';

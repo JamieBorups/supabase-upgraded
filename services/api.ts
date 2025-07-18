@@ -1,3 +1,4 @@
+
 // This file now acts as a "barrel" to re-export all the modular API functions.
 // This allows other parts of the application to continue importing from 'services/api'
 // without needing to know about the internal file structure.
@@ -17,3 +18,4 @@ export * from './api_slices/recreation';
 export * from './api_slices/research';
 export * from './api_slices/otf';
 export * from './api_slices/guidelines';
+export * from './api_slices/experience';

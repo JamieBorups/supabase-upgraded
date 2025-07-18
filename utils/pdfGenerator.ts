@@ -1,7 +1,7 @@
 
 import { 
     AppSettings, FormData as Project, Member, Task, Report, Highlight, NewsRelease, 
-    SalesTransaction, ProposalSnapshot, Event, Venue, EventTicket, AppContextType, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan, EcoStarReport, OtfApplication
+    SalesTransaction, ProposalSnapshot, Event, Venue, EventTicket, AppContextType, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan, EcoStarReport, OtfApplication, JobDescription
 } from '../types';
 import { PEOPLE_INVOLVED_OPTIONS, GRANT_ACTIVITIES_OPTIONS, IMPACT_QUESTIONS, IMPACT_OPTIONS } from '../constants';
 
@@ -355,6 +355,32 @@ export const generateOtfPdf = async (app: OtfApplication, projectTitle: string) 
     builder.save(`OTF-Application-${app.title}`);
 }
 
+export const generateJobDescriptionsPdf = async (jobDescriptions: JobDescription[], projectTitle: string) => {
+    const builder = new PdfBuilder('Project Job Descriptions', projectTitle);
+
+    jobDescriptions.forEach(jd => {
+        builder.addSectionTitle(jd.title);
+        builder.addSubSectionTitle(`Seniority: ${jd.seniorityLevel}`);
+        
+        builder.addMinorSectionTitle('Summary');
+        builder.addParagraph(jd.summary);
+
+        builder.addMinorSectionTitle('Key Responsibilities');
+        builder.addList(jd.responsibilities);
+
+        builder.addMinorSectionTitle('Qualifications');
+        builder.addList(jd.qualifications);
+
+        builder.addMinorSectionTitle('Hard Skills');
+        builder.addParagraph(jd.hardSkills.join(', '));
+        
+        builder.addMinorSectionTitle('Soft Skills');
+        builder.addParagraph(jd.softSkills.join(', '));
+    });
+
+    builder.save(`Job-Descriptions-${projectTitle}`);
+};
+
 // --- Dynamic Reports ---
 
 export const generateReportPdf = async (
@@ -396,6 +422,7 @@ export const generateSalesPdf = async (options: {
     vouchersBreakdown?: any[];
     transactions?: any[];
     itemMap: Map<string, any>;
+    sessionMap: Map<string, any>;
 }) => {
     const builder = new PdfBuilder(options.title);
 
