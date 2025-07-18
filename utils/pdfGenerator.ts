@@ -1,21 +1,7 @@
 
-
-
-
-
 import { marked, type Token } from 'marked';
 import { AppSettings, FormData, Member, Task, Report, Highlight, NewsRelease, SalesTransaction, EcoStarReport, ReportSectionContent, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ProposalSnapshot, BudgetItem, Event, Venue, EventTicket, ResearchPlan, DetailedBudget } from '../types';
 import { ARTISTIC_DISCIPLINES, ACTIVITY_TYPES, REVENUE_FIELDS, EXPENSE_FIELDS, initialBudget } from '../constants';
-
-// --- PDFMAKE INITIALIZATION ---
-// Use direct imports for robust bundling with Vite/Webpack.
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-
-// Manually assign the virtual font system to pdfmake instance.
-// This is a critical step for modern build tools.
-pdfMake.vfs = (pdfFonts as any).pdfMake.vfs;
-
 
 // --- UTILITY FUNCTIONS ---
 
@@ -223,6 +209,12 @@ class PdfBuilder {
     }
     
     save(fileName: string) {
+        const pdfMake = (window as any).pdfMake;
+        if (!pdfMake) {
+            alert('PDF generation library is not available. Please check your internet connection and try again.');
+            return;
+        }
+
         try {
             pdfMake.createPdf(this.docDefinition).download(fileName);
         } catch (error: any) {

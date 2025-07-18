@@ -1,14 +1,7 @@
 
 
-
 import { marked, type Token } from 'marked';
 import { OtfApplication, OtfBoardMember, OtfSeniorStaff, OtfCollaborator, OtfProjectPlanItem, OtfBudgetItem, OtfQuote } from '../types';
-
-// --- PDFMAKE INITIALIZATION ---
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-
-pdfMake.vfs = (pdfFonts as any).pdfMake.vfs;
 
 // --- UTILITY FUNCTIONS ---
 const formatCurrency = (value: number | null | undefined) => (value || 0).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
@@ -128,6 +121,11 @@ class PdfBuilder {
         });
     }
     save(fileName: string) {
+        const pdfMake = (window as any).pdfMake;
+        if (!pdfMake) {
+            alert('PDF generation library is not available. Please check your internet connection and try again.');
+            return;
+        }
         try { pdfMake.createPdf(this.docDefinition).download(fileName); } catch (error: any) {
             console.error("PDF Generation Error:", error);
             alert(`PDF generation failed: ${error.message}. See console for details.`);
