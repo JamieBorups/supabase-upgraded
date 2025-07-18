@@ -2,10 +2,12 @@
 import React, { useMemo } from 'react';
 import { OtfApplication } from '../../types';
 import { useAppContext } from '../../context/AppContext';
+import { generateOtfPdf } from '../../utils/otfPdfGenerator';
 
 interface OtfApplicationViewerProps {
     application: OtfApplication;
     onBack: () => void;
+    isEmbedded?: boolean;
 }
 
 const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
@@ -25,7 +27,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     </div>
 );
 
-const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application, onBack }) => {
+const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application, onBack, isEmbedded = false }) => {
     const { state } = useAppContext();
     const project = useMemo(() => application.projectId ? state.projects.find(p => p.id === application.projectId) : null, [state.projects, application.projectId]);
 
@@ -37,17 +39,24 @@ const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application
         return { subtotal: sub, adminFee: fee, total: grandTotal };
     }, [application.budgetItems]);
 
-    return (
-        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-            <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-5">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900">{application.title || 'OTF Application'}</h1>
-                    <p className="text-sm text-slate-500">Context Project: <span className="font-semibold text-teal-600">{project?.projectTitle || 'N/A'}</span></p>
+    const content = (
+         <>
+            {!isEmbedded && (
+                <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-5">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">{application.title || 'OTF Application'}</h1>
+                        <p className="text-sm text-slate-500">Context Project: <span className="font-semibold text-teal-600">{project?.projectTitle || 'N/A'}</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => generateOtfPdf(application)} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md shadow-sm hover:bg-rose-700">
+                            <i className="fa-solid fa-file-pdf mr-2"></i>Download PDF
+                        </button>
+                        <button onClick={onBack} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100">
+                            <i className="fa-solid fa-arrow-left mr-2"></i>Back to Reports
+                        </button>
+                    </div>
                 </div>
-                <button onClick={onBack} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100">
-                    <i className="fa-solid fa-arrow-left mr-2"></i>Back to Reports
-                </button>
-            </div>
+            )}
             
             <Section title="Organization Information">
                 <ViewField label="Mission Statement" value={application.missionStatement} />
@@ -150,8 +159,10 @@ const OtfApplicationViewer: React.FC<OtfApplicationViewerProps> = ({ application
                     </tfoot>
                 </table>
             </Section>
-        </div>
+        </>
     );
+    
+    return isEmbedded ? <div className="p-4">{content}</div> : <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">{content}</div>;
 };
 
 export default OtfApplicationViewer;

@@ -1,7 +1,10 @@
+
 import React from 'react';
 import MainMenu from './MainMenu';
+import Footer from './Footer';
 import { Page } from '../types';
 import { Toaster } from 'react-hot-toast';
+import ThemeInjector from './theme/ThemeInjector';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,7 +14,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate }) => {
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="flex flex-col min-h-screen">
+      <ThemeInjector />
       <Toaster 
         position="top-right"
         toastOptions={{
@@ -45,9 +49,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate }) => 
         }}
       />
       <MainMenu activePage={activePage} onNavigate={onNavigate} />
-      <main className="p-4 sm:p-6 lg:p-8">
+      <main className="flex-grow p-4 sm:p-6 lg:p-8">
         {children}
       </main>
+      <Footer />
     </div>
   );
 };

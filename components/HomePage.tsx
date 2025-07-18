@@ -1,5 +1,6 @@
 
 
+
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Activity, BudgetItem, DetailedBudget, Event, Page, Task } from '../types';
@@ -7,21 +8,21 @@ import { Activity, BudgetItem, DetailedBudget, Event, Page, Task } from '../type
 const formatCurrency = (value: number) => value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
 const MetricCard: React.FC<{ icon: string; value: number | string; label: string; color: string; }> = ({ icon, value, label, color }) => (
-    <div className="bg-white p-5 rounded-xl shadow-md flex items-center gap-4 border-l-4" style={{ borderLeftColor: color }}>
+    <div className="p-5 rounded-xl shadow-md flex items-center gap-4 border-l-4" style={{ backgroundColor: 'var(--color-surface-card)', borderLeftColor: color }}>
         <div className="w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
             <i className={`${icon} text-2xl`} style={{ color }}></i>
         </div>
         <div>
-            <div className="text-3xl font-bold text-slate-800">{value}</div>
-            <div className="text-sm font-medium text-slate-500">{label}</div>
+            <div className="text-3xl font-bold" style={{ color: 'var(--color-text-heading)' }}>{value}</div>
+            <div className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
         </div>
     </div>
 );
 
 const DashboardWidget: React.FC<{ title: string; icon: string; children: React.ReactNode; className?: string }> = ({ title, icon, children, className = "" }) => (
-    <div className={`bg-white shadow-lg rounded-xl p-6 ${className}`}>
-        <h2 className="text-xl font-bold text-slate-800 mb-4 pb-3 border-b border-slate-200 flex items-center gap-3">
-            <i className={`${icon} text-teal-600`}></i>
+    <div className={`shadow-lg rounded-xl p-6 ${className}`} style={{ backgroundColor: 'var(--color-surface-card)' }}>
+        <h2 className="text-xl font-bold mb-4 pb-3 border-b flex items-center gap-3" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-border-subtle)' }}>
+            <i className={`${icon}`} style={{ color: 'var(--color-primary)' }}></i>
             <span>{title}</span>
         </h2>
         <div className="space-y-4">
@@ -36,14 +37,14 @@ interface HomePageProps {
 
 const WelcomeScreen: React.FC<HomePageProps> = ({ onNavigate }) => {
     return (
-        <div className="text-center bg-white p-8 rounded-lg shadow-lg">
-            <i className="fa-solid fa-rocket text-7xl text-teal-500"></i>
-            <h1 className="mt-6 text-4xl font-bold text-slate-800">Welcome to The Arts Incubator!</h1>
-            <p className="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">This tool is designed to help you manage your artistic projects from concept to completion. Ready to get started?</p>
+        <div className="text-center p-8 rounded-lg shadow-lg" style={{ backgroundColor: 'var(--color-surface-card)' }}>
+            <i className="fa-solid fa-rocket text-7xl" style={{ color: 'var(--color-primary)' }}></i>
+            <h1 className="mt-6 text-4xl font-bold" style={{ color: 'var(--color-text-heading)' }}>Welcome to The Arts Incubator!</h1>
+            <p className="mt-3 text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>This tool is designed to help you manage your artistic projects from concept to completion. Ready to get started?</p>
             <div className="mt-8 flex justify-center items-center gap-4">
                 <button
                     onClick={() => onNavigate('projects')}
-                    className="px-6 py-3 text-lg font-semibold text-white bg-teal-600 border border-transparent rounded-md shadow-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-transform hover:scale-105"
+                    className="btn btn-primary px-6 py-3 text-lg font-semibold shadow-lg transition-transform hover:scale-105"
                 >
                     <i className="fa-solid fa-plus mr-2"></i>
                     Create Your First Project
@@ -176,17 +177,17 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     return (
         <div>
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Global Dashboard</h1>
-                <p className="text-slate-500 mt-1">A high-level overview of all collective activity.</p>
+                <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text-heading)' }}>Global Dashboard</h1>
+                <p className="mt-1" style={{ color: 'var(--color-text-muted)' }}>A high-level overview of all collective activity.</p>
             </div>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
-                <MetricCard icon="fa-solid fa-briefcase" value={dashboardData.activeProjectsCount} label="Active Projects" color="#14b8a6" />
-                <MetricCard icon="fa-solid fa-check-double" value={dashboardData.completedProjectsCount} label="Completed Projects" color="#3b82f6" />
-                <MetricCard icon="fa-solid fa-list-check" value={dashboardData.tasksDueThisWeek.length} label="Tasks Due This Week" color="#f59e0b" />
+                <MetricCard icon="fa-solid fa-briefcase" value={dashboardData.activeProjectsCount} label="Active Projects" color="var(--color-primary)" />
+                <MetricCard icon="fa-solid fa-check-double" value={dashboardData.completedProjectsCount} label="Completed Projects" color="var(--color-status-info-text)" />
+                <MetricCard icon="fa-solid fa-list-check" value={dashboardData.tasksDueThisWeek.length} label="Tasks Due This Week" color="var(--color-status-warning-text)" />
                 <MetricCard icon="fa-solid fa-users" value={members.length} label="Collective Members" color="#8b5cf6" />
-                <MetricCard icon="fa-solid fa-hourglass-half" value={dashboardData.totalHoursAllTime.toFixed(1)} label="Total Hours Logged" color="#ef4444" />
+                <MetricCard icon="fa-solid fa-hourglass-half" value={dashboardData.totalHoursAllTime.toFixed(1)} label="Total Hours Logged" color="var(--color-status-error-text)" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -194,16 +195,16 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 <div className="lg:col-span-2 space-y-8">
                      <DashboardWidget title="Operational Financial Snapshot (Active & On Hold Projects)" icon="fa-solid fa-chart-pie">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                            <div className="bg-slate-100 p-4 rounded-lg">
-                                <div className="text-sm text-slate-500 font-semibold">Total Budgeted Expenses</div>
-                                <div className="text-2xl font-bold text-slate-800">{formatCurrency(dashboardData.totalBudgetedExpenses)}</div>
+                            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                                <div className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>Total Budgeted Expenses</div>
+                                <div className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)' }}>{formatCurrency(dashboardData.totalBudgetedExpenses)}</div>
                             </div>
-                             <div className="bg-slate-100 p-4 rounded-lg">
-                                <div className="text-sm text-slate-500 font-semibold">Total Actual Expenses</div>
-                                <div className="text-2xl font-bold text-blue-800">{formatCurrency(dashboardData.totalActualPaidExpenses)}</div>
+                             <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                                <div className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>Total Actual Expenses</div>
+                                <div className="text-2xl font-bold" style={{ color: 'var(--color-status-info-text)' }}>{formatCurrency(dashboardData.totalActualPaidExpenses)}</div>
                             </div>
-                            <div className="bg-slate-200 p-4 rounded-lg">
-                                <div className="text-sm text-slate-600 font-bold">Remaining Budget</div>
+                            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-border-subtle)' }}>
+                                <div className="text-sm font-bold" style={{ color: 'var(--color-text-heading)' }}>Remaining Budget</div>
                                 <div className={`text-2xl font-extrabold ${dashboardData.totalBudgetedExpenses - dashboardData.totalActualPaidExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {formatCurrency(dashboardData.totalBudgetedExpenses - dashboardData.totalActualPaidExpenses)}
                                 </div>
@@ -213,16 +214,16 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
                     <DashboardWidget title="Lifetime Financial Summary" icon="fa-solid fa-landmark">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                            <div className="bg-slate-100 p-4 rounded-lg">
-                                <div className="text-sm text-slate-500 font-semibold">Total Lifetime Revenue</div>
-                                <div className="text-2xl font-bold text-slate-800">{formatCurrency(dashboardData.totalLifetimeActualRevenue)}</div>
+                            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                                <div className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>Total Lifetime Revenue</div>
+                                <div className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)' }}>{formatCurrency(dashboardData.totalLifetimeActualRevenue)}</div>
                             </div>
-                             <div className="bg-slate-100 p-4 rounded-lg">
-                                <div className="text-sm text-slate-500 font-semibold">Total Lifetime Expenses</div>
-                                <div className="text-2xl font-bold text-slate-800">{formatCurrency(dashboardData.totalLifetimeActualExpenses)}</div>
+                             <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                                <div className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>Total Lifetime Expenses</div>
+                                <div className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)' }}>{formatCurrency(dashboardData.totalLifetimeActualExpenses)}</div>
                             </div>
-                            <div className="bg-slate-200 p-4 rounded-lg">
-                                <div className="text-sm text-slate-600 font-bold">Lifetime Net Result</div>
+                            <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-border-subtle)' }}>
+                                <div className="text-sm font-bold" style={{ color: 'var(--color-text-heading)' }}>Lifetime Net Result</div>
                                 <div className={`text-2xl font-extrabold ${dashboardData.totalLifetimeActualRevenue - dashboardData.totalLifetimeActualExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {formatCurrency(dashboardData.totalLifetimeActualRevenue - dashboardData.totalLifetimeActualExpenses)}
                                 </div>
@@ -232,21 +233,21 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
                     <DashboardWidget title="Upcoming Deadlines (Active Projects)" icon="fa-solid fa-calendar-check">
                          {dashboardData.tasksDueThisWeek.length > 0 ? (
-                            <ul className="divide-y divide-slate-200 -mx-6">
+                            <ul className="divide-y -mx-6" style={{ borderColor: 'var(--color-border-subtle)' }}>
                                 {dashboardData.tasksDueThisWeek.map(task => (
                                     <li key={task.id} className="px-6 py-3">
-                                        <div className="font-semibold text-slate-800">{task.title}</div>
-                                        <div className="text-sm text-slate-500">
-                                            <span className="font-medium text-teal-700">{projectMap.get(task.projectId)}</span>
+                                        <div className="font-semibold" style={{ color: 'var(--color-text-heading)' }}>{task.title}</div>
+                                        <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                                            <span className="font-medium" style={{ color: 'var(--color-primary)' }}>{projectMap.get(task.projectId)}</span>
                                             <span className="mx-1">|</span>
                                             Due: {new Date(task.dueDate).toLocaleDateString()}
                                         </div>
-                                        <div className="text-xs text-slate-400 mt-1">Assigned to: {memberMap.get(task.assignedMemberId)?.name || "Unassigned"}</div>
+                                        <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>Assigned to: {memberMap.get(task.assignedMemberId)?.name || "Unassigned"}</div>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-center text-slate-500 py-4">No tasks are due in the next 7 days.</p>
+                            <p className="text-center py-4" style={{ color: 'var(--color-text-muted)' }}>No tasks are due in the next 7 days.</p>
                         )}
                     </DashboardWidget>
                 </div>
@@ -255,21 +256,21 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 <div className="lg:col-span-1 space-y-8">
                      <DashboardWidget title="Upcoming Events" icon="fa-solid fa-calendar-star">
                         {dashboardData.upcomingEvents.length > 0 ? (
-                            <ul className="divide-y divide-slate-200 -mx-6">
+                            <ul className="divide-y -mx-6" style={{ borderColor: 'var(--color-border-subtle)' }}>
                                 {dashboardData.upcomingEvents.map(event => {
                                     const startDate = new Date(event.startDate + 'T00:00:00');
                                     return (
                                         <li key={event.id} className="px-6 py-3 flex items-start gap-4 hover:bg-slate-50">
-                                            <div className="flex-shrink-0 text-center bg-slate-100 p-2 rounded-md w-16">
-                                                <div className="text-sm font-bold text-red-600 uppercase">{startDate.toLocaleDateString('en-US', { month: 'short' })}</div>
-                                                <div className="text-xl font-extrabold text-slate-800">{startDate.toLocaleDateString('en-US', { day: '2-digit' })}</div>
+                                            <div className="flex-shrink-0 text-center p-2 rounded-md w-16" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                                                <div className="text-sm font-bold uppercase" style={{ color: 'var(--color-status-error-text)' }}>{startDate.toLocaleDateString('en-US', { month: 'short' })}</div>
+                                                <div className="text-xl font-extrabold" style={{ color: 'var(--color-text-heading)' }}>{startDate.toLocaleDateString('en-US', { day: '2-digit' })}</div>
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-slate-800">{event.title}</div>
-                                                <div className="text-sm text-slate-500">
-                                                    <span className="font-medium text-teal-700">{projectMap.get(event.projectId) || 'No Project'}</span>
+                                                <div className="font-semibold" style={{ color: 'var(--color-text-heading)' }}>{event.title}</div>
+                                                <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                                                    <span className="font-medium" style={{ color: 'var(--color-primary)' }}>{projectMap.get(event.projectId) || 'No Project'}</span>
                                                 </div>
-                                                <div className="text-xs text-slate-400 mt-1">
+                                                <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
                                                     <i className="fa-solid fa-location-dot fa-fw mr-1"></i>
                                                     {venueMap.get(event.venueId) || 'Venue TBD'}
                                                 </div>
@@ -279,7 +280,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                                 })}
                             </ul>
                         ) : (
-                            <p className="text-center text-slate-500 py-4">No upcoming events scheduled.</p>
+                            <p className="text-center py-4" style={{ color: 'var(--color-text-muted)' }}>No upcoming events scheduled.</p>
                         )}
                     </DashboardWidget>
                     
@@ -295,11 +296,11 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                                                 <img className="h-9 w-9 rounded-full object-cover" src={member?.imageUrl || `https://ui-avatars.com/api/?name=${member?.name}&background=random`} alt="" />
                                                 <div className="flex-grow">
                                                     <div className="flex justify-between text-sm">
-                                                        <span className="font-semibold text-slate-800">{member?.name || 'Unknown Member'}</span>
-                                                        <span className="font-bold text-slate-600">{hours.toFixed(1)}h</span>
+                                                        <span className="font-semibold" style={{ color: 'var(--color-text-heading)' }}>{member?.name || 'Unknown Member'}</span>
+                                                        <span className="font-bold" style={{ color: 'var(--color-text-default)' }}>{hours.toFixed(1)}h</span>
                                                     </div>
-                                                    <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1">
-                                                        <div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                                                    <div className="w-full rounded-full h-1.5 mt-1" style={{ backgroundColor: 'var(--color-surface-muted)' }}>
+                                                        <div className="h-1.5 rounded-full" style={{ width: `${percentage}%`, backgroundColor: 'var(--color-status-error-text)' }}></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -308,7 +309,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                                 })}
                             </ul>
                         ) : (
-                            <p className="text-center text-slate-500 py-4">No approved hours have been logged yet.</p>
+                            <p className="text-center py-4" style={{ color: 'var(--color-text-muted)' }}>No approved hours have been logged yet.</p>
                         )}
                     </DashboardWidget>
                 </div>

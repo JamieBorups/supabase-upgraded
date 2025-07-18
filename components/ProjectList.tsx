@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { FormData, ProjectStatus } from '../types';
 import { PROJECT_STATUS_OPTIONS } from '../constants';
@@ -15,25 +14,30 @@ interface ProjectListProps {
 
 const StatusBadge: React.FC<{ status: ProjectStatus | string }> = ({ status }) => {
     const { state } = useAppContext();
-    const defaultStatusStyles: Record<ProjectStatus, string> = {
-        'Active': 'bg-green-100 text-green-800',
-        'On Hold': 'bg-yellow-100 text-yellow-800',
-        'Completed': 'bg-blue-100 text-blue-800',
-        'Pending': 'bg-slate-100 text-slate-800',
-        'Terminated': 'bg-rose-100 text-rose-800',
+    const { theme } = state.settings;
+
+    const defaultStatusStyles: Record<ProjectStatus, { bg: string; text: string }> = {
+        'Active': { bg: theme.statusSuccessBg, text: theme.statusSuccessText },
+        'On Hold': { bg: theme.statusWarningBg, text: theme.statusWarningText },
+        'Completed': { bg: theme.statusInfoBg, text: theme.statusInfoText },
+        'Pending': { bg: theme.surfaceMuted, text: theme.textDefault },
+        'Terminated': { bg: theme.statusErrorBg, text: theme.statusErrorText },
     };
     
-    const customStatus = state.settings.projects.statuses.find(s => s.label === status);
+    // This logic is complex because custom statuses store Tailwind classes, not colors.
+    // For now, we'll manually map theme vars to the default statuses.
+    // A future refactor could store colors in custom statuses instead.
     
-    let style = 'bg-gray-100 text-gray-800'; // Default fallback
-    if (customStatus) {
-        style = customStatus.color;
-    } else if (status in defaultStatusStyles) {
+    let style = defaultStatusStyles['Pending']; // Default fallback
+    if (status in defaultStatusStyles) {
         style = defaultStatusStyles[status as ProjectStatus];
     }
     
     return (
-        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${style}`}>
+        <span 
+            className="px-2 py-0.5 text-xs font-semibold rounded-full"
+            style={{ backgroundColor: style.bg, color: style.text }}
+        >
             {status}
         </span>
     );
@@ -74,20 +78,25 @@ const StatusDropdown: React.FC<{
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-md text-slate-500 hover:bg-slate-200 hover:text-slate-700"
+        className="p-2 rounded-md"
         aria-label="Change project status"
+        style={{ color: 'var(--color-text-muted)', backgroundColor: isOpen ? 'var(--color-surface-muted)' : 'transparent' }}
       >
         <i className="fa-solid fa-ellipsis-vertical"></i>
       </button>
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10">
+        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10" style={{ backgroundColor: 'var(--color-surface-card)'}}>
           <div className="py-1">
             {projectStatusOptions.map(option => (
               <button
                 key={option.value}
                 onClick={() => handleUpdate(option.value)}
                 disabled={project.status === option.value}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="block w-full text-left px-4 py-2 text-sm disabled:cursor-not-allowed"
+                style={{
+                    color: project.status === option.value ? 'var(--color-text-muted)' : 'var(--color-text-default)',
+                    backgroundColor: project.status === option.value ? 'var(--color-surface-muted)' : 'transparent'
+                }}
               >
                 {option.label}
               </button>
@@ -107,35 +116,35 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, onAddProject, onEdi
      <li key={project.id} className={`py-4 px-2 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-50 rounded-md -mx-2 transition-all duration-200 ${project.status === 'On Hold' ? 'opacity-70' : ''}`}>
         <div className="mb-3 sm:mb-0">
           <div className="flex items-center gap-3">
-            <p className="text-lg font-semibold text-teal-700 hover:underline cursor-pointer" onClick={() => onViewProject(project.id)}>
+            <p className="text-lg font-semibold hover:underline cursor-pointer" style={{color: 'var(--color-primary)'}} onClick={() => onViewProject(project.id)}>
               {project.projectTitle || 'Untitled Project'}
             </p>
             <StatusBadge status={project.status || 'Active'} />
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm mt-1" style={{color: 'var(--color-text-muted)'}}>
             {project.projectStartDate ? new Date(project.projectStartDate).toLocaleDateString() : 'No start date'} - {project.projectEndDate ? new Date(project.projectEndDate).toLocaleDateString() : 'No end date'}
           </p>
         </div>
         <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
             <button
             onClick={() => onViewProject(project.id)}
-            className="px-3 py-1.5 text-sm text-slate-700 bg-white hover:bg-slate-100 rounded-md border border-slate-300 shadow-sm transition-colors"
+            className="btn btn-secondary"
             aria-label={`View ${project.projectTitle}`}
             >
-            <i className="fa-solid fa-eye mr-2 text-slate-500"></i>
+            <i className="fa-solid fa-eye mr-2" style={{color: 'var(--color-text-muted)'}}></i>
             View
             </button>
             <button
             onClick={() => onEditProject(project.id)}
-            className="px-3 py-1.5 text-sm text-slate-700 bg-white hover:bg-slate-100 rounded-md border border-slate-300 shadow-sm transition-colors"
+            className="btn btn-secondary"
             aria-label={`Edit ${project.projectTitle}`}
             >
-            <i className="fa-solid fa-pencil mr-2 text-slate-500"></i>
+            <i className="fa-solid fa-pencil mr-2" style={{color: 'var(--color-text-muted)'}}></i>
             Edit
             </button>
             <button
             onClick={() => onDeleteProject(project.id)}
-            className="px-3 py-1.5 text-sm text-red-700 bg-red-50 hover:bg-red-100 rounded-md border border-red-200 shadow-sm transition-colors"
+            className="btn btn-danger"
             aria-label={`Delete ${project.projectTitle}`}
             >
             <i className="fa-solid fa-trash-alt mr-2"></i>
@@ -147,43 +156,47 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, onAddProject, onEdi
   );
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6 sm:p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-slate-200 pb-4 gap-4">
-        <h1 className="text-3xl font-bold text-slate-900">Your Projects</h1>
+    <div className="p-6 sm:p-8 rounded-xl shadow-lg" style={{ backgroundColor: 'var(--color-surface-card)' }}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-4 gap-4" style={{ borderColor: 'var(--color-border-subtle)'}}>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Your Projects</h1>
         <button
           onClick={onAddProject}
-          className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors"
+          className="btn btn-primary"
         >
           <i className="fa-solid fa-plus mr-2"></i>
           Add New Project
         </button>
       </div>
+      
+      <p className="text-base mb-8 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+        This section is your main dashboard for all projects. From here, you can add, view, edit, or delete any project your collective is working on. Use the controls on each project to manage its status and access the detailed viewer or editor.
+      </p>
 
       {projects.length === 0 ? (
         <div className="text-center py-20">
-          <i className="fa-solid fa-folder-open text-7xl text-slate-300"></i>
-          <h3 className="mt-6 text-xl font-medium text-slate-800">You haven't created any projects yet.</h3>
-          <p className="text-slate-500 mt-2 text-base">Click the "Add New Project" button above to get started!</p>
+          <i className="fa-solid fa-folder-open text-7xl" style={{color: 'var(--color-border-default)'}}></i>
+          <h3 className="mt-6 text-xl font-medium" style={{color: 'var(--color-text-heading)'}}>You haven't created any projects yet.</h3>
+          <p className="mt-2 text-base" style={{color: 'var(--color-text-muted)'}}>Click the "Add New Project" button above to get started!</p>
         </div>
       ) : (
         <div>
-            <h2 className="text-xl font-bold text-slate-700 mb-2">Active & On Hold</h2>
+            <h2 className="text-xl font-bold mb-2" style={{color: 'var(--color-text-heading)'}}>Active & On Hold</h2>
             {activeAndOnHoldProjects.length > 0 ? (
-                 <ul className="divide-y divide-slate-200">
+                 <ul className="divide-y" style={{borderColor: 'var(--color-border-subtle)'}}>
                     {activeAndOnHoldProjects.map(renderProjectItem)}
                 </ul>
             ) : (
-                <p className="text-slate-500 italic py-4">No active projects.</p>
+                <p className="italic py-4" style={{color: 'var(--color-text-muted)'}}>No active projects.</p>
             )}
 
             {finishedProjects.length > 0 && (
-                <details className="mt-8">
-                    <summary className="text-xl font-bold text-slate-700 cursor-pointer list-none flex items-center gap-2">
-                        <i className="fa-solid fa-chevron-right transition-transform duration-200"></i>
+                <details className="mt-8 group">
+                    <summary className="text-xl font-bold cursor-pointer list-none flex items-center gap-2" style={{color: 'var(--color-text-heading)'}}>
+                        <i className="fa-solid fa-chevron-right transition-transform duration-200 group-open:rotate-90"></i>
                         Finished Projects ({finishedProjects.length})
                     </summary>
-                    <div className="mt-2 border-t pt-2">
-                        <ul className="divide-y divide-slate-200">
+                    <div className="mt-2 border-t pt-2" style={{borderColor: 'var(--color-border-subtle)'}}>
+                        <ul className="divide-y" style={{borderColor: 'var(--color-border-subtle)'}}>
                             {finishedProjects.map(renderProjectItem)}
                         </ul>
                     </div>

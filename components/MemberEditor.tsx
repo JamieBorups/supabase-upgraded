@@ -11,9 +11,10 @@ interface MemberEditorProps {
   member: Member;
   onSave: (member: Member) => void;
   onCancel: () => void;
+  isSaving: boolean;
 }
 
-const MemberEditor: React.FC<MemberEditorProps> = ({ member, onSave, onCancel }) => {
+const MemberEditor: React.FC<MemberEditorProps> = ({ member, onSave, onCancel, isSaving }) => {
   const [formData, setFormData] = useState<Member>(member);
 
   const handleFormChange = useCallback(<K extends keyof Member>(field: K, value: Member[K]) => {
@@ -94,8 +95,13 @@ const MemberEditor: React.FC<MemberEditorProps> = ({ member, onSave, onCancel })
           <button type="button" onClick={onCancel} className="px-6 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
               Cancel
           </button>
-          <button type="submit" className="px-6 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-              Save Member
+          <button type="submit" className="px-6 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                    <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Saving...
+                </>
+              ) : 'Save Member'}
           </button>
         </div>
     </form>

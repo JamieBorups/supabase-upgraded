@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo } from 'react';
 import { Contact } from '../../types';
 import { useAppContext } from '../../context/AppContext';
@@ -66,6 +65,10 @@ const ContactList: React.FC<ContactListProps> = ({ onAddContact, onEditContact, 
                 </button>
             </div>
             
+            <p className="text-base mb-8 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                This section is your Customer Relationship Manager (CRM), a central database for all your external contacts. Use it to keep track of funders, media personnel, community partners, and other key stakeholders by logging interactions and associating them with specific projects.
+            </p>
+
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <Input
                     placeholder="Search by name, organization, email..."

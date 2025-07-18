@@ -134,6 +134,10 @@ const MediaManager: React.FC = () => {
                         </div>
                     </div>
 
+                    <p className="text-base mb-8 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                        The Media Center is your communications hub for creating and managing project-based news releases and official announcements. You can also manage your external stakeholder contacts through the built-in CRM and archive your project's public highlights all in one place.
+                    </p>
+
                     {projects.length === 0 ? (
                          <div className="text-center py-20">
                             <i className="fa-solid fa-folder-open text-7xl text-slate-300"></i>

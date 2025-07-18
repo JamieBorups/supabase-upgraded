@@ -118,6 +118,10 @@ const OtfPage: React.FC = () => {
              <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
                 <h1 className="text-2xl font-bold text-slate-900">OTF Module</h1>
             </div>
+            
+             <p className="text-base mb-8 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                The OTF Module is a specialized workspace designed to help you draft and manage Ontario Trillium Foundation (OTF) grant applications. This tool provides a structured environment that aligns with OTF requirements, allowing you to generate content with AI assistance and organize all necessary information for a successful submission.
+            </p>
 
             <div className="border-b border-slate-200 mb-6">
                 <nav className="-mb-px flex space-x-6" aria-label="Tabs">

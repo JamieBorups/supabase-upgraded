@@ -24,6 +24,10 @@ const MemberList: React.FC<MemberListProps> = ({ members, onAddMember, onEditMem
         </button>
       </div>
 
+      <p className="text-base mb-8 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+        This section is your central database for everyone in your arts collective. Here you can add, view, and manage profiles for all team members. Keeping this information up-to-date is crucial, as member profiles are used throughout the application to assign collaborators to projects and log time against tasks.
+      </p>
+
       {members.length === 0 ? (
         <div className="text-center py-16">
           <i className="fa-solid fa-users text-6xl text-slate-300"></i>

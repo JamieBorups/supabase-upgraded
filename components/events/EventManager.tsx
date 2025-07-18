@@ -32,6 +32,10 @@ const EventManager: React.FC = () => {
                 <h1 className="text-3xl font-bold text-slate-900">Events & Venues</h1>
             </div>
             
+            <p className="text-base mb-8 -mt-2" style={{ color: 'var(--color-text-muted)' }}>
+                This section is your dedicated module for managing all aspects of your public-facing events. Use the tabs below to create and schedule your events, manage your list of venues, and create reusable ticket types to streamline your sales process.
+            </p>
+            
             <div className="border-b border-slate-200 mb-6">
                 <nav className="-mb-px flex space-x-6" aria-label="Tabs">
                     {navItems.map(item => (
