@@ -15,11 +15,12 @@ interface TaskEditorProps {
   task: Task;
   onSave: (task: Task) => void;
   onCancel: () => void;
+  isSaving: boolean;
 }
 
 type ExpenseCategory = keyof DetailedBudget['expenses'];
 
-const TaskEditor: React.FC<TaskEditorProps> = ({ task, onSave, onCancel }) => {
+const TaskEditor: React.FC<TaskEditorProps> = ({ task, onSave, onCancel, isSaving }) => {
   const { state: { projects, members, tasks }, dispatch } = useAppContext();
   const [formData, setFormData] = useState<Task>(task);
   const [isNewBudgetItemModalOpen, setIsNewBudgetItemModalOpen] = useState(false);
@@ -221,7 +222,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ task, onSave, onCancel }) => {
             </div>
             <div className="mt-8 flex justify-end space-x-3 border-t pt-5">
               <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">Save Task</button>
+              <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md shadow-sm hover:bg-teal-700" disabled={isSaving}>
+                {isSaving ? (
+                    <>
+                        <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                        Saving...
+                    </>
+                ) : 'Save Task'}
+              </button>
             </div>
           </form>
         </div>

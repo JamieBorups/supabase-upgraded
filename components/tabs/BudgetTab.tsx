@@ -1,4 +1,3 @@
-
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { produce } from 'immer';
 import { FormData, BudgetItem, BudgetItemStatus, SaleSession } from '../../types';
@@ -20,7 +19,7 @@ const formatCurrency = (value: number | undefined | null) => {
 };
 
 const ReadOnlyField: React.FC<{value: string | number}> = ({ value }) => (
-    <div className="mt-1 p-2 bg-slate-100 border border-slate-300 rounded-md text-sm text-slate-700 min-h-[38px] flex items-center">
+    <div className="mt-1 p-2 border rounded-md text-sm min-h-[38px] flex items-center" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-default)' }}>
         {value}
     </div>
 );
@@ -84,8 +83,8 @@ const BudgetCategoryManager: React.FC<BudgetCategoryManagerProps> = ({ items, op
     return (
         <div className="space-y-3">
             {items.length > 0 && (
-                <div className="space-y-2 border-b border-slate-200 pb-3 mb-3">
-                    <div className={`hidden md:grid ${gridCols} gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider`}>
+                <div className="space-y-2 border-b pb-3 mb-3" style={{ borderColor: 'var(--color-border-subtle)'}}>
+                    <div className={`hidden md:grid ${gridCols} gap-2 text-xs font-semibold uppercase tracking-wider`} style={{ color: 'var(--color-text-muted)'}}>
                         <div className="md:col-span-4">Item</div>
                         {isRevenue && <div className="md:col-span-2">Status</div>}
                         <div className="md:col-span-4">Description</div>
@@ -94,7 +93,7 @@ const BudgetCategoryManager: React.FC<BudgetCategoryManagerProps> = ({ items, op
                     </div>
                     {items.map(item => (
                         <div key={item.id} className={`grid grid-cols-1 md:${gridCols} gap-2 items-center`}>
-                            <div className="md:col-span-4 text-sm text-slate-800 font-medium">{getLabelForSource(item.source)}</div>
+                            <div className="md:col-span-4 text-sm font-medium" style={{ color: 'var(--color-text-heading)'}}>{getLabelForSource(item.source)}</div>
                             {isRevenue && (
                                 <div className="md:col-span-2">
                                     <Select
@@ -127,7 +126,7 @@ const BudgetCategoryManager: React.FC<BudgetCategoryManagerProps> = ({ items, op
                                 />
                             </div>
                             <div className="md:col-span-1 text-right">
-                                <button type="button" onClick={() => handleRemoveItem(item.id)} className="text-slate-400 hover:text-red-600 p-2 rounded-full hover:bg-red-100 transition-colors" aria-label={`Remove ${getLabelForSource(item.source)}`}>
+                                <button type="button" onClick={() => handleRemoveItem(item.id)} className="p-2 rounded-full transition-colors" style={{ color: 'var(--color-text-muted)'}} aria-label={`Remove ${getLabelForSource(item.source)}`}>
                                     <i className="fa-solid fa-trash-alt fa-fw"></i>
                                 </button>
                             </div>
@@ -146,7 +145,7 @@ const BudgetCategoryManager: React.FC<BudgetCategoryManagerProps> = ({ items, op
                     type="button"
                     onClick={handleAddItem}
                     disabled={!newItemSource}
-                    className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md shadow-sm hover:bg-teal-700 disabled:bg-slate-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                    className="btn btn-primary w-full disabled:opacity-50"
                 >
                     <i className="fa-solid fa-plus mr-2"></i>
                     Add to Budget
@@ -157,12 +156,12 @@ const BudgetCategoryManager: React.FC<BudgetCategoryManagerProps> = ({ items, op
 };
 
 const BudgetSection: React.FC<{ title: string; children: React.ReactNode; instructions?: React.ReactNode; total?: number }> = ({ title, children, instructions, total }) => (
-    <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-6">
-        <h3 className="text-xl font-bold text-slate-800 border-b border-slate-200 pb-3 mb-4">{title}</h3>
-        {instructions && <div className="text-sm text-slate-600 mb-4 prose max-w-none prose-ul:list-disc prose-ul:list-inside prose-li:mb-1">{instructions}</div>}
+    <div className="p-4 rounded-lg border shadow-sm mt-6" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
+        <h3 className="text-xl font-bold border-b pb-3 mb-4" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-border-subtle)'}}>{title}</h3>
+        {instructions && <div className="text-sm mb-4 prose max-w-none prose-ul:list-disc prose-ul:list-inside prose-li:mb-1" style={{ color: 'var(--color-text-default)'}}>{instructions}</div>}
         <div className="space-y-2">{children}</div>
         {total !== undefined && (
-            <div className="text-right font-bold mt-4 pt-4 border-t-2 border-slate-200 text-slate-800 text-lg">
+            <div className="text-right font-bold mt-4 pt-4 border-t-2 text-lg" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-border-default)'}}>
                 Total: {formatCurrency(total)}
             </div>
         )}
@@ -335,30 +334,30 @@ const BudgetTab: React.FC<Props> = ({ formData, onChange }) => {
 
     return (
         <div className="space-y-8">
-            <h2 className="text-3xl font-bold text-slate-900">Project Budget</h2>
-            <p className="text-base text-slate-600">Enter your project budget below. Add revenue and expense items to each category. The form will automatically calculate totals for you.</p>
+            <h2 className="text-3xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Project Budget</h2>
+            <p className="text-base" style={{ color: 'var(--color-text-default)'}}>Enter your project budget below. Add revenue and expense items to each category. The form will automatically calculate totals for you.</p>
 
             <BudgetSection title="Revenue: Sales">
-                <p className="text-sm text-slate-600 mb-4">This data is automatically calculated from the <span className="font-semibold">Sales & Inventory</span> module.</p>
+                <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)'}}>This data is automatically calculated from the <span className="font-semibold">Sales & Inventory</span> module.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-                    <div className="bg-slate-100 p-3 rounded-md">
-                        <div className="text-xs text-slate-500 font-semibold">BUDGETED</div>
-                        <div className="text-lg font-bold text-slate-800">{formatCurrency(salesData.totalEstimatedRevenue)}</div>
+                    <div className="p-3 rounded-md" style={{ backgroundColor: 'var(--color-surface-muted)'}}>
+                        <div className="text-xs font-semibold" style={{ color: 'var(--color-text-muted)'}}>BUDGETED</div>
+                        <div className="text-lg font-bold" style={{ color: 'var(--color-text-heading)'}}>{formatCurrency(salesData.totalEstimatedRevenue)}</div>
                     </div>
-                     <div className="bg-green-100 p-3 rounded-md">
-                        <div className="text-xs text-green-700 font-semibold">ACTUAL</div>
-                        <div className="text-lg font-bold text-green-800">{formatCurrency(salesData.totalActualRevenue)}</div>
+                     <div className="p-3 rounded-md" style={{ backgroundColor: 'var(--color-status-success-bg)'}}>
+                        <div className="text-xs font-semibold" style={{ color: 'var(--color-status-success-text)'}}>ACTUAL</div>
+                        <div className="text-lg font-bold" style={{ color: 'var(--color-status-success-text)'}}>{formatCurrency(salesData.totalActualRevenue)}</div>
                     </div>
                 </div>
                 {salesData.breakdown.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-slate-200">
-                        <h4 className="text-md font-semibold text-slate-700 mb-2">Breakdown by Sales Event:</h4>
+                    <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border-subtle)'}}>
+                        <h4 className="text-md font-semibold mb-2" style={{ color: 'var(--color-text-heading)'}}>Breakdown by Sales Event:</h4>
                         <div className="space-y-2">
                             {salesData.breakdown.map(item => (
-                                <div key={item.id} className="grid grid-cols-3 gap-4 text-sm p-2 bg-slate-100 rounded-md">
+                                <div key={item.id} className="grid grid-cols-3 gap-4 text-sm p-2 rounded-md" style={{ backgroundColor: 'var(--color-surface-muted)'}}>
                                     <div className="col-span-1 font-medium">{item.name}</div>
                                     <div className="col-span-1 text-right">Expected: <span className="font-semibold">{formatCurrency(item.estimatedRevenue)}</span></div>
-                                    <div className="col-span-1 text-right">Actual: <span className="font-semibold text-teal-600">{formatCurrency(item.actualRevenue)}</span></div>
+                                    <div className="col-span-1 text-right">Actual: <span className="font-semibold" style={{ color: 'var(--color-primary)'}}>{formatCurrency(item.actualRevenue)}</span></div>
                                 </div>
                             ))}
                         </div>
@@ -375,14 +374,14 @@ const BudgetTab: React.FC<Props> = ({ formData, onChange }) => {
                 />
             </BudgetSection>
 
-            <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-6">
-                <h3 className="text-xl font-bold text-slate-800">Revenue: Tickets and box office</h3>
-                <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
-                    <p className="text-sm text-slate-600 mb-4">The information below is automatically calculated based on the events you have planned for this project.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 p-2 bg-slate-200/50 rounded-md">
-                        <div className="font-semibold text-sm text-slate-600">Number of presentations</div>
-                        <div className="font-semibold text-sm text-slate-600">Average % of venue sold out</div>
-                        <div className="font-semibold text-sm text-slate-600">Average venue capacity</div>
+            <div className="p-4 rounded-lg border shadow-sm mt-6" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)'}}>
+                <h3 className="text-xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Revenue: Tickets and box office</h3>
+                <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
+                    <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)'}}>The information below is automatically calculated based on the events you have planned for this project.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 p-2 rounded-md" style={{ backgroundColor: 'rgba(0,0,0,0.05)'}}>
+                        <div className="font-semibold text-sm" style={{ color: 'var(--color-text-muted)'}}>Number of presentations</div>
+                        <div className="font-semibold text-sm" style={{ color: 'var(--color-text-muted)'}}>Average % of venue sold out</div>
+                        <div className="font-semibold text-sm" style={{ color: 'var(--color-text-muted)'}}>Average venue capacity</div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <ReadOnlyField value={ticketCalcs.numberOfPresentations.toLocaleString()} />
@@ -391,24 +390,24 @@ const BudgetTab: React.FC<Props> = ({ formData, onChange }) => {
                     </div>
                 </div>
 
-                <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
+                <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                      <div className="flex items-end justify-between">
-                         <div className="font-semibold text-slate-700">Projected total audience</div>
-                         <div className="p-2 bg-white border border-slate-300 rounded-md text-slate-800 font-bold min-w-[120px] text-right">{ticketCalcs.projectedAudience.toLocaleString()}</div>
+                         <div className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Projected total audience</div>
+                         <div className="p-2 border rounded-md font-bold min-w-[120px] text-right" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-heading)'}}>{ticketCalcs.projectedAudience.toLocaleString()}</div>
                     </div>
                 </div>
                 
-                <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
+                <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                      <div className="flex items-end justify-between">
-                         <div className="font-semibold text-slate-700">Average ticket price</div>
-                         <div className="p-2 bg-white border border-slate-300 rounded-md text-slate-800 font-bold min-w-[120px] text-right">{formatCurrency(ticketCalcs.averageTicketPrice)}</div>
+                         <div className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Average ticket price</div>
+                         <div className="p-2 border rounded-md font-bold min-w-[120px] text-right" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-heading)'}}>{formatCurrency(ticketCalcs.averageTicketPrice)}</div>
                     </div>
                 </div>
                 
-                <div className="mt-4 bg-slate-100/70 p-4 rounded-lg border border-slate-200">
+                <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
                      <div className="flex items-end justify-between">
-                         <div className="font-semibold text-slate-700">Total tickets or box office</div>
-                         <div className="p-2 bg-white border border-slate-300 rounded-md text-slate-800 font-bold min-w-[120px] text-right">{formatCurrency(ticketCalcs.projectedRevenue)}</div>
+                         <div className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>Total tickets or box office</div>
+                         <div className="p-2 border rounded-md font-bold min-w-[120px] text-right" style={{ backgroundColor: 'var(--color-surface-card)', borderColor: 'var(--color-border-default)', color: 'var(--color-text-heading)'}}>{formatCurrency(ticketCalcs.projectedRevenue)}</div>
                     </div>
                 </div>
             </div>
@@ -431,9 +430,9 @@ const BudgetTab: React.FC<Props> = ({ formData, onChange }) => {
                 />
             </BudgetSection>
 
-            <div className="mt-8 pt-6 border-t-4 border-double border-slate-300">
-                <h2 className="text-3xl font-bold text-slate-900">Expenses</h2>
-                <p className="text-base text-slate-600">Enter your project expenses. These will be used to calculate your project's balance.</p>
+            <div className="mt-8 pt-6 border-t-4 border-double" style={{ borderColor: 'var(--color-border-default)'}}>
+                <h2 className="text-3xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Expenses</h2>
+                <p className="text-base" style={{ color: 'var(--color-text-default)'}}>Enter your project expenses. These will be used to calculate your project's balance.</p>
             </div>
 
             <BudgetSection title="Expenses: Professional Fees" total={totalProfessionalFees}>
@@ -479,21 +478,21 @@ const BudgetTab: React.FC<Props> = ({ formData, onChange }) => {
                 />
             </BudgetSection>
 
-            <div className="mt-12 bg-slate-100 p-6 rounded-lg border border-slate-200 shadow-inner">
-                <h3 className="text-2xl font-bold text-slate-800">Budget Summary</h3>
+            <div className="mt-12 p-6 rounded-lg border shadow-inner" style={{ backgroundColor: 'var(--color-surface-muted)', borderColor: 'var(--color-border-subtle)'}}>
+                <h3 className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)'}}>Budget Summary</h3>
                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div className="bg-green-100 p-4 rounded-lg border border-green-200">
-                        <div className="text-sm font-semibold text-green-800">Total Projected Revenue</div>
-                        <div className="text-2xl font-bold text-green-900">{formatCurrency(totalRevenue)}</div>
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-status-success-bg)', borderColor: 'var(--color-status-success-text)'}}>
+                        <div className="text-sm font-semibold" style={{ color: 'var(--color-status-success-text)'}}>Total Projected Revenue</div>
+                        <div className="text-2xl font-bold" style={{ color: 'var(--color-status-success-text)'}}>{formatCurrency(totalRevenue)}</div>
                     </div>
-                     <div className="bg-red-100 p-4 rounded-lg border border-red-200">
-                        <div className="text-sm font-semibold text-red-800">Total Projected Expenses</div>
-                        <div className="text-2xl font-bold text-red-900">{formatCurrency(totalExpensesWithVenues)}</div>
-                        <p className="text-xs text-red-600">(includes {formatCurrency(projectedVenueCashExpense)} from venue rentals)</p>
+                     <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-status-error-bg)', borderColor: 'var(--color-status-error-text)'}}>
+                        <div className="text-sm font-semibold" style={{ color: 'var(--color-status-error-text)'}}>Total Projected Expenses</div>
+                        <div className="text-2xl font-bold" style={{ color: 'var(--color-status-error-text)'}}>{formatCurrency(totalExpensesWithVenues)}</div>
+                        <p className="text-xs" style={{ color: 'var(--color-status-error-text)'}}>(includes {formatCurrency(projectedVenueCashExpense)} from venue rentals)</p>
                     </div>
-                    <div className="bg-blue-100 p-4 rounded-lg border border-blue-200">
-                        <div className="text-sm font-semibold text-blue-800">Projected Balance</div>
-                        <div className={`text-2xl font-bold ${balance >= 0 ? 'text-blue-900' : 'text-orange-600'}`}>{formatCurrency(balance)}</div>
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--color-status-info-bg)', borderColor: 'var(--color-status-info-text)'}}>
+                        <div className="text-sm font-semibold" style={{ color: 'var(--color-status-info-text)'}}>Projected Balance</div>
+                        <div className={`text-2xl font-bold ${balance >= 0 ? '' : 'text-orange-600'}`} style={balance >= 0 ? { color: 'var(--color-status-info-text)'} : {}}>{formatCurrency(balance)}</div>
                     </div>
                 </div>
             </div>

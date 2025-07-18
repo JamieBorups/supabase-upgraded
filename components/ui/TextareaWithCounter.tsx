@@ -22,11 +22,9 @@ export const TextareaWithCounter: React.FC<TextareaWithCounterProps> = ({ wordLi
       <textarea
         {...props}
         value={value}
-        className={`block w-full px-3 py-2 bg-white border border-slate-400 rounded-md shadow-sm placeholder-slate-400 
-                   focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent 
-                   sm:text-sm transition-shadow duration-150 ${props.className}`}
+        className={`form-textarea ${props.className}`}
       />
-      <div className="text-right text-xs text-slate-500 mt-1" aria-live="polite">
+      <div className="text-right text-xs mt-1" style={{ color: 'var(--color-text-muted)' }} aria-live="polite">
         {wordLimit - wordCount} words left
       </div>
     </div>

@@ -14,9 +14,10 @@ interface ActivityEditorProps {
   onSave: (activity: Activity & { memberIds?: string[] }) => void;
   onCancel: () => void;
   selectedProjectId: string;
+  isSaving: boolean;
 }
 
-const ActivityEditor: React.FC<ActivityEditorProps> = ({ activity, onSave, onCancel, selectedProjectId }) => {
+const ActivityEditor: React.FC<ActivityEditorProps> = ({ activity, onSave, onCancel, selectedProjectId, isSaving }) => {
   const { state: { tasks, members, projects } } = useAppContext();
   
   const getInitialProjectId = () => {
@@ -228,7 +229,14 @@ const ActivityEditor: React.FC<ActivityEditorProps> = ({ activity, onSave, onCan
 
           <div className="mt-8 flex justify-end space-x-3 border-t pt-5">
             <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">Cancel</button>
-            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md shadow-sm hover:bg-teal-700">Save Activity</button>
+            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md shadow-sm hover:bg-teal-700" disabled={isSaving}>
+                {isSaving ? (
+                    <>
+                        <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                        Saving...
+                    </>
+                ) : 'Save Activity'}
+            </button>
           </div>
         </form>
       </div>

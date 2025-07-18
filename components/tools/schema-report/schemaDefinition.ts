@@ -1,4 +1,3 @@
-
 import {
     initialFormData,
     initialMemberData,
@@ -623,7 +622,6 @@ export const dbSchema: ModuleDefinition[] = [
                     { name: 'proj_census_division', type: 'text' }, { name: 'proj_start_date', type: 'date' }, { name: 'proj_requested_term', type: 'integer' },
                     { name: 'proj_funding_priority', type: 'text' }, { name: 'proj_objective', type: 'text' },
                     { name: 'proj_impact_explanation', type: 'text' },
-                    { name: 'justification_intro', type: 'text' }, { name: 'justification_outro', type: 'text' },
                     { name: 'is_collaborative_application', type: 'boolean' }, { name: 'collaborative_agreement_url', type: 'text' },
                     { name: 'plan_to_purchase_equipment', type: 'boolean' }, { name: 'equipment_photos', type: 'jsonb' },
                     { name: 'proj_why_and_who_benefits', type: 'text' }, { name: 'proj_barriers_explanation', type: 'text' },

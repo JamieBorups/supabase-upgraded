@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { SettingsCategory, UserRole } from '../../types';
 import GeneralSettings from './GeneralSettings';
@@ -15,6 +14,7 @@ import ProposalSettings from './ProposalSettings';
 import UsersSettings from './UsersSettings';
 import { useAppContext } from '../../context/AppContext';
 import SalesSettingsPage from './SalesSettingsPage.tsx';
+import ThemeSettings from './ThemeSettings.tsx';
 
 const SettingsManager: React.FC = () => {
     const { state } = useAppContext();
@@ -22,6 +22,7 @@ const SettingsManager: React.FC = () => {
 
     const menuItems: { id: SettingsCategory; label: string; icon: string; adminOnly?: boolean }[] = [
         { id: 'general', label: 'General', icon: 'fa-solid fa-sliders' },
+        { id: 'theme', label: 'Theme', icon: 'fa-solid fa-palette' },
         { id: 'users', label: 'Users', icon: 'fa-solid fa-users-cog', adminOnly: true },
         { id: 'ai', label: 'AI Settings', icon: 'fa-solid fa-wand-magic-sparkles' },
         { id: 'projects', label: 'Projects', icon: 'fa-solid fa-briefcase' },
@@ -38,6 +39,7 @@ const SettingsManager: React.FC = () => {
     const renderContent = () => {
         switch(activeCategory) {
             case 'general': return <GeneralSettings />;
+            case 'theme': return <ThemeSettings />;
             case 'users': return <UsersSettings />;
             case 'projects': return <ProjectSettings />;
             case 'proposals': return <ProposalSettings />;

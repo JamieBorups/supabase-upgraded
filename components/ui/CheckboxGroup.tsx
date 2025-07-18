@@ -28,9 +28,9 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({ options, selectedV
             value={option.value}
             checked={selectedValues.includes(option.value)}
             onChange={() => handleCheckboxChange(option.value)}
-            className="h-4 w-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
+            className="form-checkbox"
           />
-          <label htmlFor={`${name}-${option.value}`} className="ml-2 block text-sm text-slate-900">
+          <label htmlFor={`${name}-${option.value}`} className="ml-2 block text-sm" style={{ color: 'var(--color-text-default)' }}>
             {option.label}
           </label>
         </div>

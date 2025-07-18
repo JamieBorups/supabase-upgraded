@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   message: React.ReactNode;
   confirmButtonText?: string;
   cancelButtonText?: string;
+  isConfirming?: boolean;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -18,6 +19,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   message,
   confirmButtonText = 'Confirm',
   cancelButtonText = 'Cancel',
+  isConfirming = false,
 }) => {
   if (!isOpen) return null;
 
@@ -28,17 +30,17 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md transform transition-all">
+      <div className="p-6 rounded-lg shadow-xl w-full max-w-md transform transition-all" style={{ backgroundColor: 'var(--color-surface-card)'}}>
         <div className="flex items-start">
-            <div className="flex-shrink-0 mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                <i className="fa-solid fa-triangle-exclamation h-6 w-6 text-red-600" aria-hidden="true"></i>
+            <div className="flex-shrink-0 mx-auto flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10" style={{ backgroundColor: 'var(--color-status-error-bg)'}}>
+                <i className="fa-solid fa-triangle-exclamation h-6 w-6" style={{ color: 'var(--color-status-error-text)'}} aria-hidden="true"></i>
             </div>
             <div className="ml-4 text-left">
-                <h3 className="text-lg font-bold text-slate-800" id="modal-title">
+                <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-heading)'}} id="modal-title">
                 {title}
                 </h3>
                 <div className="mt-2">
-                <p className="text-sm text-slate-600">
+                <p className="text-sm" style={{ color: 'var(--color-text-default)'}}>
                     {message}
                 </p>
                 </div>
@@ -48,16 +50,23 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+            className="btn btn-secondary"
+            disabled={isConfirming}
           >
             {cancelButtonText}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            className="btn btn-danger"
+            disabled={isConfirming}
           >
-            {confirmButtonText}
+            {isConfirming ? (
+                <>
+                    <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Processing...
+                </>
+            ) : confirmButtonText}
           </button>
         </div>
       </div>

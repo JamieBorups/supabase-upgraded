@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FormData, Collaborator } from '../../types';
 import FormField from '../ui/FormField';
@@ -64,11 +63,11 @@ const CollaboratorsTab: React.FC<Props> = ({ formData, onChange }) => {
             />
       </FormField>
 
-      <div className="bg-slate-100 p-4 rounded-lg border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Assign Collaborators</h3>
+      <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-surface-muted)', border: '1px solid var(--color-border-subtle)'}}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-heading)'}}>Assign Collaborators</h3>
         
         <FormField label="Click the button below to assign a member from your collective to this project." htmlFor="assignMemberBtn">
-            <button type="button" onClick={() => setIsModalOpen(true)} className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+            <button type="button" onClick={() => setIsModalOpen(true)} className="btn btn-primary">
                 <i className="fa-solid fa-user-plus mr-2"></i>
                 Assign Member
             </button>
@@ -76,35 +75,35 @@ const CollaboratorsTab: React.FC<Props> = ({ formData, onChange }) => {
         
         {formData.collaboratorDetails.length > 0 && (
           <div className="mt-6">
-            <h4 className="font-medium text-slate-700 mb-2">Assigned Collaborators:</h4>
-            <ul className="bg-white border border-slate-200 rounded-md divide-y divide-slate-200">
+            <h4 className="font-medium mb-2" style={{ color: 'var(--color-text-default)'}}>Assigned Collaborators:</h4>
+            <ul className="divide-y" style={{ backgroundColor: 'var(--color-surface-card)', border: '1px solid var(--color-border-subtle)', borderColor: 'var(--color-border-subtle)', borderRadius: '0.375rem' }}>
               {formData.collaboratorDetails.map(c => {
                   const member = getMember(c.memberId);
                   return (
-                    <li key={c.memberId} className="p-4 hover:bg-slate-50">
+                    <li key={c.memberId} className="p-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <span className="font-semibold text-slate-800">{member ? `${member.firstName} ${member.lastName}` : 'Unknown Member'}</span>
-                            <span className="text-slate-600 text-sm ml-2">- {c.role}</span>
+                            <span className="font-semibold" style={{ color: 'var(--color-text-heading)'}}>{member ? `${member.firstName} ${member.lastName}` : 'Unknown Member'}</span>
+                            <span className="text-sm ml-2" style={{ color: 'var(--color-text-muted)'}}>- {c.role}</span>
                           </div>
-                          <button onClick={() => handleRemoveCollaborator(c.memberId)} className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors">Remove</button>
+                          <button onClick={() => handleRemoveCollaborator(c.memberId)} className="text-sm font-medium transition-colors" style={{ color: 'var(--color-status-error-text)'}}>Remove</button>
                         </div>
                         {member && (
-                            <div className="mt-3 pl-3 border-l-2 border-slate-200 space-y-3">
+                            <div className="mt-3 pl-3 space-y-3" style={{ borderLeft: '2px solid var(--color-border-subtle)'}}>
                                 {member.shortBio && (
                                 <div>
-                                    <h4 className="text-xs font-semibold uppercase text-slate-400">Short Bio</h4>
-                                    <p className="text-sm text-slate-600 mt-1 whitespace-pre-wrap">{member.shortBio}</p>
+                                    <h4 className="text-xs font-semibold uppercase" style={{ color: 'var(--color-text-muted)'}}>Short Bio</h4>
+                                    <p className="text-sm mt-1 whitespace-pre-wrap" style={{ color: 'var(--color-text-default)'}}>{member.shortBio}</p>
                                 </div>
                                 )}
                                 {member.artistBio && (
                                 <div>
-                                    <h4 className="text-xs font-semibold uppercase text-slate-400">Full Artist Bio</h4>
-                                    <p className="text-sm text-slate-600 mt-1 whitespace-pre-wrap">{member.artistBio}</p>
+                                    <h4 className="text-xs font-semibold uppercase" style={{ color: 'var(--color-text-muted)'}}>Full Artist Bio</h4>
+                                    <p className="text-sm mt-1 whitespace-pre-wrap" style={{ color: 'var(--color-text-default)'}}>{member.artistBio}</p>
                                 </div>
                                 )}
                                 {!member.shortBio && !member.artistBio && (
-                                <p className="text-sm text-slate-500 italic">No bio available for this member.</p>
+                                <p className="text-sm italic" style={{ color: 'var(--color-text-muted)'}}>No bio available for this member.</p>
                                 )}
                             </div>
                         )}
@@ -118,8 +117,8 @@ const CollaboratorsTab: React.FC<Props> = ({ formData, onChange }) => {
 
       {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4">
-              <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                  <h3 className="text-lg font-bold text-slate-800 mb-4">Assign Member to Project</h3>
+              <div className="p-6 rounded-lg shadow-xl w-full max-w-md" style={{ backgroundColor: 'var(--color-surface-card)'}}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--color-text-heading)'}}>Assign Member to Project</h3>
                   <div className="space-y-4">
                       <Select
                           value={selectedMemberId}
@@ -136,8 +135,8 @@ const CollaboratorsTab: React.FC<Props> = ({ formData, onChange }) => {
                       />
                   </div>
                   <div className="mt-6 flex justify-end space-x-3">
-                      <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">Cancel</button>
-                      <button type="button" onClick={handleAddCollaborator} className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">Assign to Project</button>
+                      <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
+                      <button type="button" onClick={handleAddCollaborator} className="btn btn-primary">Assign to Project</button>
                   </div>
               </div>
           </div>

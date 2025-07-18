@@ -1,5 +1,3 @@
-
-
 import React, { useMemo } from 'react';
 import { FormData, ProjectStatus } from '../../types';
 import FormField from '../ui/FormField';
@@ -79,7 +77,7 @@ const ProjectInformationTab: React.FC<Props> = ({ formData, onChange }) => {
             onChange={e => onChange('status', e.target.value as ProjectStatus)} />
       </FormField>
 
-      <FormField label="Artistic discipline(s) most relevant to this application" htmlFor="artisticDisciplines" required instructions={<span>See glossary for <a href="#" className="text-teal-600 hover:underline">the definition of inter-arts (interdisciplinary arts)</a>.</span>}>
+      <FormField label="Artistic discipline(s) most relevant to this application" htmlFor="artisticDisciplines" required instructions={<span>See glossary for <a>the definition of inter-arts (interdisciplinary arts)</a>.</span>}>
           <CheckboxGroup
             name="artisticDisciplines"
             options={ARTISTIC_DISCIPLINES}
