@@ -4,6 +4,7 @@ import { AppState } from '../../../types';
 import { TableDefinition } from './schemaDefinition.ts';
 import { dbSchema } from './schemaDefinition.ts';
 import { mapObjectToSnakeCase } from '../../../services/api_slices/utils';
+import { PLATFORM_CONTRIBUTOR_ROLES } from '../../../constants/experience.constants.ts';
 
 // --- SQL GENERATION ---
 const generateCreateTable = (table: TableDefinition): string => {
@@ -71,7 +72,7 @@ const formatSqlValue = (value: any): string => {
 // Hardcoded dependency order to guarantee correctness.
 const CREATION_ORDER = [
     'app_settings', 'inventory_categories', 'ticket_types', 'members', 'users',
-    'venues', 'projects', 'contacts', 'events', 'item_lists', 'sale_sessions',
+    'venues', 'projects', 'job_descriptions', 'contacts', 'events', 'item_lists', 'sale_sessions',
     'inventory_items', 'project_collaborators', 'contact_projects',
     'budget_items', 'event_members', 'event_tickets', 'tasks',
     'sale_listings', 'activities', 'direct_expenses', 'sales_transactions',
@@ -133,7 +134,8 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
         'sale_sessions': 'saleSessions', 'sale_listings': 'saleListings', 'item_lists': 'itemLists',
         'sales_transactions': 'salesTransactions', 'ecostar_reports': 'ecostarReports',
         'interest_compatibility_reports': 'interestCompatibilityReports', 'sdg_alignment_reports': 'sdgAlignmentReports',
-        'recreation_framework_reports': 'recreationFrameworkReports', 'research_plans': 'researchPlans'
+        'recreation_framework_reports': 'recreationFrameworkReports', 'research_plans': 'researchPlans',
+        'job_descriptions': 'jobDescriptions'
     };
 
     const extraProcessingMap: { [key: string]: (state: AppState) => any[] } = {
@@ -162,7 +164,18 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
             : [];
         
         if (!data || (Array.isArray(data) && data.length === 0)) {
-            sql += `-- No data found for ${table.tableName}\n\n`;
+             if(table.tableName === 'job_descriptions') {
+                // Seed system roles if no data exists
+                sql += '\n-- Seeding system-defined job descriptions\n';
+                PLATFORM_CONTRIBUTOR_ROLES.forEach(role => {
+                    const snakeRole = mapObjectToSnakeCase(role);
+                    const columns = Object.keys(snakeRole).map(c => `"${c}"`);
+                    const values = Object.values(snakeRole).map(formatSqlValue);
+                    sql += `INSERT INTO public.job_descriptions (${columns.join(', ')}) VALUES (${values.join(', ')});\n`;
+                });
+            } else {
+                sql += `-- No data found for ${table.tableName}\n\n`;
+            }
             continue;
         }
 
@@ -212,7 +225,7 @@ export const generateDataDumpSqlParts = (state: AppState): { dataPart1: string, 
     const dataPart1 = generateInsertStatementsForTables(dataOrderPart1, allTables, state);
 
     const dataOrderPart2 = [
-        'venues', 'projects', 'contacts', 'events', 'item_lists', 'sale_sessions', 'inventory_items',
+        'venues', 'projects', 'job_descriptions', 'contacts', 'events', 'item_lists', 'sale_sessions', 'inventory_items',
     ];
     const dataPart2 = generateInsertStatementsForTables(dataOrderPart2, allTables, state);
 
