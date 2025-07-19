@@ -1,5 +1,6 @@
 
 
+
 import { SalesSettings } from './sales.types';
 import { EcoStarFieldSettings } from './ecostar.types';
 import { ResearchPlanSectionSettings } from './research.types.ts';
@@ -93,6 +94,10 @@ export interface AppSettings {
     dateFormat: 'YYYY-MM-DD' | 'MM/DD/YYYY' | 'DD/MM/YYYY';
     supabaseUrl: string;
     supabaseAnonKey: string;
+    organizationalDescription?: string;
+    mission?: string;
+    vision?: string;
+    callToAction?: string;
   };
   projects: {
     statuses: CustomStatus[];

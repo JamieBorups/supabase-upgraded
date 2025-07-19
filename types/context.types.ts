@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { FormData } from './project.types';
 import { Member, User } from './member.types';
@@ -80,6 +79,7 @@ export interface AppState {
     reportProjectIdToOpen: string | null;
     researchPlanToEdit: ResearchPlan | null;
     otfApplicationToEdit: OtfApplication | null;
+    experienceHubProjectId: string | null;
     activeWorkshopItem: {
       type: 'task';
       itemId: string;
@@ -163,6 +163,7 @@ export type Action =
   | { type: 'SET_REPORT_PROJECT_ID_TO_OPEN'; payload: string | null }
   | { type: 'SET_RESEARCH_PLAN_TO_EDIT'; payload: ResearchPlan | null }
   | { type: 'SET_OTF_APPLICATION_TO_EDIT'; payload: OtfApplication | null }
+  | { type: 'SET_EXPERIENCE_HUB_PROJECT_ID'; payload: string | null }
   | { type: 'SET_ACTIVE_WORKSHOP_ITEM'; payload: AppState['activeWorkshopItem'] }
   | { type: 'ADD_PROJECT_DATA', payload: ProjectExportData }
   | { type: 'LOAD_DATA'; payload: Omit<Partial<AppState>, 'reportProjectIdToOpen' | 'activeWorkshopItem' | 'currentUser' | 'loading'> }

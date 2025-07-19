@@ -1,3 +1,4 @@
+
 import { 
     AppSettings, FormData as Project, Member, Task, Report, Highlight, NewsRelease, 
     SalesTransaction, ProposalSnapshot, Event, Venue, EventTicket, AppContextType, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan, EcoStarReport, OtfApplication, JobDescription
@@ -126,9 +127,10 @@ class PdfBuilder {
         this.addText(text, this.fontSizes.p, 'normal', { top: 4, bottom: 12 });
     }
 
-    private addText(text: string, fontSize: number, fontStyle: 'normal' | 'bold' | 'italic', spacing: { top: number, bottom: number }) {
+    addText(text: string, fontSize: number, fontStyle: 'normal' | 'bold' | 'italic', spacing: { top: number, bottom: number }, color: string = '#334155') {
         this.doc.setFont('helvetica', fontStyle);
         this.doc.setFontSize(fontSize);
+        this.doc.setTextColor(color);
         const lines = this.doc.splitTextToSize(text, this.pageWidth - this.margin * 2);
         const lineHeight = fontSize * this.lineHeightRatio;
         const textHeight = lines.length * lineHeight;
@@ -375,31 +377,61 @@ export const generateOtfPdf = async (app: OtfApplication, projectTitle: string) 
     builder.save(`OTF-Application-${app.title}`);
 }
 
-export const generateJobDescriptionsPdf = async (jobDescriptions: JobDescription[], projectTitle: string) => {
-    const builder = new PdfBuilder('Project Job Descriptions', projectTitle);
+export const generateJobDescriptionsPdf = async (jobDescriptions: JobDescription[], projectTitle: string, settings: AppSettings) => {
+    const docTitle = jobDescriptions.length > 1 ? 'Volunteer Job Descriptions' : jobDescriptions[0].title;
+    const builder = new PdfBuilder(docTitle, projectTitle);
 
-    jobDescriptions.forEach(jd => {
-        const seniorityText = `Seniority: ${jd.seniorityLevel}`;
-        builder.addSectionTitle(jd.title);
-        builder.addSubSectionTitle(seniorityText);
+    jobDescriptions.forEach((jd, index) => {
+        if (index > 0) {
+            builder.doc.addPage();
+            builder.y = builder.margin;
+        }
+
+        const addConditionalSection = (title: string, content: string | string[] | undefined | null) => {
+            if (!content || (Array.isArray(content) && content.length === 0) || (typeof content === 'string' && content.trim() === '')) {
+                return;
+            }
+            builder.addSubSectionTitle(title);
+            if (Array.isArray(content)) {
+                builder.addList(content);
+            } else {
+                builder.addParagraph(content);
+            }
+        };
         
-        builder.addMinorSectionTitle('Summary');
-        builder.addParagraph(jd.summary);
+        if (jobDescriptions.length > 1) {
+             builder.addSectionTitle(jd.title);
+        }
 
-        builder.addMinorSectionTitle('Key Responsibilities');
-        builder.addList(jd.responsibilities);
+        if (jd.projectTagline) {
+            builder.addText(jd.projectTagline, builder.fontSizes.h3, 'italic', { top: 0, bottom: 12 }, '#475569');
+        }
 
-        builder.addMinorSectionTitle('Qualifications');
-        builder.addList(jd.qualifications);
-
-        builder.addMinorSectionTitle('Hard Skills');
-        builder.addParagraph(jd.hardSkills.join(', '));
+        const aboutOrgContent = jd.aboutOrg || settings.general.organizationalDescription;
+        if (aboutOrgContent) {
+            builder.addSubSectionTitle(`About ${settings.general.collectiveName}`);
+            builder.addParagraph(aboutOrgContent);
+        }
         
-        builder.addMinorSectionTitle('Soft Skills');
-        builder.addParagraph(jd.softSkills.join(', '));
+        addConditionalSection('Project Summary', jd.projectSummary);
+        
+        addConditionalSection('Role Summary', jd.summary);
+        addConditionalSection('Key Responsibilities', jd.responsibilities);
+        addConditionalSection('Qualifications', jd.qualifications);
+        
+        addConditionalSection('Hard Skills', jd.hardSkills);
+        addConditionalSection('Soft Skills', jd.softSkills);
+        
+        addConditionalSection("What You'll Gain", jd.volunteerBenefits);
+        addConditionalSection('Time Commitment & Logistics', jd.timeCommitment);
+        addConditionalSection('How to Get Involved', jd.applicationProcess);
+
+        const callToActionContent = [jd.callToAction, settings.media.contactInfo].filter(Boolean).join('\n\n');
+        addConditionalSection('Get Involved!', callToActionContent);
     });
 
-    builder.save(`Job-Descriptions-${projectTitle}`);
+    const fileName = jobDescriptions.length > 1 ? `Volunteer-Job-Descriptions-${projectTitle}` : `Job-Description-${jobDescriptions[0].title}`;
+    builder.save(fileName);
 };
 
 // --- Dynamic Reports ---
