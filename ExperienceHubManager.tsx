@@ -135,7 +135,7 @@ const GenerationForm: React.FC<GenerationFormProps> = ({ onCancel, onGenerate, p
                 </div>
             </div>
         );
-    }
+    };
 
     return (
          <div className="bg-white shadow-lg rounded-xl p-6 sm:p-8">
