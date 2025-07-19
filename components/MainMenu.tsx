@@ -158,11 +158,12 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
             { type: 'divider' },
             { page: 'settings', icon: 'fa-solid fa-sliders', label: 'Settings' },
         ]},
-        { name: 'projects', label: 'Projects', pages: ['projects', 'tasks', 'reports'], items: [
+        { name: 'projects', label: 'Projects', pages: ['projects', 'tasks', 'reports', 'otf'], items: [
             { page: 'projects', icon: 'fa-solid fa-briefcase', label: 'Project List' },
             { page: 'tasks', icon: 'fa-solid fa-list-check', label: 'Tasks & Timesheets' },
             { type: 'divider' },
             { page: 'reports', icon: 'fa-solid fa-file-invoice', label: 'Reporting & Archives' },
+            { page: 'otf', icon: 'fa-solid fa-stamp', label: 'OTF Grant Generator' },
         ]},
         { name: 'members', label: 'Members', pages: ['members', 'experienceHub'], items: [
             { page: 'members', icon: 'fa-solid fa-users', label: 'Member Profiles' },
@@ -170,7 +171,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
         ]},
         { page: 'events', label: 'Events' },
         { page: 'sales', label: 'Marketplace' },
-        { page: 'otf', label: 'OTF' },
         { name: 'media', label: 'Media', pages: ['media', 'contacts', 'highlights'], items: [
             { page: 'media', icon: 'fa-solid fa-newspaper', label: 'News Releases' },
             { page: 'contacts', icon: 'fa-solid fa-address-book', label: 'Contacts' },
