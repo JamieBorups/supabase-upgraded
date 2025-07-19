@@ -135,7 +135,7 @@ const GenerationForm: React.FC<GenerationFormProps> = ({ onCancel, onGenerate, p
                 </div>
             </div>
         );
-    };
+    }
 
     return (
          <div className="bg-white shadow-lg rounded-xl p-6 sm:p-8">
@@ -145,7 +145,7 @@ const GenerationForm: React.FC<GenerationFormProps> = ({ onCancel, onGenerate, p
                 <div className="space-y-6 max-w-2xl mx-auto">
                     <FormField label="Role Title" htmlFor="role_title" required><Input id="role_title" value={config.title} onChange={e => setConfig(p => ({...p, title: e.target.value}))} /></FormField>
                     <FormField label="Seniority Level" htmlFor="seniority"><Select id="seniority" value={config.seniorityLevel} onChange={e => setConfig(p => ({...p, seniorityLevel: e.target.value}))} options={SENIORITY_LEVELS} /></FormField>
-                    <FormField label="Assign to Member (Optional)" htmlFor="member" instructions="AI will use their bio as context."><Select id="member" value={config.memberId} onChange={e => setConfig(p => ({...p, memberId: e.target.value}))} options={[{value: '', label: 'Generic Role'}, ...availableMembers.map(m => ({value: m.id, label: `${m.firstName} ${m.lastName}`))]} /></FormField>
+                    <FormField label="Assign to Member (Optional)" htmlFor="member" instructions="AI will use their bio as context."><Select id="member" value={config.memberId} onChange={e => setConfig(p => ({...p, memberId: e.target.value}))} options={[{value: '', label: 'Generic Role'}, ...availableMembers.map(m => ({value: m.id, label: `${m.firstName} ${m.lastName}`}))]} /></FormField>
                     <FormField label="Tailor Description" htmlFor="tags" instructions="Select skills to emphasize."><CheckboxGroup name="tags" options={TAILORING_TAGS} selectedValues={config.tailoringTags} onChange={v => setConfig(p => ({...p, tailoringTags: v}))} columns={2} /></FormField>
                 </div>
                 <div className="mt-8 flex justify-end space-x-3 pt-5 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
@@ -212,7 +212,7 @@ const JobDescriptionViewer: React.FC<{jd: JobDescription; onBack: () => void; on
                  <div className="space-y-4">
                     <ViewField label="Resume / CV Points" textToCopy={(jd.resumePoints || []).join('\n')}><ul className="list-disc list-inside space-y-1">{(jd.resumePoints || []).map((p, i) => <li key={i}>{String(p)}</li>)}</ul></ViewField>
                     <ViewField label="LinkedIn Summary" textToCopy={jd.linkedinSummary}><p className="whitespace-pre-wrap">{jd.linkedinSummary}</p></ViewField>
-                    {jd.volunteerBenefits && <ViewField label="What You'll Gain" textToCopy={jd.volunteerBenefits}><p className="whitespace-pre-wrap">{jd.volunteerBenefits}</p></ViewField>}
+                    {jd.volunteerBenefits && <ViewField label="What You'll Gain (Volunteer Benefits)" textToCopy={jd.volunteerBenefits}><p className="whitespace-pre-wrap">{jd.volunteerBenefits}</p></ViewField>}
                     {jd.timeCommitment && <ViewField label="Time Commitment" textToCopy={jd.timeCommitment}><p className="whitespace-pre-wrap">{jd.timeCommitment}</p></ViewField>}
                     {jd.applicationProcess && <ViewField label="How to Get Involved" textToCopy={jd.applicationProcess}><p className="whitespace-pre-wrap">{jd.applicationProcess}</p></ViewField>}
                     {jd.callToAction && <ViewField label="Get Involved!" textToCopy={jd.callToAction}><p className="whitespace-pre-wrap">{jd.callToAction}</p></ViewField>}
@@ -249,19 +249,19 @@ const JobDescriptionEditor: React.FC<{jd: JobDescription; onSave: (jd: JobDescri
                     <div className="space-y-4">
                         <FormField label="Title" htmlFor="jd_title"><Input id="jd_title" value={formData.title} onChange={e => handleChange('title', e.target.value)} /></FormField>
                         <FormField label="Summary" htmlFor="jd_summary"><Textarea id="jd_summary" value={formData.summary} onChange={e => handleChange('summary', e.target.value)} rows={5} /></FormField>
-                        <FormField label="Key Responsibilities (one per line)" htmlFor="jd_responsibilities"><Textarea id="jd_responsibilities" value={formData.responsibilities.join('\n')} onChange={e => handleArrayChange('responsibilities', e.target.value)} rows={8} /></FormField>
-                        <FormField label="Qualifications (one per line)" htmlFor="jd_qualifications"><Textarea id="jd_qualifications" value={formData.qualifications.join('\n')} onChange={e => handleArrayChange('qualifications', e.target.value)} rows={5} /></FormField>
+                        <FormField label="Key Responsibilities (one per line)" htmlFor="jd_responsibilities"><Textarea id="jd_responsibilities" value={(formData.responsibilities || []).join('\n')} onChange={e => handleArrayChange('responsibilities', e.target.value)} rows={8} /></FormField>
+                        <FormField label="Qualifications (one per line)" htmlFor="jd_qualifications"><Textarea id="jd_qualifications" value={(formData.qualifications || []).join('\n')} onChange={e => handleArrayChange('qualifications', e.target.value)} rows={5} /></FormField>
                         <FormField label="Hard Skills" htmlFor="jd_hardSkills"><Textarea id="jd_hardSkills" value={formData.hardSkills} onChange={e => handleChange('hardSkills', e.target.value)} rows={4} /></FormField>
                         <FormField label="Soft Skills" htmlFor="jd_softSkills"><Textarea id="jd_softSkills" value={formData.softSkills} onChange={e => handleChange('softSkills', e.target.value)} rows={4} /></FormField>
                     </div>
                      <div className="space-y-4">
-                        <FormField label="Resume / CV Points (one per line)" htmlFor="jd_resumePoints"><Textarea id="jd_resumePoints" value={formData.resumePoints.join('\n')} onChange={e => handleArrayChange('resumePoints', e.target.value)} rows={6} /></FormField>
+                        <FormField label="Resume / CV Points (one per line)" htmlFor="jd_resumePoints"><Textarea id="jd_resumePoints" value={(formData.resumePoints || []).join('\n')} onChange={e => handleArrayChange('resumePoints', e.target.value)} rows={6} /></FormField>
                         <FormField label="LinkedIn Summary" htmlFor="jd_linkedinSummary"><Textarea id="jd_linkedinSummary" value={formData.linkedinSummary} onChange={e => handleChange('linkedinSummary', e.target.value)} rows={6} /></FormField>
                         <FormField label="About the Organization" htmlFor="jd_aboutOrg"><Textarea id="jd_aboutOrg" value={formData.aboutOrg || ''} onChange={e => handleChange('aboutOrg', e.target.value)} rows={4} /></FormField>
-                        <FormField label="What You'll Gain" htmlFor="jd_volunteerBenefits"><Textarea id="jd_volunteerBenefits" value={formData.volunteerBenefits || ''} onChange={e => handleChange('volunteerBenefits', e.target.value)} rows={4} /></FormField>
+                        <FormField label="Volunteer Benefits" htmlFor="jd_volunteerBenefits"><Textarea id="jd_volunteerBenefits" value={formData.volunteerBenefits || ''} onChange={e => handleChange('volunteerBenefits', e.target.value)} rows={4} /></FormField>
                         <FormField label="Time Commitment" htmlFor="jd_timeCommitment"><Textarea id="jd_timeCommitment" value={formData.timeCommitment || ''} onChange={e => handleChange('timeCommitment', e.target.value)} rows={4} /></FormField>
-                        <FormField label="How to Get Involved" htmlFor="jd_applicationProcess"><Textarea id="jd_applicationProcess" value={formData.applicationProcess || ''} onChange={e => handleChange('applicationProcess', e.target.value)} rows={4} /></FormField>
-                        <FormField label="Get Involved!" htmlFor="jd_callToAction" instructions="A welcoming invitation for volunteers."><Textarea id="jd_callToAction" value={formData.callToAction || ''} onChange={e => handleChange('callToAction', e.target.value)} rows={3} /></FormField>
+                        <FormField label="Application Process" htmlFor="jd_applicationProcess"><Textarea id="jd_applicationProcess" value={formData.applicationProcess || ''} onChange={e => handleChange('applicationProcess', e.target.value)} rows={4} /></FormField>
+                        <FormField label="Call to Action" htmlFor="jd_callToAction" instructions="A welcoming invitation for volunteers."><Textarea id="jd_callToAction" value={formData.callToAction || ''} onChange={e => handleChange('callToAction', e.target.value)} rows={3} /></FormField>
                     </div>
                  </div>
                  <div className="mt-8 pt-6 border-t flex justify-end gap-3" style={{ borderColor: 'var(--color-border-subtle)' }}>
@@ -355,7 +355,7 @@ const ExperienceHubManager: React.FC<ExperienceHubManagerProps> = ({ onNavigate 
                 volunteerBenefits: { type: Type.STRING },
                 timeCommitment: { type: Type.STRING },
                 applicationProcess: { type: Type.STRING, description: "A paragraph explaining how to get involved, providing clear, low-barrier steps for expressing interest." },
-                callToAction: { type: Type.STRING, description: "A welcoming and inclusive call to action to encourage community participation." },
+                callToAction: { type: Type.STRING, description: "A welcoming and inclusive call to action to encourage community participation." }
             },
             required: ['projectTagline', 'projectSummary', 'summary', 'responsibilities', 'hardSkills', 'softSkills', 'qualifications', 'resumePoints', 'linkedinSummary', 'volunteerBenefits', 'timeCommitment', 'applicationProcess', 'callToAction']
         };
