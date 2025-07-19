@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import FormField from './ui/FormField.tsx';
@@ -84,9 +83,9 @@ const ReportsPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-12">
-                        <JobDescriptionsSection selectedProject={selectedProject} />
                         <ProposalSnapshotsSection selectedProject={selectedProject} />
                         <SupplementalReportsSection selectedProject={selectedProject} />
+                        <JobDescriptionsSection selectedProject={selectedProject} />
                         <FinalReportSection selectedProject={selectedProject} />
                     </div>
                 )}

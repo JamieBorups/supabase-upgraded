@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../context/AppContext';
@@ -7,6 +8,7 @@ import FormField from '../ui/FormField';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import * as api from '../../services/api';
+import { TextareaWithCounter } from '../ui/TextareaWithCounter';
 
 const GeneralSettings: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
@@ -65,6 +67,47 @@ const GeneralSettings: React.FC = () => {
                         onChange={e => handleChange('collectiveName', e.target.value)} 
                     />
                 </FormField>
+
+                 <FormField label="Organizational Description" htmlFor="organizationalDescription" instructions="A brief description of your organization for use in generated documents like job descriptions.">
+                    <TextareaWithCounter
+                        id="organizationalDescription"
+                        rows={4}
+                        value={settings.organizationalDescription || ''}
+                        onChange={e => handleChange('organizationalDescription', e.target.value)}
+                        wordLimit={200}
+                    />
+                </FormField>
+
+                <FormField label="Mission" htmlFor="mission" instructions="Your organization's mission statement.">
+                    <TextareaWithCounter
+                        id="mission"
+                        rows={3}
+                        value={settings.mission || ''}
+                        onChange={e => handleChange('mission', e.target.value)}
+                        wordLimit={150}
+                    />
+                </FormField>
+                
+                <FormField label="Vision" htmlFor="vision" instructions="Your organization's vision statement.">
+                    <TextareaWithCounter
+                        id="vision"
+                        rows={3}
+                        value={settings.vision || ''}
+                        onChange={e => handleChange('vision', e.target.value)}
+                        wordLimit={150}
+                    />
+                </FormField>
+                
+                <FormField label="Call to Action" htmlFor="callToAction" instructions="A general call to action used at the end of generated documents like job descriptions to encourage engagement.">
+                    <TextareaWithCounter
+                        id="callToAction"
+                        rows={3}
+                        value={settings.callToAction || ''}
+                        onChange={e => handleChange('callToAction', e.target.value)}
+                        wordLimit={100}
+                    />
+                </FormField>
+
 
                 <FormField label="Default Currency" htmlFor="defaultCurrency" instructions="Select the primary currency for budgeting and reporting.">
                     <Select 
