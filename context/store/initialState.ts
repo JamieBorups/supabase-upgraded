@@ -1,5 +1,4 @@
 
-
 import { AppState } from '../../types.ts';
 import { projectsInitialState } from '../slices/projects.slice';
 import { membersInitialState } from '../slices/members.slice';
@@ -37,4 +36,5 @@ export const initialState: AppState = {
     ...experienceInitialState,
     programGuidelines: [],
     otfApplicationToEdit: null,
+    experienceHubProjectId: null,
 };

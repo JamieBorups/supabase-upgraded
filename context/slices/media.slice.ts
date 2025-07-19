@@ -1,7 +1,7 @@
 
-import { AppState, Action } from '../../types';
+import { AppState, Action, NewsRelease, Contact, Interaction } from '../../types';
 
-export const mediaInitialState = {
+export const mediaInitialState: { newsReleases: NewsRelease[], contacts: Contact[], interactions: Interaction[] } = {
     newsReleases: [],
     contacts: [],
     interactions: [],

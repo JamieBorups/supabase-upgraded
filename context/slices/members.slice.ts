@@ -1,8 +1,8 @@
 
 import { produce } from 'immer';
-import { AppState, Action } from '../../types';
+import { AppState, Action, Member, User } from '../../types';
 
-export const membersInitialState = {
+export const membersInitialState: { members: Member[], users: User[] } = {
     members: [],
     users: [],
 };

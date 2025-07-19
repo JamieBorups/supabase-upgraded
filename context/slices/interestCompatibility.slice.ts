@@ -1,7 +1,7 @@
 
-import { AppState, Action } from '../../types';
+import { AppState, Action, InterestCompatibilityReport } from '../../types';
 
-export const interestCompatibilityInitialState = {
+export const interestCompatibilityInitialState: { interestCompatibilityReports: InterestCompatibilityReport[] } = {
     interestCompatibilityReports: [],
 };
 

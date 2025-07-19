@@ -2,13 +2,14 @@
 import { produce } from 'immer';
 import { AppState, Action, ProjectExportData, Member, ResearchPlan, OtfApplication } from '../../types';
 
-export const uiInitialState = {
+export const uiInitialState: Pick<AppState, 'loading' | 'setupNeeded' | 'currentUser' | 'reportProjectIdToOpen' | 'researchPlanToEdit' | 'otfApplicationToEdit' | 'experienceHubProjectId' | 'activeWorkshopItem'> = {
     loading: true,
     setupNeeded: false, // Default to false, AppContext will determine if setup is needed
     currentUser: null,
     reportProjectIdToOpen: null,
     researchPlanToEdit: null,
     otfApplicationToEdit: null,
+    experienceHubProjectId: null,
     activeWorkshopItem: null,
 };
 
@@ -45,6 +46,7 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
                 saleSessions: [],
                 otfApplications: [],
                 programGuidelines: [],
+                jobDescriptions: [],
                 settings: state.settings, // Preserve settings
                 loading: false,
                 currentUser: null,
@@ -58,6 +60,9 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
 
         case 'SET_OTF_APPLICATION_TO_EDIT':
             return { otfApplicationToEdit: action.payload };
+        
+        case 'SET_EXPERIENCE_HUB_PROJECT_ID':
+            return { experienceHubProjectId: action.payload };
 
         case 'SET_ACTIVE_WORKSHOP_ITEM':
             return { activeWorkshopItem: action.payload };

@@ -2,7 +2,7 @@
 import { AppState, Action } from '../../types';
 import { RecreationFrameworkReport } from '../../types';
 
-export const recreationInitialState = {
+export const recreationInitialState: { recreationFrameworkReports: RecreationFrameworkReport[] } = {
     recreationFrameworkReports: [],
 };
 

@@ -1,6 +1,7 @@
-import { AppState, Action } from '../../types';
 
-export const sdgInitialState = {
+import { AppState, Action, SdgAlignmentReport } from '../../types';
+
+export const sdgInitialState: { sdgAlignmentReports: SdgAlignmentReport[] } = {
     sdgAlignmentReports: [],
 };
 

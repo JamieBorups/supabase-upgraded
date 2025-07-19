@@ -1,10 +1,11 @@
 
 
 
-import { AppState, Action } from '../../types';
+
+import { AppState, Action, AppSettings } from '../../types';
 import { initialSettings } from '../../constants.ts';
 
-export const settingsInitialState = {
+export const settingsInitialState: { settings: AppSettings } = {
     settings: initialSettings,
 };
 

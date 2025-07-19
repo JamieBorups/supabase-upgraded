@@ -1,8 +1,10 @@
 
 
-import { AppState, Action } from '../../types';
 
-export const researchInitialState = {
+
+import { AppState, Action, ResearchPlan } from '../../types';
+
+export const researchInitialState: { researchPlans: ResearchPlan[] } = {
     researchPlans: [],
 };
 

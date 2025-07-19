@@ -1,4 +1,6 @@
 
+
+
 import { AppSettings } from '../../types.ts';
 import { AI_PERSONAS } from './personas.constants.ts';
 import { PROJECT_GENERATOR_FIELD_INSTRUCTIONS } from './projectGeneratorField.instructions.ts';
@@ -14,6 +16,10 @@ export const initialSettings: AppSettings = {
     dateFormat: 'YYYY-MM-DD',
     supabaseUrl: 'https://vfbmiuyamdbquhvhuifb.supabase.co',
     supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmYm1pdXlhbWRicXVodmh1aWZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMjc2OTksImV4cCI6MjA2NzYwMzY5OX0.Fv1YUVAhPmTNxoJ9G05sTyQeig0qnD26q1ES6ChsiY8',
+    organizationalDescription: 'The Arts Incubator is a collective dedicated to fostering artistic innovation and community engagement through collaborative projects and capacity-building initiatives.',
+    mission: 'To empower artists and arts collectives by providing tools, resources, and frameworks that reduce administrative burden and unlock creative potential.',
+    vision: 'A thriving, resilient, and decentralized arts ecosystem where all artists have the capacity to bring their visions to life.',
+    callToAction: 'Interested in contributing your skills to a mission-driven arts project? We are always looking for passionate volunteers. Apply now to be part of our community!',
   },
   theme: {
     // Brand

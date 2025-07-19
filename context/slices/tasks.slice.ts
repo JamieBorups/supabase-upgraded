@@ -1,8 +1,8 @@
 
 import { produce } from 'immer';
-import { AppState, Action } from '../../types';
+import { AppState, Action, Task, Activity, DirectExpense } from '../../types';
 
-export const tasksInitialState = {
+export const tasksInitialState: { tasks: Task[], activities: Activity[], directExpenses: DirectExpense[] } = {
     tasks: [],
     activities: [],
     directExpenses: [],

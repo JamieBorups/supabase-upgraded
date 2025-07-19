@@ -1,7 +1,8 @@
-import { produce } from 'immer';
-import { AppState, Action } from '../../types';
 
-export const projectsInitialState = {
+import { produce } from 'immer';
+import { AppState, Action, FormData, ProposalSnapshot } from '../../types';
+
+export const projectsInitialState: { projects: FormData[], proposals: ProposalSnapshot[] } = {
     projects: [],
     proposals: [],
 };

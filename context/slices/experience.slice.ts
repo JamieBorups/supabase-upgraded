@@ -1,7 +1,7 @@
 
-import { AppState, Action } from '../../types';
+import { AppState, Action, JobDescription } from '../../types';
 
-export const experienceInitialState = {
+export const experienceInitialState: { jobDescriptions: JobDescription[] } = {
     jobDescriptions: [],
 };
 

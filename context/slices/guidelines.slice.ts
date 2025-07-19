@@ -1,8 +1,10 @@
 
 
-import { AppState, Action } from '../../types';
 
-export const guidelinesInitialState = {
+
+import { AppState, Action, ProgramGuideline } from '../../types';
+
+export const guidelinesInitialState: { programGuidelines: ProgramGuideline[] } = {
     programGuidelines: [],
 };
 

@@ -1,8 +1,10 @@
 
 
-import { AppState, Action } from '../../types';
 
-export const otfInitialState = {
+
+import { AppState, Action, OtfApplication, ProgramGuideline } from '../../types';
+
+export const otfInitialState: { otfApplications: OtfApplication[], programGuidelines: ProgramGuideline[] } = {
     otfApplications: [],
     programGuidelines: [],
 };

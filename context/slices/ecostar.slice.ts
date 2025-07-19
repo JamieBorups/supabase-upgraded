@@ -1,6 +1,7 @@
-import { AppState, Action } from '../../types';
 
-export const ecostarInitialState = {
+import { AppState, Action, EcoStarReport } from '../../types';
+
+export const ecostarInitialState: { ecostarReports: EcoStarReport[] } = {
     ecostarReports: [],
 };
 

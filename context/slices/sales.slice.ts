@@ -1,8 +1,15 @@
 
 import { produce } from 'immer';
-import { AppState, Action } from '../../types';
+import { AppState, Action, InventoryItem, InventoryCategory, SaleSession, SaleListing, SalesTransaction, ItemList } from '../../types';
 
-export const salesInitialState = {
+export const salesInitialState: {
+    inventoryItems: InventoryItem[],
+    inventoryCategories: InventoryCategory[],
+    saleSessions: SaleSession[],
+    saleListings: SaleListing[],
+    salesTransactions: SalesTransaction[],
+    itemLists: ItemList[],
+} = {
     inventoryItems: [],
     inventoryCategories: [],
     saleSessions: [],

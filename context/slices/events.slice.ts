@@ -1,7 +1,7 @@
 
-import { AppState, Action } from '../../types';
+import { AppState, Action, Venue, Event, TicketType, EventTicket } from '../../types';
 
-export const eventsInitialState = {
+export const eventsInitialState: { venues: Venue[], events: Event[], ticketTypes: TicketType[], eventTickets: EventTicket[] } = {
     venues: [],
     events: [],
     ticketTypes: [],

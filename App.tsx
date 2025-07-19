@@ -33,6 +33,7 @@ import SetupWizard from './components/setup/SetupWizard.tsx';
 import ResearchPlanGeneratorPage from './components/tools/ResearchPlanGeneratorPage.tsx';
 import OtfPage from './components/otf/OtfPage.tsx';
 import ExperienceHubManager from './ExperienceHubManager.tsx';
+import AutoGenerateJobsPage from './components/experience/AutoGenerateJobsPage.tsx';
 
 const AppContent: React.FC = () => {
     const { state } = useAppContext();
@@ -98,7 +99,8 @@ const AppContent: React.FC = () => {
             case 'events': return <EventManager />;
             case 'proposals': return <ProposalManager />;
             case 'sales': return <MarketplaceManager />;
-            case 'experienceHub': return <ExperienceHubManager />;
+            case 'experienceHub': return <ExperienceHubManager onNavigate={handleNavigate} />;
+            case 'autoGenerateJobs': return <AutoGenerateJobsPage onNavigate={handleNavigate} />;
             default: return <HomePage onNavigate={handleNavigate} />;
         }
     };

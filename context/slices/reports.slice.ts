@@ -1,7 +1,7 @@
 
-import { AppState, Action } from '../../types';
+import { AppState, Action, Report, Highlight } from '../../types';
 
-export const reportsInitialState = {
+export const reportsInitialState: { reports: Report[], highlights: Highlight[] } = {
     reports: [],
     highlights: [],
 };
