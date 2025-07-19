@@ -1,4 +1,3 @@
-
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -12,7 +11,7 @@ const ExperienceHubGuide: React.FC = () => {
       <p>
         It uses AI to analyze all the data from a selected project to generate high-quality, professionally-worded job descriptions and accomplishment statements that accurately reflect the value of the work performed.
       </p>
-      
+
       <h3>The Workflow: From Project to Professional Asset</h3>
       <p>
         The process is designed to be straightforward and collaborative with the AI assistant.
@@ -22,7 +21,7 @@ const ExperienceHubGuide: React.FC = () => {
           <strong>Select a Project:</strong> The first step is always to select a project from the filter dropdown at the top of the page. All generated descriptions are linked to a specific project, as this provides the necessary context for the AI.
         </li>
         <li>
-          <strong>Generate New Description:</strong> Click the "Generate New Description" button. This will open a configuration modal where you provide the initial parameters for the AI.
+          <strong>Generate a New Description:</strong> Click the <code>Generate New Description</code> button. This will open a configuration modal where you provide the initial parameters for the AI.
         </li>
         <li>
           <strong>Configure the Generation:</strong> In the modal, you'll set:
@@ -40,7 +39,12 @@ const ExperienceHubGuide: React.FC = () => {
           <strong>Save:</strong> Once you're happy with the description, click "Save". It will now appear in the library for that project.
         </li>
       </ol>
-      
+
+      <h3>Auto-Generating for the Whole Team</h3>
+      <p>
+        For larger projects, you can use the <code>Auto Generate</code> button. This feature tells the AI to analyze the entire project and suggest a balanced team of 5-7 generic roles required for its success. It's a great way to quickly create a set of volunteer position descriptions for your grant proposals or recruitment efforts.
+      </p>
+
       <h3>The Viewer: Your Copy-Paste Hub</h3>
       <p>
         From the main list, click "View" on any saved description. The <strong>Viewer</strong> provides a clean, read-only display of all the generated content.

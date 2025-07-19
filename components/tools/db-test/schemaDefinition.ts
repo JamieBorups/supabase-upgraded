@@ -1,4 +1,67 @@
 
+
+
+import {
+    initialFormData,
+    initialMemberData,
+    initialTaskData,
+    initialActivityData,
+    initialReportData,
+    initialVenueData,
+    initialEventData,
+    initialTicketTypeData,
+    initialSettings,
+    initialInventoryItem,
+    initialSaleSession,
+    initialItemListData,
+    initialInventoryCategory,
+    initialRecreationReportData,
+    initialResearchPlanData,
+    initialOtfApplicationData,
+    initialJobDescription
+} from '../../../constants.ts';
+import { User, Contact, Interaction, DirectExpense, Highlight, NewsRelease, EventTicket, ProposalSnapshot, SalesTransaction, SaleListing, SalesTransactionItem, EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport } from '../../../types.ts';
+
+// Local initializers for models not in constants.ts
+const initialHighlightData: Omit<Highlight, 'id'> = { projectId: '', title: '', url: '' };
+const initialDirectExpenseData: Omit<DirectExpense, 'id'> = { projectId: '', budgetItemId: '', description: '', amount: 0, date: '' };
+const initialNewsReleaseData: Omit<NewsRelease, 'id' | 'createdAt' | 'updatedAt'> = {
+    projectId: '', type: '', contactMemberId: '', headline: '', subhead: '', publishDate: '', publishedUrl: '',
+    location: '', introduction: '', body: '', quotes: '', boilerplate: '', contactInfo: '', status: 'Draft',
+};
+const initialEventTicketData: Omit<EventTicket, 'id'> = { eventId: '', ticketTypeId: '', price: 0, capacity: 0, soldCount: 0 };
+const initialContactData: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'> = {
+    firstName: '', lastName: '', email: '', phone: '', title: '', organization: '',
+    contactType: '', associatedProjectIds: [],
+    address: { street: '', city: '', province: 'MB', postalCode: '' },
+    tags: [], notes: '',
+};
+const initialInteractionData: Omit<Interaction, 'id' | 'contactId'> = { date: '', type: 'Call', notes: '' };
+const initialProposalSnapshotData: Omit<ProposalSnapshot, 'id'> = {
+    projectId: '', createdAt: '', updatedAt: '', notes: '', projectData: initialFormData, tasks: [],
+    calculatedMetrics: { projectedRevenue: 0, projectedAudience: 0, numberOfPresentations: 0, averageTicketPrice: 0, averagePctSold: 0, averageVenueCapacity: 0 }
+};
+const initialSalesTransactionData: Omit<SalesTransaction, 'id' | 'createdAt' | 'items'> = { saleSessionId: '', notes: '', subtotal: 0, taxes: 0, total: 0 };
+const initialSalesTransactionItemData: Omit<SalesTransactionItem, 'id' | 'transactionId'> = { inventoryItemId: '', quantity: 0, pricePerItem: 0, itemTotal: 0, isVoucherRedemption: false };
+const initialSaleListingData: Omit<SaleListing, 'id'> = { saleSessionId: '', inventoryItemId: '' };
+const initialEcoStarReportData: Omit<EcoStarReport, 'id' | 'projectId' | 'createdAt'> = {
+    notes: '', environmentReport: null, customerReport: null, opportunityReport: null,
+    solutionReport: null, teamReport: null, advantageReport: null, resultsReport: null, fullReportText: ''
+};
+const initialInterestCompatibilityReportData: Omit<InterestCompatibilityReport, 'id' | 'projectId' | 'createdAt'> = {
+    notes: '', executiveSummary: '', stakeholderAnalysis: [], highCompatibilityAreas: [],
+    potentialConflicts: [], actionableRecommendations: [], fullReportText: ''
+};
+const initialSdgAlignmentReportData: Omit<SdgAlignmentReport, 'id' | 'projectId' | 'createdAt'> = {
+    notes: '', executiveSummary: '', detailedAnalysis: [], strategicRecommendations: [], fullReportText: ''
+};
+const initialUserData: Omit<User, 'id'> = {
+    username: 'sample_user',
+    passwordHash: 'a_very_long_secure_hash_string_representing_the_real_hash',
+    role: 'user',
+    memberId: 'mem_123456789'
+};
+
 // --- DB SCHEMA TYPES ---
 export interface RlsPolicy {
     name: string;
@@ -124,13 +187,20 @@ export const dbSchema: ModuleDefinition[] = [
                     { name: 'title', type: 'text', constraints: 'not null' },
                     { name: 'seniority_level', type: 'text' },
                     { name: 'tailoring_tags', type: 'jsonb', constraints: 'not null default \'[]\'::jsonb' },
+                    { name: 'project_tagline', type: 'text' },
+                    { name: 'project_summary', type: 'text' },
                     { name: 'summary', type: 'text' },
                     { name: 'responsibilities', type: 'jsonb', constraints: 'not null default \'[]\'::jsonb' },
                     { name: 'hard_skills', type: 'jsonb', constraints: 'not null default \'[]\'::jsonb' },
                     { name: 'soft_skills', type: 'jsonb', constraints: 'not null default \'[]\'::jsonb' },
                     { name: 'qualifications', type: 'jsonb', constraints: 'not null default \'[]\'::jsonb' },
                     { name: 'resume_points', type: 'jsonb', constraints: 'not null default \'[]\'::jsonb' },
-                    { name: 'linkedin_summary', type: 'text' }
+                    { name: 'linkedin_summary', type: 'text' },
+                    { name: 'about_org', type: 'text' },
+                    { name: 'volunteer_benefits', type: 'text' },
+                    { name: 'time_commitment', type: 'text' },
+                    { name: 'application_process', type: 'text' },
+                    { name: 'call_to_action', type: 'text' }
                 ],
                 rls: { enable: true, policies: [{ name: 'Public read-write access', command: 'ALL', using: 'true', check: 'true' }] }
             }

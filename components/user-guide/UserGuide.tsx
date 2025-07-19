@@ -22,6 +22,7 @@ import SetupGuide from './SetupGuide';
 import ResearchPlanGeneratorGuide from './ResearchPlanGeneratorGuide.tsx';
 import ResearchApproachesGuide from './ResearchApproachesGuide.tsx';
 import ExperienceHubGuide from './ExperienceHubGuide.tsx';
+import July182025Updates from './July182025Updates.tsx';
 
 
 import './guide.css';
@@ -29,7 +30,8 @@ import './guide.css';
 type GuideTopic = 
   | 'welcome' | 'setup' | 'acknowledgements' | 'empowering' | 'projects' | 'members' | 'tasks' | 'events' | 'sales' | 'media' 
   | 'reports' | 'communityImpact' | 'supplementalReports' | 'tools' | 'settings'
-  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches' | 'experienceHub';
+  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches' | 'experienceHub'
+  | 'july18_2025_updates';
 
 interface MenuItem {
     id: GuideTopic;
@@ -51,6 +53,12 @@ const menuStructure: MenuSection[] = [
             { id: 'empowering', label: 'Empowering the Arts', icon: 'fa-solid fa-rocket' },
             { id: 'acknowledgements', label: 'Acknowledgements', icon: 'fa-solid fa-award' },
             { id: 'setup', label: 'Initial Setup', icon: 'fa-solid fa-cogs' },
+        ]
+    },
+    {
+        title: 'Recent Updates',
+        items: [
+            { id: 'july18_2025_updates', label: 'July 18th, 2025', icon: 'fa-solid fa-bell' },
         ]
     },
     {
@@ -134,6 +142,7 @@ const UserGuide: React.FC = () => {
             case 'researchPlanGenerator': return <ResearchPlanGeneratorGuide />;
             case 'researchPlanApproaches': return <ResearchApproachesGuide />;
             case 'experienceHub': return <ExperienceHubGuide />;
+            case 'july18_2025_updates': return <July182025Updates />;
             default: return <WelcomePage />;
         }
     };
