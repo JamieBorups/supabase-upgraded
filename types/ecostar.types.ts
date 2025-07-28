@@ -18,11 +18,16 @@ export interface EcoStarFieldConfig {
 
 export type EcoStarFieldSettings = Record<string, EcoStarFieldConfig>;
 
+export type EcoStarPerspective = 'individual' | 'collective' | 'nonprofit' | 'municipal';
+
+export type ComprehensiveEcoStarReport = Partial<Record<EcoStarPerspective, Partial<EcoStarReport>>>;
+
 export interface EcoStarReport {
     id: string;
     projectId: string;
     createdAt: string;
     notes: string;
+    perspective?: EcoStarPerspective;
     environmentReport: ReportSectionContent | null;
     customerReport: ReportSectionContent | null;
     opportunityReport: ReportSectionContent | null;

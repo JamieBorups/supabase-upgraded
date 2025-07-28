@@ -1,4 +1,5 @@
 
+
 import { Content, GoogleGenAI } from "@google/genai";
 import { AiPersonaName, AppSettings } from '../types.ts';
 
@@ -14,11 +15,10 @@ export async function getAiResponse(
         throw new Error("AI features are currently disabled in settings.");
     }
     
-    // Per guidelines, *always* assume process.env.API_KEY is available.
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
         // This is a failsafe for local dev, but the primary assumption is it exists.
-        throw new Error("API Key is not configured in the environment. Please set the API_KEY environment variable.");
+        throw new Error("API Key is not configured. Please set the API_KEY environment variable.");
     }
 
     try {

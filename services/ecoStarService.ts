@@ -1,6 +1,6 @@
 
 import { getAiResponse } from './aiService';
-import { AppSettings, EcoStarField, FormData as Project, Member, ReportSectionContent, ResearchPlan } from '../types';
+import { AppSettings, EcoStarField, FormData as Project, Member, ReportSectionContent, ResearchPlan, EcoStarPerspective } from '../types';
 
 /**
  * Generates the context prompt for the ECO-STAR AI.
@@ -56,14 +56,26 @@ export const generateEcoStarSection = async (
     members: Member[],
     settings: AppSettings['ai'],
     chatHistoryText: string = '',
-    researchPlan?: ResearchPlan | null
+    researchPlan?: ResearchPlan | null,
+    perspective: EcoStarPerspective = 'nonprofit'
 ): Promise<ReportSectionContent> => {
     const fieldConfig = settings.ecostarFieldSettings[topic.key];
     if (!fieldConfig) {
         throw new Error(`Configuration for ECO-STAR section "${topic.key}" not found.`);
     }
+    
+    const perspectiveInstructions: Record<EcoStarPerspective, string> = {
+        individual: "You are an established artist mentoring a peer. Your analysis must focus on artistic growth, skill development, career advancement, and personal voice.",
+        collective: "You are an experienced project manager for artistic collaborations. Your analysis must focus on synergy, shared outcomes, and the value of the collaborative process.",
+        nonprofit: "You are a professional Executive Director and grant writer. Your analysis must focus on mission alignment, programmatic delivery, community impact metrics, and financial accountability.",
+        municipal: "You are a municipal policy advisor specializing in recreation and community well-being. Your analysis must heavily synthesize data from recreation frameworks and risk management to emphasize public good, alignment with public policy, and asset utilization."
+    };
 
-    const basePrompt = `${fieldConfig.prompt} ${chatHistoryText ? `Use the following chat history as your primary source for generating the report content: \n\n${chatHistoryText}` : 'Use the general project context provided for your analysis.'}`;
+    const basePrompt = `//--- PERSPECTIVE INSTRUCTION ---
+${perspectiveInstructions[perspective]}
+//--- TASK INSTRUCTION ---
+${fieldConfig.prompt}
+${chatHistoryText ? `Use the following chat history as your primary source for generating the report content: \n\n${chatHistoryText}` : 'Use the general project context provided for your analysis.'}`;
     const finalPrompt = constructContextPrompt(basePrompt, project, members, researchPlan);
 
     try {

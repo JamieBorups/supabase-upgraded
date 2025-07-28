@@ -14,9 +14,11 @@ import { EcoStarReport } from './ecostar.types';
 import { InterestCompatibilityReport } from './interestCompatibility.types';
 import { SdgAlignmentReport } from './sdg.types';
 import { RecreationFrameworkReport } from './recreation.types';
-import { ResearchPlan } from './research.types.ts';
+import { ResearchPlan, RelatedProject } from './research.types.ts';
 import { OtfApplication, ProgramGuideline } from './otf.types.ts';
-import { JobDescription } from './experience.types.ts';
+import { NohfcApplication } from './nohfc.types.ts';
+import { Risk } from './risk.types.ts';
+import { Infrastructure } from './infrastructure.types.ts';
 
 export interface ProjectExportData {
   project: FormData;
@@ -72,14 +74,17 @@ export interface AppState {
     sdgAlignmentReports: SdgAlignmentReport[];
     recreationFrameworkReports: RecreationFrameworkReport[];
     researchPlans: ResearchPlan[];
+    relatedProjects: RelatedProject[];
     otfApplications: OtfApplication[];
+    nohfcApplications: NohfcApplication[];
     programGuidelines: ProgramGuideline[];
-    jobDescriptions: JobDescription[];
+    risks: Risk[];
+    infrastructure: Infrastructure[];
     currentUser: User | null;
     reportProjectIdToOpen: string | null;
     researchPlanToEdit: ResearchPlan | null;
     otfApplicationToEdit: OtfApplication | null;
-    experienceHubProjectId: string | null;
+    nohfcApplicationToEdit: NohfcApplication | null;
     activeWorkshopItem: {
       type: 'task';
       itemId: string;
@@ -163,7 +168,7 @@ export type Action =
   | { type: 'SET_REPORT_PROJECT_ID_TO_OPEN'; payload: string | null }
   | { type: 'SET_RESEARCH_PLAN_TO_EDIT'; payload: ResearchPlan | null }
   | { type: 'SET_OTF_APPLICATION_TO_EDIT'; payload: OtfApplication | null }
-  | { type: 'SET_EXPERIENCE_HUB_PROJECT_ID'; payload: string | null }
+  | { type: 'SET_NOHFC_APPLICATION_TO_EDIT'; payload: NohfcApplication | null }
   | { type: 'SET_ACTIVE_WORKSHOP_ITEM'; payload: AppState['activeWorkshopItem'] }
   | { type: 'ADD_PROJECT_DATA', payload: ProjectExportData }
   | { type: 'LOAD_DATA'; payload: Omit<Partial<AppState>, 'reportProjectIdToOpen' | 'activeWorkshopItem' | 'currentUser' | 'loading'> }
@@ -207,17 +212,29 @@ export type Action =
   | { type: 'ADD_RESEARCH_PLAN'; payload: ResearchPlan }
   | { type: 'UPDATE_RESEARCH_PLAN'; payload: ResearchPlan }
   | { type: 'DELETE_RESEARCH_PLAN'; payload: string }
+  | { type: 'SET_RELATED_PROJECTS'; payload: RelatedProject[] }
+  | { type: 'ADD_RELATED_PROJECT'; payload: RelatedProject }
+  | { type: 'UPDATE_RELATED_PROJECT'; payload: RelatedProject }
+  | { type: 'DELETE_RELATED_PROJECT'; payload: string }
   | { type: 'SET_OTF_APPLICATIONS'; payload: OtfApplication[] }
   | { type: 'ADD_OTF_APPLICATION'; payload: OtfApplication }
   | { type: 'UPDATE_OTF_APPLICATION'; payload: OtfApplication }
   | { type: 'DELETE_OTF_APPLICATION'; payload: string }
+  | { type: 'SET_NOHFC_APPLICATIONS'; payload: NohfcApplication[] }
+  | { type: 'ADD_NOHFC_APPLICATION'; payload: NohfcApplication }
+  | { type: 'UPDATE_NOHFC_APPLICATION'; payload: NohfcApplication }
+  | { type: 'DELETE_NOHFC_APPLICATION'; payload: string }
   | { type: 'SET_PROGRAM_GUIDELINES'; payload: ProgramGuideline[] }
   | { type: 'ADD_PROGRAM_GUIDELINE'; payload: ProgramGuideline }
   | { type: 'UPDATE_PROGRAM_GUIDELINE'; payload: ProgramGuideline }
-  | { type: 'SET_JOB_DESCRIPTIONS'; payload: JobDescription[] }
-  | { type: 'ADD_JOB_DESCRIPTION'; payload: JobDescription }
-  | { type: 'UPDATE_JOB_DESCRIPTION'; payload: JobDescription }
-  | { type: 'DELETE_JOB_DESCRIPTION'; payload: string };
+  | { type: 'SET_RISKS'; payload: Risk[] }
+  | { type: 'ADD_RISK'; payload: Risk }
+  | { type: 'UPDATE_RISK'; payload: Risk }
+  | { type: 'DELETE_RISK'; payload: string }
+  | { type: 'SET_INFRASTRUCTURE'; payload: Infrastructure[] }
+  | { type: 'ADD_INFRASTRUCTURE'; payload: Infrastructure }
+  | { type: 'UPDATE_INFRASTRUCTURE'; payload: Infrastructure }
+  | { type: 'DELETE_INFRASTRUCTURE'; payload: string };
 
 
 export interface AppContextType {

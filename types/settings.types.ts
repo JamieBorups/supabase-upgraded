@@ -1,6 +1,4 @@
 
-
-
 import { SalesSettings } from './sales.types';
 import { EcoStarFieldSettings } from './ecostar.types';
 import { ResearchPlanSectionSettings } from './research.types.ts';
@@ -11,7 +9,7 @@ export interface CustomDiscipline { id: string; name: string; genres: { id: stri
 export interface CustomRole { id: string; name: string; }
 export interface CustomTaskStatus { id: string; name: string; color: string; }
 
-export type AiPersonaName = 'main' | 'projects' | 'members' | 'tasks' | 'budget' | 'reports' | 'media' | 'ecostar' | 'projectGenerator' | 'interestCompatibility' | 'sdgAlignment' | 'recreation' | 'taskGenerator' | 'researchPlan' | 'otf' | 'experienceHub';
+export type AiPersonaName = 'main' | 'projects' | 'members' | 'tasks' | 'budget' | 'reports' | 'media' | 'ecostar' | 'projectGenerator' | 'interestCompatibility' | 'sdgAlignment' | 'recreation' | 'taskGenerator' | 'researchPlan' | 'otf' | 'nohfc';
 
 export interface AiPersonaSettings {
   instructions: string;
@@ -131,6 +129,7 @@ export interface AppSettings {
     personaTemplates: Record<AiPersonaName, CommunicationTemplate[]>;
     projectGeneratorFieldInstructions: Record<string, string>;
     otfFieldSettings: Record<string, string>;
+    nohfcFieldSettings: Record<string, string>;
     ecostarFieldSettings: EcoStarFieldSettings;
     interestCompatibilitySectionSettings: Record<keyof Omit<import('../interestCompatibility.types').InterestCompatibilityReport, 'id' | 'projectId' | 'createdAt' | 'notes' | 'fullReportText'>, InterestCompatibilitySectionSettings>;
     researchPlanSectionSettings: Record<keyof Omit<import('../research.types').ResearchPlan, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'notes' | 'researchTypes' | 'fullReportHtml'>, ResearchPlanSectionSettings>;

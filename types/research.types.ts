@@ -1,4 +1,15 @@
 
+export interface RelatedProject {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    title: string;
+    organizations: string;
+    reportUrl: string;
+    description: string;
+    notes: string;
+    associatedProjectIds: string[];
+}
 
 export interface ResearchPlanCommunity {
     id?: string;
@@ -29,11 +40,13 @@ export interface ResearchPlan {
     knowledgeMobilization?: string;
     projectManagement?: string;
     sustainability?: string;
+    risksAndMitigation?: string;
     projectEvaluation?: string;
+    relatedProjectIds?: string[];
     fullReportHtml?: string;
 }
 
-export type ResearchPlanSection = keyof Omit<ResearchPlan, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'notes' | 'researchTypes' | 'fullReportHtml' | 'epistemologies' | 'pedagogies' | 'methodologies' | 'mixedMethods' | 'communities'>;
+export type ResearchPlanSection = keyof Omit<ResearchPlan, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'notes' | 'researchTypes' | 'fullReportHtml' | 'epistemologies' | 'pedagogies' | 'methodologies' | 'mixedMethods' | 'communities' | 'relatedProjectIds'>;
 
 export interface ResearchPlanSectionSettings {
     prompt: string;

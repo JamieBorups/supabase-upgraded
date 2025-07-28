@@ -74,4 +74,5 @@ export interface FormData {
     actualSales?: number;
     actualSalesDate?: string;
     imageUrl?: string;
+    riskIntroText: string;
 }

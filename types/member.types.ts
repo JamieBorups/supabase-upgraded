@@ -1,3 +1,4 @@
+
 export interface Member {
     id: string;
     memberId: string;
@@ -23,4 +24,4 @@ export interface User {
     memberId: string | null;
 }
 
-export type MemberViewTabId = 'profile' | 'activity' | 'experience';
+export type MemberViewTabId = 'profile' | 'activity';

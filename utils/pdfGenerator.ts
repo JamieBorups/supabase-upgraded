@@ -1,7 +1,7 @@
 
 import { 
     AppSettings, FormData as Project, Member, Task, Report, Highlight, NewsRelease, 
-    SalesTransaction, ProposalSnapshot, Event, Venue, EventTicket, AppContextType, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan, EcoStarReport, OtfApplication, JobDescription
+    SalesTransaction, ProposalSnapshot, Event, Venue, EventTicket, AppContextType, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, ResearchPlan, EcoStarReport, OtfApplication, NohfcApplication, ComprehensiveEcoStarReport, EcoStarPerspective, ReportSectionContent
 } from '../types';
 import { PEOPLE_INVOLVED_OPTIONS, GRANT_ACTIVITIES_OPTIONS, IMPACT_QUESTIONS, IMPACT_OPTIONS } from '../constants';
 
@@ -9,8 +9,9 @@ import { PEOPLE_INVOLVED_OPTIONS, GRANT_ACTIVITIES_OPTIONS, IMPACT_QUESTIONS, IM
 declare const jspdf: any;
 
 /**
- * A from-scratch PDF builder that creates free-flowing, document-style reports without tables for layout.
+ * A from-scratch PDF builder that creates free-flowing, document-style reports.
  * It manages its own Y-coordinate, text wrapping, and page breaks to prevent layout issues.
+ * Now includes a powerful table generator.
  */
 class PdfBuilder {
     doc: any; // jsPDF instance
@@ -59,7 +60,7 @@ class PdfBuilder {
         this.y += (this.fontSizes.small * this.lineHeightRatio) + 25;
     }
 
-    private checkPageBreak(requiredHeight: number): void {
+    checkPageBreak(requiredHeight: number): void {
         if (this.y + requiredHeight > this.pageHeight - this.margin) {
             this.doc.addPage();
             this.y = this.margin;
@@ -133,10 +134,7 @@ class PdfBuilder {
         this.doc.setTextColor(color);
         const lines = this.doc.splitTextToSize(text, this.pageWidth - this.margin * 2);
         const lineHeight = fontSize * this.lineHeightRatio;
-        const textHeight = lines.length * lineHeight;
         
-        // This is the core logic that prevents text from being split awkwardly.
-        // It checks line by line if a page break is needed.
         this.y += spacing.top;
         lines.forEach((line: string) => {
             this.checkPageBreak(lineHeight);
@@ -154,6 +152,120 @@ class PdfBuilder {
         const listContent = items.filter(Boolean).map(item => `•  ${item}`).join('\n');
         this.addParagraph(listContent);
     }
+    
+    addTable(headers: string[], rows: (string | number)[][], options: { columnStyles?: { width?: number, align?: 'left' | 'center' | 'right' }[] } = {}) {
+        const tableWidth = this.pageWidth - this.margin * 2;
+        const padding = 5;
+        const headerFontSize = this.fontSizes.p;
+        const rowFontSize = this.fontSizes.p;
+        const lineHeight = rowFontSize * 1.2; // Use a slightly smaller line height for tables
+
+        // 1. Calculate Column Widths
+        const numColumns = headers.length;
+        let columnWidths: number[] = [];
+        if (options.columnStyles && options.columnStyles.length === numColumns) {
+            const totalWidth = options.columnStyles.reduce((sum, style) => sum + (style.width || 0), 0);
+            if(totalWidth > 0 && totalWidth <= 1) { // Proportional widths
+                 columnWidths = options.columnStyles.map(style => (style.width || 1 / numColumns) * tableWidth);
+            } else { // Fixed widths
+                 columnWidths = options.columnStyles.map(style => style.width || tableWidth / numColumns);
+            }
+        } else {
+            columnWidths = Array(numColumns).fill(tableWidth / numColumns);
+        }
+        
+        const columnAligns = (options.columnStyles || []).map(style => style.align || 'left');
+
+        const drawHeader = () => {
+            this.doc.setFont('helvetica', 'bold');
+            this.doc.setFontSize(headerFontSize);
+            this.doc.setTextColor('#334155'); // slate-700
+            this.doc.setFillColor('#f1f5f9'); // slate-100
+            
+            // Calculate header height
+            let maxHeaderLines = 0;
+            const wrappedHeaders = headers.map((header, i) => {
+                const lines = this.doc.splitTextToSize(header, columnWidths[i] - padding * 2);
+                if (lines.length > maxHeaderLines) maxHeaderLines = lines.length;
+                return lines;
+            });
+            const headerHeight = maxHeaderLines * lineHeight + padding * 2;
+
+            this.checkPageBreak(headerHeight);
+            
+            // Draw header background and bottom border
+            this.doc.rect(this.margin, this.y, tableWidth, headerHeight, 'F');
+            this.doc.setDrawColor('#cbd5e1'); // slate-300
+            this.doc.line(this.margin, this.y + headerHeight, this.margin + tableWidth, this.y + headerHeight);
+            
+            // Draw header text and vertical lines
+            let x = this.margin;
+            wrappedHeaders.forEach((lines, i) => {
+                this.doc.text(lines, x + padding, this.y + padding + rowFontSize);
+                x += columnWidths[i];
+                if (i < numColumns - 1) {
+                    this.doc.line(x, this.y, x, this.y + headerHeight);
+                }
+            });
+
+            this.y += headerHeight;
+        };
+
+        drawHeader(); // Draw the initial header
+
+        // 2. Draw Rows
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setFontSize(rowFontSize);
+        this.doc.setTextColor('#334155');
+
+        rows.forEach((row, rowIndex) => {
+            let maxRowLines = 0;
+            const wrappedRow = row.map((cell, i) => {
+                const text = String(cell || '');
+                const lines = this.doc.splitTextToSize(text, columnWidths[i] - padding * 2);
+                if (lines.length > maxRowLines) maxRowLines = lines.length;
+                return lines;
+            });
+            const rowHeight = maxRowLines * lineHeight + padding * 2;
+
+            // Check for page break and repeat header if necessary
+            if (this.y + rowHeight > this.pageHeight - this.margin) {
+                this.doc.addPage();
+                this.y = this.margin;
+                drawHeader();
+            }
+
+            // Zebra striping
+            if (rowIndex % 2 !== 0) {
+                 this.doc.setFillColor('#f8fafc'); // slate-50
+                 this.doc.rect(this.margin, this.y, tableWidth, rowHeight, 'F');
+            }
+
+            // Draw row text and vertical lines
+            let x = this.margin;
+            wrappedRow.forEach((lines, i) => {
+                const align = columnAligns[i];
+                let textX = x + padding;
+                if (align === 'right') textX = x + columnWidths[i] - padding;
+                else if (align === 'center') textX = x + columnWidths[i] / 2;
+                
+                this.doc.text(lines, textX, this.y + padding + rowFontSize, { align: align });
+                
+                x += columnWidths[i];
+                if (i < numColumns - 1) {
+                    this.doc.setDrawColor('#e2e8f0'); // slate-200
+                    this.doc.line(x, this.y, x, this.y + rowHeight);
+                }
+            });
+            
+            this.y += rowHeight;
+            // Draw bottom border for the row
+            this.doc.setDrawColor('#e2e8f0');
+            this.doc.line(this.margin, this.y, this.margin + tableWidth, this.y);
+        });
+
+        this.y += 20; // Add some space after the table
+    }
 
     save(fileName: string) {
         // Sanitize filename
@@ -169,40 +281,83 @@ const formatCurrency = (value: number | undefined | null) => {
 
 // --- Supplemental Reports ---
 
-export const generateEcoStarPdf = async (report: EcoStarReport, projectTitle: string) => {
+export const generateEcoStarPdf = async (report: EcoStarReport | ComprehensiveEcoStarReport, projectTitle: string) => {
     if (!report || typeof report !== 'object') throw new Error("Report data is missing or corrupted.");
     
-    const builder = new PdfBuilder('ECO-STAR Supplemental Report', projectTitle);
-    const sections: { key: keyof EcoStarReport; label: string; }[] = [
-        { key: 'environmentReport', label: 'E – Environment' }, { key: 'customerReport', label: 'C – Customer' },
-        { key: 'opportunityReport', label: 'O – Opportunity' }, { key: 'solutionReport', label: 'S – Solution' },
-        { key: 'teamReport', label: 'T – Team' }, { key: 'advantageReport', label: 'A – Advantage' },
-        { key: 'resultsReport', label: 'R – Results' },
-    ];
-    
-    sections.forEach(section => {
-        const content = report[section.key] as any;
-        if (content) {
-            builder.addSectionTitle(section.label);
-            builder.addSubSectionTitle('Summary');
-            builder.addParagraph(content.summary);
+    const isComprehensive = 'individual' in report || 'collective' in report || 'nonprofit' in report || 'municipal' in report;
 
-            builder.addSubSectionTitle('Key Considerations');
-            builder.addList(content.keyConsiderations);
-            
-            builder.addSubSectionTitle('Follow-up Questions');
-            if (Array.isArray(content.followUpQuestions) && content.followUpQuestions.length > 0) {
-                content.followUpQuestions.forEach((qa: any) => {
-                    builder.addMinorSectionTitle(qa.question);
-                    builder.addParagraph(qa.sampleAnswer);
+    if (isComprehensive) {
+        const comprehensiveReport = report as ComprehensiveEcoStarReport;
+        const builder = new PdfBuilder('Comprehensive ECO-STAR Report', projectTitle);
+        
+        const perspectives: EcoStarPerspective[] = ['individual', 'collective', 'nonprofit', 'municipal'];
+        
+        perspectives.forEach(p => {
+            const perspectiveReport = comprehensiveReport[p];
+            if (perspectiveReport) {
+                const perspectiveLabels: Record<EcoStarPerspective, string> = {
+                    individual: 'Individual Artist Perspective',
+                    collective: 'Ad-hoc Collective Perspective',
+                    nonprofit: 'Incorporated Non-Profit Perspective',
+                    municipal: 'Municipal Recreation Board Perspective'
+                };
+                builder.addSectionTitle(perspectiveLabels[p]);
+
+                const sections: { key: keyof EcoStarReport; label: string; }[] = [
+                    { key: 'environmentReport', label: 'E – Environment' }, { key: 'customerReport', label: 'C – Customer' },
+                    { key: 'opportunityReport', label: 'O – Opportunity' }, { key: 'solutionReport', label: 'S – Solution' },
+                    { key: 'teamReport', label: 'T – Team' }, { key: 'advantageReport', label: 'A – Advantage' },
+                    { key: 'resultsReport', label: 'R – Results' },
+                ];
+                
+                sections.forEach(section => {
+                    const content = (perspectiveReport as any)[section.key] as ReportSectionContent | null;
+                    if (content) {
+                        builder.addSubSectionTitle(section.label);
+                        builder.addMinorSectionTitle('Summary');
+                        builder.addParagraph(content.summary);
+                        builder.addMinorSectionTitle('Key Considerations');
+                        builder.addList(content.keyConsiderations);
+                    }
                 });
-            } else {
-                 builder.addParagraph('N/A');
             }
-        }
-    });
+        });
+        builder.save(`Comprehensive-ECO-STAR-Report-${projectTitle}`);
 
-    builder.save(`ECO-STAR-Report-${projectTitle}`);
+    } else {
+        const singleReport = report as EcoStarReport;
+        const builder = new PdfBuilder('ECO-STAR Supplemental Report', projectTitle);
+        const sections: { key: keyof EcoStarReport; label: string; }[] = [
+            { key: 'environmentReport', label: 'E – Environment' }, { key: 'customerReport', label: 'C – Customer' },
+            { key: 'opportunityReport', label: 'O – Opportunity' }, { key: 'solutionReport', label: 'S – Solution' },
+            { key: 'teamReport', label: 'T – Team' }, { key: 'advantageReport', label: 'A – Advantage' },
+            { key: 'resultsReport', label: 'R – Results' },
+        ];
+        
+        sections.forEach(section => {
+            const content = (singleReport as any)[section.key] as any;
+            if (content) {
+                builder.addSectionTitle(section.label);
+                builder.addSubSectionTitle('Summary');
+                builder.addParagraph(content.summary);
+
+                builder.addSubSectionTitle('Key Considerations');
+                builder.addList(content.keyConsiderations);
+                
+                builder.addSubSectionTitle('Follow-up Questions');
+                if (Array.isArray(content.followUpQuestions) && content.followUpQuestions.length > 0) {
+                    content.followUpQuestions.forEach((qa: any) => {
+                        builder.addMinorSectionTitle(qa.question);
+                        builder.addParagraph(qa.sampleAnswer);
+                    });
+                } else {
+                     builder.addParagraph('N/A');
+                }
+            }
+        });
+
+        builder.save(`ECO-STAR-Report-${projectTitle}`);
+    }
 };
 
 export const generateInterestCompatibilityPdf = async (report: InterestCompatibilityReport, projectTitle: string) => {
@@ -333,6 +488,14 @@ export const generateResearchPlanPdf = async (plan: ResearchPlan, projectTitle: 
     builder.addParagraph(plan.ethicalConsiderations);
     builder.addSectionTitle('Knowledge Mobilization');
     builder.addParagraph(plan.knowledgeMobilization);
+    builder.addSectionTitle('Project Management');
+    builder.addParagraph(plan.projectManagement);
+    builder.addSectionTitle('Sustainability');
+    builder.addParagraph(plan.sustainability);
+    builder.addSectionTitle('Risks and Risk Mitigation');
+    builder.addParagraph(plan.risksAndMitigation);
+    builder.addSectionTitle('Project Evaluation');
+    builder.addParagraph(plan.projectEvaluation);
 
     builder.save(`Research-Plan-${projectTitle}`);
 }
@@ -354,85 +517,142 @@ export const generateOtfPdf = async (app: OtfApplication, projectTitle: string) 
     
     builder.addSectionTitle('Project Plan');
     if (app.projectPlan && app.projectPlan.length > 0) {
-        app.projectPlan.forEach(item => {
-            builder.addSubSectionTitle(item.deliverable);
-            builder.addMinorSectionTitle('Key Task');
-            builder.addParagraph(item.keyTask);
-            builder.addMinorSectionTitle('Timing');
-            builder.addParagraph(item.timing);
-            builder.addMinorSectionTitle('Justification');
-            builder.addParagraph(item.justification);
+        const headers = ['Deliverable', 'Key Task', 'Timing', 'Justification'];
+        const rows = app.projectPlan.map(item => [
+            item.deliverable,
+            item.keyTask,
+            item.timing,
+            item.justification
+        ]);
+        builder.addTable(headers, rows, {
+            columnStyles: [
+                { width: 0.2 }, { width: 0.3 }, { width: 0.15 }, { width: 0.35 },
+            ]
         });
     }
 
     builder.addSectionTitle('Budget');
     if (app.budgetItems && app.budgetItems.length > 0) {
-        app.budgetItems.forEach(item => {
-            builder.addSubSectionTitle(`${item.category}: ${item.itemDescription}`);
-            builder.addParagraph(`Cost Breakdown: ${item.costBreakdown}`);
-            builder.addParagraph(`Amount: ${formatCurrency(item.requestedAmount)}`);
+        const headers = ['Category', 'Item', 'Cost Breakdown', 'Requested Amount'];
+        const rows = app.budgetItems.map(item => [
+            item.category,
+            item.itemDescription,
+            item.costBreakdown,
+            formatCurrency(item.requestedAmount)
+        ]);
+        builder.addTable(headers, rows, {
+            columnStyles: [
+                { width: 0.25 }, { width: 0.25 }, { width: 0.35 }, { width: 0.15, align: 'right' },
+            ]
         });
     }
 
     builder.save(`OTF-Application-${app.title}`);
 }
 
-export const generateJobDescriptionsPdf = async (jobDescriptions: JobDescription[], projectTitle: string, settings: AppSettings) => {
-    const docTitle = jobDescriptions.length > 1 ? 'Volunteer Job Descriptions' : jobDescriptions[0].title;
-    const builder = new PdfBuilder(docTitle, projectTitle);
+export const generateNohfcPdf = async (app: NohfcApplication, projectTitle: string) => {
+    const builder = new PdfBuilder('NOHFC Application Draft', projectTitle);
+    
+    builder.addSectionTitle('Section 1: About the Project');
+    builder.addSubSectionTitle('1a. Organization Description');
+    builder.addParagraph(app.question_1a);
+    builder.addSubSectionTitle('1b. Enhanced Organization Description');
+    builder.addParagraph(app.question_1b);
+    builder.addSubSectionTitle('1c. Why is the project being undertaken?');
+    builder.addParagraph(app.question_1c);
+    builder.addSubSectionTitle('1d. Enhanced: Why is the project being undertaken?');
+    builder.addParagraph(app.question_1d);
+    builder.addSubSectionTitle('1e. Is the project identified in a planning process such as a current community or organizational plan? Please explain.');
+    builder.addParagraph(app.question_1e);
+    builder.addSubSectionTitle('1f. Enhanced: Is the project identified in a planning process?');
+    builder.addParagraph(app.question_1f);
+    builder.addSubSectionTitle('2a. What are the key activities that will be undertaken to complete the project?');
+    builder.addParagraph(app.question_2a);
+    builder.addSubSectionTitle('2b. Enhanced: Key project activities');
+    builder.addParagraph(app.question_2b);
 
-    jobDescriptions.forEach((jd, index) => {
-        if (index > 0) {
-            builder.doc.addPage();
-            builder.y = builder.margin;
-        }
+    builder.addSectionTitle('Section 2: Project Outcomes and Benefits');
+    builder.addSubSectionTitle('3a. What are the expected outcomes and benefits of the project?');
+    builder.addParagraph(app.question_3a);
+    builder.addSubSectionTitle('3b. Enhanced: Expected outcomes and benefits');
+    builder.addParagraph(app.question_3b);
+    
+    builder.addSectionTitle('Section 3: Technical, Managerial and Financial Capacity');
+    builder.addSubSectionTitle('4a. Please identify the technical, managerial and financial capacity for implementing the project:');
+    builder.addParagraph(app.question_4a);
+    builder.addSubSectionTitle('4b. Enhanced: Capacity for implementing');
+    builder.addParagraph(app.question_4b);
+    builder.addSubSectionTitle('5a. Please identify the technical, managerial and financial capacity for sustaining the facility:');
+    builder.addParagraph(app.question_5a);
+    builder.addSubSectionTitle('5b. Enhanced: Capacity for sustaining');
+    builder.addParagraph(app.question_5b);
+    builder.addSubSectionTitle('6a. Please explain how the project builds on and optimizes the capacity and efficiency of existing infrastructure.');
+    builder.addParagraph(app.question_6a);
+    builder.addSubSectionTitle('6b. Enhanced: Optimizing existing infrastructure');
+    builder.addParagraph(app.question_6b);
+    
+    builder.addSectionTitle('Section 4: Justification');
+    builder.addSubSectionTitle('7a. Why is NOHFC funding necessary for the completion of the project?');
+    builder.addParagraph(app.question_7a);
+    builder.addSubSectionTitle('7b. Enhanced: Need for NOHFC funding');
+    builder.addParagraph(app.question_7b);
+    builder.addSubSectionTitle('8a. In addition to the funding sources identified herein , have you approached or applied to any other funding programs?');
+    builder.addParagraph(app.question_8a);
+    builder.addSubSectionTitle('8b. Enhanced: Other funding applications');
+    builder.addParagraph(app.question_8b);
 
-        const addConditionalSection = (title: string, content: string | string[] | undefined | null) => {
-            if (!content || (Array.isArray(content) && content.length === 0) || (typeof content === 'string' && content.trim() === '')) {
-                return;
-            }
-            builder.addSubSectionTitle(title);
-            if (Array.isArray(content)) {
-                builder.addList(content);
-            } else {
-                builder.addParagraph(content);
-            }
-        };
+    builder.addSectionTitle('Project Budget');
+    if (app.budgetItems && app.budgetItems.length > 0) {
+        const headers = ['Category', 'Item', 'Cost Breakdown', 'Requested Amount', 'Justification'];
+        const rows = app.budgetItems.map(item => [
+            item.category,
+            item.itemDescription,
+            item.costBreakdown,
+            formatCurrency(item.requestedAmount),
+            item.justification
+        ]);
+        builder.addTable(headers, rows, {
+            columnStyles: [
+                { width: 0.15 }, { width: 0.20 }, { width: 0.20 }, { width: 0.15, align: 'right' }, { width: 0.30 }
+            ]
+        });
+
+        const subtotal = app.budgetItems.reduce((sum, item) => sum + (item.requestedAmount || 0), 0);
+        const adminFee = subtotal * 0.15;
+        const total = subtotal + adminFee;
+
+        const lineHeight = builder.fontSizes.p * builder.lineHeightRatio;
+        builder.checkPageBreak(3 * lineHeight + 20); // Check space for 3 lines + padding
+        builder.y += 20;
+
+        const labelX = builder.pageWidth - builder.margin - 200;
+        const valueX = builder.pageWidth - builder.margin;
         
-        if (jobDescriptions.length > 1) {
-             builder.addSectionTitle(jd.title);
-        }
-
-        if (jd.projectTagline) {
-            builder.addText(jd.projectTagline, builder.fontSizes.h3, 'italic', { top: 0, bottom: 12 }, '#475569');
-        }
-
-        const aboutOrgContent = jd.aboutOrg || settings.general.organizationalDescription;
-        if (aboutOrgContent) {
-            builder.addSubSectionTitle(`About ${settings.general.collectiveName}`);
-            builder.addParagraph(aboutOrgContent);
-        }
+        builder.doc.setFont('helvetica', 'normal');
+        builder.doc.setFontSize(builder.fontSizes.p);
         
-        addConditionalSection('Project Summary', jd.projectSummary);
+        builder.doc.text('Subtotal:', labelX, builder.y);
+        builder.doc.text(formatCurrency(subtotal), valueX, builder.y, { align: 'right' });
+        builder.y += lineHeight;
         
-        addConditionalSection('Role Summary', jd.summary);
-        addConditionalSection('Key Responsibilities', jd.responsibilities);
-        addConditionalSection('Qualifications', jd.qualifications);
-        
-        addConditionalSection('Hard Skills', jd.hardSkills);
-        addConditionalSection('Soft Skills', jd.softSkills);
-        
-        addConditionalSection("What You'll Gain", jd.volunteerBenefits);
-        addConditionalSection('Time Commitment & Logistics', jd.timeCommitment);
-        addConditionalSection('How to Get Involved', jd.applicationProcess);
+        builder.doc.text('Administrative Fee (15%):', labelX, builder.y);
+        builder.doc.text(formatCurrency(adminFee), valueX, builder.y, { align: 'right' });
+        builder.y += lineHeight;
 
-        const callToActionContent = [jd.callToAction, settings.media.contactInfo].filter(Boolean).join('\n\n');
-        addConditionalSection('Get Involved!', callToActionContent);
-    });
+        builder.doc.setDrawColor('#475569'); // slate-600
+        builder.doc.setLineWidth(0.5);
+        builder.doc.line(labelX, builder.y, valueX, builder.y);
+        builder.y += 5;
 
-    const fileName = jobDescriptions.length > 1 ? `Volunteer-Job-Descriptions-${projectTitle}` : `Job-Description-${jobDescriptions[0].title}`;
-    builder.save(fileName);
+        builder.doc.setFont('helvetica', 'bold');
+        builder.doc.text('Total NOHFC Request:', labelX, builder.y);
+        builder.doc.text(formatCurrency(total), valueX, builder.y, { align: 'right' });
+        builder.y += lineHeight + 5;
+    }
+
+    builder.save(`NOHFC-Application-${app.title}`);
 };
+
 
 // --- Dynamic Reports ---
 

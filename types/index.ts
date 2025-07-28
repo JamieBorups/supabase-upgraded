@@ -19,4 +19,6 @@ export * from './types/sdg.types';
 export * from './types/recreation.types';
 export * from './types/research.types';
 export * from './types/otf.types';
-export * from './types/experience.types';
+export * from './types/nohfc.types';
+export * from './types/risk.types';
+export * from './types/infrastructure.types';

@@ -1,5 +1,6 @@
 
 
+
 import { supabase } from '../../supabase.ts';
 import { FormData as Project, DetailedBudget, BudgetItem, ProposalSnapshot, ProjectExportData } from '../../types.ts';
 import { mapObjectToSnakeCase, mapObjectToCamelCase, handleResponse } from './utils';
@@ -32,6 +33,7 @@ export const getProjects = async (): Promise<Project[]> => {
         mappedProject.budget = budget;
         mappedProject.collaboratorDetails = (project_collaborators || []).map((c: any) => mapObjectToCamelCase(c));
         mappedProject.permissionConfirmationFiles = [];
+        mappedProject.riskIntroText = mappedProject.riskIntroText || '';
         return mappedProject as Project;
     });
 };

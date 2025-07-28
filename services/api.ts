@@ -17,5 +17,7 @@ export * from './api_slices/sdg';
 export * from './api_slices/recreation';
 export * from './api_slices/research';
 export * from './api_slices/otf';
+export * from './api_slices/nohfc';
 export * from './api_slices/guidelines';
-export * from './api_slices/experience';
+export * from './api_slices/risks';
+export * from './api_slices/infrastructure';
