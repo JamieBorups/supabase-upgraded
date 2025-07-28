@@ -1,6 +1,4 @@
 
-
-
 import { ResearchPlanSection } from '../types';
 
 export const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; wordLimit: number }[] = [
@@ -13,6 +11,7 @@ export const RESEARCH_PLAN_SECTIONS: { key: ResearchPlanSection; label: string; 
     { key: 'knowledgeMobilization', label: 'Knowledge Mobilization and Dissemination', wordLimit: 500 },
     { key: 'projectManagement', label: 'Project Management and Timeline', wordLimit: 500 },
     { key: 'sustainability', label: 'Sustainability', wordLimit: 800 },
+    { key: 'risksAndMitigation', label: 'Risks and Risk Mitigation', wordLimit: 800 },
     { key: 'projectEvaluation', label: 'Project Evaluation', wordLimit: 400 },
 ];
 

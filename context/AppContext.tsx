@@ -57,14 +57,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     events, ticketTypes, eventTickets, proposals, directExpenses,
                     inventoryItems, inventoryCategories, saleSessions, salesTransactions, itemLists,
                     saleListings, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports,
-                    researchPlans, programGuidelines, otfApplications, jobDescriptions
+                    researchPlans, programGuidelines, otfApplications, nohfcApplications, risks, infrastructure
                 ] = await Promise.all([
                     api.getProjects(), api.getMembers(), api.getUsers(), api.getTasks(), api.getActivities(), api.getHighlights(),
                     api.getNewsReleases(), api.getReports(), api.getContacts(), api.getInteractions(), api.getVenues(),
                     api.getEvents(), api.getTicketTypes(), api.getEventTickets(), api.getProposals(), api.getDirectExpenses(),
                     api.getInventoryItems(), api.getInventoryCategories(), api.getSaleSessions(), api.getSalesTransactions(), api.getItemLists(),
                     api.getSaleListings(), api.getEcoStarReports(), api.getInterestCompatibilityReports(), api.getSdgAlignmentReports(), api.getRecreationFrameworkReports(),
-                    api.getResearchPlans(), api.getProgramGuidelines(), api.getOtfApplications(), api.getJobDescriptions()
+                    api.getResearchPlans(), api.getProgramGuidelines(), api.getOtfApplications(), api.getNohfcApplications(), api.getRisks(), api.getInfrastructure()
                 ]);
 
                 // Check for admin user after fetching users table
@@ -94,7 +94,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     eventTickets, proposals, directExpenses, inventoryItems, inventoryCategories,
                     saleSessions, salesTransactions, itemLists, saleListings, ecostarReports,
                     interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, researchPlans,
-                    programGuidelines, otfApplications, jobDescriptions
+                    programGuidelines, otfApplications, nohfcApplications, risks, infrastructure
                 };
                 
                 dispatch({ type: 'LOAD_DATA', payload: loadedData });

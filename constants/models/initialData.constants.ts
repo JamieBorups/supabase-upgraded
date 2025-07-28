@@ -24,7 +24,6 @@ export * from './models/venue.initial';
 export * from './models/research.initial';
 export * from './models/otf.initial';
 export * from './models/nohfc.initial';
-export * from './ai/nohfc.constants';
 export * from './models/risk.initial';
 export * from './models/infrastructure.initial';
 export * from './ai/interestCompatibility.constants';

@@ -38,4 +38,5 @@ export const initialFormData: FormData = {
   actualSales: 0,
   actualSalesDate: '',
   imageUrl: '',
+  riskIntroText: '',
 };

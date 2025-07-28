@@ -1,5 +1,4 @@
 
-
 import { AppState, Action } from '../../types.ts';
 import { projectsReducer } from '../slices/projects.slice';
 import { membersReducer } from '../slices/members.slice';
@@ -14,10 +13,12 @@ import { ecostarReducer } from '../slices/ecostar.slice';
 import { interestCompatibilityReducer } from '../slices/interestCompatibility.slice';
 import { sdgReducer } from '../slices/sdg.slice';
 import { recreationReducer } from '../slices/recreation.slice';
-import { researchReducer } from '../slices/research.slice.ts';
+import { researchReducer, relatedProjectsReducer } from '../slices/research.slice.ts';
 import { otfReducer } from '../slices/otf.slice.ts';
+import { nohfcReducer } from '../slices/nohfc.slice.ts';
 import { guidelinesReducer } from '../slices/guidelines.slice.ts';
-import { experienceReducer } from '../slices/experience.slice.ts';
+import { risksReducer } from '../slices/risks.slice.ts';
+import { infrastructureReducer } from '../slices/infrastructure.slice.ts';
 
 export const appReducer = (state: AppState, action: Action): AppState => {
     // Each reducer is responsible for its own slice of the state.
@@ -38,9 +39,12 @@ export const appReducer = (state: AppState, action: Action): AppState => {
         ...sdgReducer(state, action),
         ...recreationReducer(state, action),
         ...researchReducer(state, action),
+        ...relatedProjectsReducer(state, action),
         ...otfReducer(state, action),
+        ...nohfcReducer(state, action),
         ...guidelinesReducer(state, action),
-        ...experienceReducer(state, action),
+        ...risksReducer(state, action),
+        ...infrastructureReducer(state, action),
     };
     return newState;
 };

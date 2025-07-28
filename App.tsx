@@ -32,8 +32,10 @@ import MarketplaceManager from './components/sales/SalesManager.tsx';
 import SetupWizard from './components/setup/SetupWizard.tsx';
 import ResearchPlanGeneratorPage from './components/tools/ResearchPlanGeneratorPage.tsx';
 import OtfPage from './components/otf/OtfPage.tsx';
-import ExperienceHubManager from './ExperienceHubManager.tsx';
-import AutoGenerateJobsPage from './components/experience/AutoGenerateJobsPage.tsx';
+import NohfcPage from './components/nohfc/NohfcPage.tsx';
+import RelatedProjectsManager from './RelatedProjectsManager.tsx';
+import RiskManager from './RiskManager.tsx';
+import InfrastructureManager from './InfrastructureManager.tsx';
 
 const AppContent: React.FC = () => {
     const { state } = useAppContext();
@@ -44,8 +46,10 @@ const AppContent: React.FC = () => {
             setActivePage('researchPlanGenerator');
         } else if (state.otfApplicationToEdit) {
             setActivePage('otf');
+        } else if (state.nohfcApplicationToEdit) {
+            setActivePage('nohfc');
         }
-    }, [state.researchPlanToEdit, state.otfApplicationToEdit]);
+    }, [state.researchPlanToEdit, state.otfApplicationToEdit, state.nohfcApplicationToEdit]);
 
     const handleNavigate = (page: Page) => {
         setActivePage(page);
@@ -92,6 +96,7 @@ const AppContent: React.FC = () => {
             case 'frameworkForRecreation': return <FrameworkForRecreationPage />;
             case 'researchPlanGenerator': return <ResearchPlanGeneratorPage />;
             case 'otf': return <OtfPage />;
+            case 'nohfc': return <NohfcPage />;
             case 'dbTest': return <DbTestPage />;
             case 'highlights': return <HighlightsManager />;
             case 'media': return <MediaManager />;
@@ -99,8 +104,9 @@ const AppContent: React.FC = () => {
             case 'events': return <EventManager />;
             case 'proposals': return <ProposalManager />;
             case 'sales': return <MarketplaceManager />;
-            case 'experienceHub': return <ExperienceHubManager onNavigate={handleNavigate} />;
-            case 'autoGenerateJobs': return <AutoGenerateJobsPage onNavigate={handleNavigate} />;
+            case 'relatedProjects': return <RelatedProjectsManager />;
+            case 'riskManagement': return <RiskManager />;
+            case 'infrastructure': return <InfrastructureManager />;
             default: return <HomePage onNavigate={handleNavigate} />;
         }
     };

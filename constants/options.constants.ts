@@ -1,4 +1,4 @@
-import { TaskStatus, WorkType, TaskType, ProjectStatus, BudgetItemStatus, TaskSortOption, TaskStatusFilter, ActivitySortOption, ActivityStatusFilter, DateRangeFilter } from '../types.ts';
+import { TaskStatus, WorkType, TaskType, ProjectStatus, BudgetItemStatus, TaskSortOption, TaskStatusFilter, ActivitySortOption, ActivityStatusFilter, DateRangeFilter, RiskLevel } from '../types.ts';
 
 // --- OPTIONS FOR SELECTS AND CHECKBOXES ---
 
@@ -69,6 +69,14 @@ export const BUDGET_ITEM_STATUS_OPTIONS: { value: BudgetItemStatus; label: strin
     { value: 'Pending', label: 'Pending' },
     { value: 'Approved', label: 'Approved' },
     { value: 'Denied', label: 'Denied' },
+];
+
+// Risks
+export const RISK_LEVEL_OPTIONS: { value: RiskLevel, label: string }[] = [
+    { value: 'Low', label: 'Low' },
+    { value: 'Medium', label: 'Medium' },
+    { value: 'High', label: 'High' },
+    { value: 'Critical', label: 'Critical' },
 ];
 
 // Tasks

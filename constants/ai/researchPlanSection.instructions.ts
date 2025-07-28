@@ -1,6 +1,4 @@
 
-
-
 import { Type } from '@google/genai';
 import { AppSettings } from '../../types';
 
@@ -89,6 +87,15 @@ ${commonResponseFormat}`,
 - FUTURE RESOURCE DEVELOPMENT: Outline strategies for securing future financial and in-kind support (e.g., new grant applications, earned revenue, partnerships).
 - CAPACITY BUILDING AND LEADERSHIP TRANSITION: Detail how the project will build internal capacity within the community to reduce dependency on external researchers and ensure local leadership can continue the work.
 - ADAPTATION AND EVOLUTION: Explain how the project's outcomes and activities will be monitored and adapted to meet evolving community needs.
+${commonResponseFormat}`,
+        schema: { type: Type.STRING }
+    },
+    risksAndMitigation: {
+        prompt: `Generate a 'Risks and Risk Mitigation' section of approximately 800 words. You MUST use the 'riskManagement' object from the context as your primary source.
+Structure your response with the following plain text sub-headings (in all caps, followed by a double newline):
+- OVERVIEW: Begin by using the 'introductoryText' from the context to craft a comprehensive introductory paragraph that sets the stage for the risk analysis.
+- IDENTIFIED RISKS AND MITIGATION STRATEGIES: For each risk listed in the 'identifiedRisks' array, create a detailed narrative section. Start with the risk 'heading' as a sub-sub-heading (use title case). Then, describe the risk using the 'description' and its 'level'. Follow this with a detailed explanation of the 'mitigation' plan. Weave these points into a coherent, formal paragraph for each identified risk.
+- CONCLUSION: Conclude with a summary paragraph that reinforces the project's proactive and thorough approach to risk management.
 ${commonResponseFormat}`,
         schema: { type: Type.STRING }
     },

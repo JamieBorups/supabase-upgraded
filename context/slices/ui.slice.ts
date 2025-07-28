@@ -1,25 +1,16 @@
 
 import { produce } from 'immer';
-import { AppState, Action, ProjectExportData, Member, ResearchPlan, OtfApplication } from '../../types';
+import { AppState, Action, ProjectExportData, Member, ResearchPlan, OtfApplication, NohfcApplication } from '../../types';
 
-export const uiInitialState: Pick<AppState, 'loading' | 'setupNeeded' | 'currentUser' | 'reportProjectIdToOpen' | 'researchPlanToEdit' | 'otfApplicationToEdit' | 'experienceHubProjectId' | 'activeWorkshopItem'> = {
+export const uiInitialState: Pick<AppState, 'loading' | 'setupNeeded' | 'currentUser' | 'reportProjectIdToOpen' | 'researchPlanToEdit' | 'otfApplicationToEdit' | 'nohfcApplicationToEdit' | 'activeWorkshopItem'> = {
     loading: true,
     setupNeeded: false, // Default to false, AppContext will determine if setup is needed
     currentUser: null,
     reportProjectIdToOpen: null,
     researchPlanToEdit: null,
     otfApplicationToEdit: null,
-    experienceHubProjectId: null,
+    nohfcApplicationToEdit: null,
     activeWorkshopItem: null,
-};
-
-// The initial state for the rest of the app, used on LOGOUT and CLEAR_ALL_DATA actions
-const otherInitialState = {
-    projects: [], members: [], users: [], tasks: [], activities: [], directExpenses: [],
-    reports: [], highlights: [], newsReleases: [], contacts: [], interactions: [],
-    venues: [], events: [], ticketTypes: [], eventTickets: [], proposals: [],
-    inventoryItems: [], inventoryCategories: [], salesTransactions: [], itemLists: [],
-    saleListings: [], ecostarReports: [], interestCompatibilityReports: [], recreationFrameworkReports: [], sdgAlignmentReports: [], researchPlans: [],
 };
 
 export const uiReducer = (state: AppState, action: Action): Partial<AppState> => {
@@ -41,15 +32,51 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
         case 'LOGOUT':
             sessionStorage.removeItem('currentUser');
             return {
-                ...uiInitialState,
-                ...otherInitialState,
-                saleSessions: [],
-                otfApplications: [],
-                programGuidelines: [],
-                jobDescriptions: [],
-                settings: state.settings, // Preserve settings
+                // Slices from uiInitialState that are reset
                 loading: false,
+                setupNeeded: false, 
                 currentUser: null,
+                reportProjectIdToOpen: null,
+                researchPlanToEdit: null,
+                otfApplicationToEdit: null,
+                nohfcApplicationToEdit: null,
+                activeWorkshopItem: null,
+                
+                // Slices to PRESERVE from current state
+                settings: state.settings,
+                users: state.users,
+
+                // Slices to explicitly RESET to their initial empty states
+                projects: [],
+                proposals: [],
+                members: [],
+                tasks: [],
+                activities: [],
+                directExpenses: [],
+                reports: [],
+                highlights: [],
+                newsReleases: [],
+                contacts: [],
+                interactions: [],
+                venues: [],
+                events: [],
+                ticketTypes: [],
+                eventTickets: [],
+                inventoryItems: [],
+                inventoryCategories: [],
+                saleSessions: [],
+                saleListings: [],
+                salesTransactions: [],
+                itemLists: [],
+                ecostarReports: [],
+                interestCompatibilityReports: [],
+                sdgAlignmentReports: [],
+                recreationFrameworkReports: [],
+                researchPlans: [],
+                relatedProjects: [],
+                otfApplications: [],
+                nohfcApplications: [],
+                programGuidelines: [],
             };
 
         case 'SET_REPORT_PROJECT_ID_TO_OPEN':
@@ -61,8 +88,8 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
         case 'SET_OTF_APPLICATION_TO_EDIT':
             return { otfApplicationToEdit: action.payload };
         
-        case 'SET_EXPERIENCE_HUB_PROJECT_ID':
-            return { experienceHubProjectId: action.payload };
+        case 'SET_NOHFC_APPLICATION_TO_EDIT':
+            return { nohfcApplicationToEdit: action.payload };
 
         case 'SET_ACTIVE_WORKSHOP_ITEM':
             return { activeWorkshopItem: action.payload };
@@ -109,7 +136,11 @@ export const uiReducer = (state: AppState, action: Action): Partial<AppState> =>
         case 'CLEAR_ALL_DATA':
             return {
                 ...uiInitialState,
-                ...otherInitialState,
+                projects: [], members: [], users: [], tasks: [], activities: [], directExpenses: [],
+                reports: [], highlights: [], newsReleases: [], contacts: [], interactions: [],
+                venues: [], events: [], ticketTypes: [], eventTickets: [], proposals: [],
+                inventoryItems: [], inventoryCategories: [], salesTransactions: [], itemLists: [],
+                saleListings: [], ecostarReports: [], interestCompatibilityReports: [], recreationFrameworkReports: [], sdgAlignmentReports: [], researchPlans: [],
                 settings: state.settings,
                 currentUser: state.currentUser,
                 loading: false,

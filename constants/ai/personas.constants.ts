@@ -1,4 +1,3 @@
-
 import { MAIN_PERSONA_INSTRUCTIONS } from './main.persona.ts';
 import { PROJECTS_PERSONA_INSTRUCTIONS } from './projects.persona.ts';
 import { MEMBERS_PERSONA_INSTRUCTIONS } from './members.persona.ts';
@@ -14,7 +13,7 @@ import { SDG_ALIGNMENT_PERSONA_INSTRUCTIONS } from './sdgAlignment.persona.ts';
 import { RECREATION_PERSONA_INSTRUCTIONS } from './recreation.persona.ts';
 import { RESEARCH_PLAN_PERSONA_INSTRUCTIONS } from './researchPlan.persona.ts';
 import { OTF_PERSONA_INSTRUCTIONS } from './otf.persona.ts';
-import { EXPERIENCE_HUB_PERSONA_INSTRUCTIONS } from './experienceHub.persona.ts';
+import { NOHFC_PERSONA_INSTRUCTIONS } from './nohfc.persona.ts';
 
 export const AI_PERSONAS = {
     main: { instructions: MAIN_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
@@ -32,5 +31,5 @@ export const AI_PERSONAS = {
     recreation: { instructions: RECREATION_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
     researchPlan: { instructions: RESEARCH_PLAN_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
     otf: { instructions: OTF_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
-    experienceHub: { instructions: EXPERIENCE_HUB_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.8 },
+    nohfc: { instructions: NOHFC_PERSONA_INSTRUCTIONS, model: 'gemini-2.5-flash', temperature: 0.7 },
 };
