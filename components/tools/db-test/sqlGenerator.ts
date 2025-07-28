@@ -1,10 +1,8 @@
 
-
 import { AppState } from '../../../types';
 import { TableDefinition } from './schemaDefinition.ts';
 import { dbSchema } from './schemaDefinition.ts';
 import { mapObjectToSnakeCase } from '../../../services/api_slices/utils';
-import { PLATFORM_CONTRIBUTOR_ROLES } from '../../../constants/experience.constants.ts';
 
 // --- SQL GENERATION ---
 const generateCreateTable = (table: TableDefinition): string => {
@@ -72,18 +70,23 @@ const formatSqlValue = (value: any): string => {
 // Hardcoded dependency order to guarantee correctness.
 const CREATION_ORDER = [
     'app_settings', 'inventory_categories', 'ticket_types', 'members', 'users',
-    'venues', 'projects', 'job_descriptions', 'contacts', 'events', 'item_lists', 'sale_sessions',
-    'inventory_items', 'project_collaborators', 'contact_projects',
+    'venues', 'projects', 'related_projects', 'contacts', 'events', 'item_lists', 'sale_sessions',
+    'infrastructure', // Added new table
+    'inventory_items', 'project_collaborators', 'related_project_associations', 'contact_projects',
     'budget_items', 'event_members', 'event_tickets', 'tasks',
-    'sale_listings', 'activities', 'direct_expenses', 'sales_transactions',
+    'risks', 'sale_listings', 'activities', 'direct_expenses', 'sales_transactions',
     'sales_transaction_items', 'reports', 'highlights', 'news_releases', 'interactions',
     'proposal_snapshots', 'ecostar_reports', 'interest_compatibility_reports',
-    'sdg_alignment_reports', 'recreation_framework_reports', 'research_plans', 'research_plan_communities'
+    'sdg_alignment_reports', 'recreation_framework_reports', 'research_plans', 'research_plan_communities',
+    'otf_applications', 'otf_board_members', 'otf_senior_staff', 'otf_collaborators',
+    'otf_project_plan', 'otf_budget_items', 'otf_quotes', 'otf_larger_project_funding',
+    'nohfc_applications', 'nohfc_budget_items'
 ];
 
 export const generateSchemaCreationSql = (): string => {
     const allTablesMap = new Map(dbSchema.flatMap(m => m.tables).map(t => [t.tableName, t]));
     
+    // This logic ensures that even if a table is missing from CREATION_ORDER, it doesn't break.
     const tablesInCreationOrder = CREATION_ORDER.map(name => allTablesMap.get(name)).filter((t): t is TableDefinition => !!t);
     const tablesForDropping = [...tablesInCreationOrder].reverse();
 
@@ -127,7 +130,7 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
 
     const stateToTableMap: { [key: string]: keyof AppState } = {
         'app_settings': 'settings', 'members': 'members', 'users': 'users', 'projects': 'projects',
-        'tasks': 'tasks', 'activities': 'activities', 'direct_expenses': 'directExpenses', 'reports': 'reports',
+        'related_projects': 'relatedProjects', 'tasks': 'tasks', 'activities': 'activities', 'direct_expenses': 'directExpenses', 'reports': 'reports',
         'highlights': 'highlights', 'news_releases': 'newsReleases', 'contacts': 'contacts', 'interactions': 'interactions',
         'venues': 'venues', 'events': 'events', 'ticket_types': 'ticketTypes', 'event_tickets': 'eventTickets',
         'proposal_snapshots': 'proposals', 'inventory_categories': 'inventoryCategories', 'inventory_items': 'inventoryItems',
@@ -135,7 +138,7 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
         'sales_transactions': 'salesTransactions', 'ecostar_reports': 'ecostarReports',
         'interest_compatibility_reports': 'interestCompatibilityReports', 'sdg_alignment_reports': 'sdgAlignmentReports',
         'recreation_framework_reports': 'recreationFrameworkReports', 'research_plans': 'researchPlans',
-        'job_descriptions': 'jobDescriptions'
+        'risks': 'risks', 'infrastructure': 'infrastructure', 'otf_applications': 'otfApplications', 'nohfc_applications': 'nohfcApplications'
     };
 
     const extraProcessingMap: { [key: string]: (state: AppState) => any[] } = {
@@ -150,6 +153,15 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
         'event_members': (state) => state.events.flatMap(e => (e.assignedMembers || []).map(am => ({ event_id: e.id, member_id: am.memberId, role: am.role }))),
         'sales_transaction_items': (state) => state.salesTransactions.flatMap(tx => tx.items.map(item => ({ ...item, transaction_id: tx.id }))),
         'research_plan_communities': (state) => state.researchPlans.flatMap(plan => (plan.communities || []).map(community => ({ research_plan_id: plan.id, ...community }))),
+        'related_project_associations': (state) => state.relatedProjects.flatMap(rp => rp.associatedProjectIds.map(pid => ({ related_project_id: rp.id, project_id: pid }))),
+        'otf_board_members': (state) => state.otfApplications.flatMap(app => (app.boardMembers || []).map(bm => ({ ...bm, application_id: app.id }))),
+        'otf_senior_staff': (state) => state.otfApplications.flatMap(app => (app.seniorStaff || []).map(ss => ({ ...ss, application_id: app.id }))),
+        'otf_collaborators': (state) => state.otfApplications.flatMap(app => (app.collaborators || []).map(c => ({ ...c, application_id: app.id }))),
+        'otf_project_plan': (state) => state.otfApplications.flatMap(app => (app.projectPlan || []).map(p => ({ ...p, application_id: app.id }))),
+        'otf_budget_items': (state) => state.otfApplications.flatMap(app => (app.budgetItems || []).map(b => ({ ...b, application_id: app.id }))),
+        'otf_quotes': (state) => state.otfApplications.flatMap(app => (app.quotes || []).map(q => ({ ...q, application_id: app.id }))),
+        'otf_larger_project_funding': (state) => state.otfApplications.flatMap(app => (app.largerProjectFundingSources || []).map(f => ({ ...f, application_id: app.id }))),
+        'nohfc_budget_items': (state) => state.nohfcApplications.flatMap(app => (app.budgetItems || []).map(bi => ({ ...bi, application_id: app.id })))
     };
     
     const tablesToProcess = tableNames.map(name => allTables.find(t => t.tableName === name)).filter((t): t is TableDefinition => !!t);
@@ -164,18 +176,7 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
             : [];
         
         if (!data || (Array.isArray(data) && data.length === 0)) {
-             if(table.tableName === 'job_descriptions') {
-                // Seed system roles if no data exists
-                sql += '\n-- Seeding system-defined job descriptions\n';
-                PLATFORM_CONTRIBUTOR_ROLES.forEach(role => {
-                    const snakeRole = mapObjectToSnakeCase(role);
-                    const columns = Object.keys(snakeRole).map(c => `"${c}"`);
-                    const values = Object.values(snakeRole).map(formatSqlValue);
-                    sql += `INSERT INTO public.job_descriptions (${columns.join(', ')}) VALUES (${values.join(', ')});\n`;
-                });
-            } else {
-                sql += `-- No data found for ${table.tableName}\n\n`;
-            }
+            sql += `-- No data found for ${table.tableName}\n\n`;
             continue;
         }
 
@@ -219,19 +220,15 @@ const generateInsertStatementsForTables = (tableNames: string[], allTables: Tabl
 export const generateDataDumpSqlParts = (state: AppState): { dataPart1: string, dataPart2: string, dataPart3: string, dataPart4: string } => {
     const allTables = dbSchema.flatMap(module => module.tables);
 
-    const dataOrderPart1 = [
-        'app_settings', 'inventory_categories', 'ticket_types', 'members', 'users',
-    ];
+    const dataOrderPart1 = [ 'app_settings', 'inventory_categories', 'ticket_types', 'members', 'users', ];
     const dataPart1 = generateInsertStatementsForTables(dataOrderPart1, allTables, state);
 
-    const dataOrderPart2 = [
-        'venues', 'projects', 'job_descriptions', 'contacts', 'events', 'item_lists', 'sale_sessions', 'inventory_items',
-    ];
+    const dataOrderPart2 = [ 'venues', 'projects', 'related_projects', 'contacts', 'events', 'item_lists', 'sale_sessions', 'infrastructure', 'inventory_items', ];
     const dataPart2 = generateInsertStatementsForTables(dataOrderPart2, allTables, state);
 
     const dataOrderPart3 = [
-        'project_collaborators', 'contact_projects', 'budget_items', 'event_members', 
-        'event_tickets', 'tasks', 'sale_listings',
+        'project_collaborators', 'related_project_associations', 'contact_projects', 'budget_items', 'event_members', 
+        'event_tickets', 'tasks', 'risks', 'sale_listings', 'nohfc_applications',
     ];
     const dataPart3 = generateInsertStatementsForTables(dataOrderPart3, allTables, state);
 
@@ -239,7 +236,10 @@ export const generateDataDumpSqlParts = (state: AppState): { dataPart1: string, 
         'activities', 'direct_expenses', 'sales_transactions', 'sales_transaction_items',
         'reports', 'highlights', 'news_releases', 'interactions', 'proposal_snapshots',
         'ecostar_reports', 'interest_compatibility_reports', 'sdg_alignment_reports', 
-        'recreation_framework_reports', 'research_plans', 'research_plan_communities'
+        'recreation_framework_reports', 'research_plans', 'research_plan_communities',
+        'otf_applications', 'otf_board_members', 'otf_senior_staff', 'otf_collaborators',
+        'otf_project_plan', 'otf_budget_items', 'otf_quotes', 'otf_larger_project_funding',
+        'nohfc_budget_items',
     ];
     const dataPart4 = generateInsertStatementsForTables(dataOrderPart4, allTables, state);
     

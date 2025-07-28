@@ -1,4 +1,4 @@
-import { ModuleDefinition } from './types.ts';
+import type { ModuleDefinition } from './types.schema.ts';
 
 export const coreSchema: ModuleDefinition = {
     module: "Core & Settings",

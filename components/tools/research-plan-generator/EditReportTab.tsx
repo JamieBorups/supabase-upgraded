@@ -57,7 +57,7 @@ interface EditReportTabProps {
 
 const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, setDirty }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { projects, members, tasks, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, otfApplications } = state;
+    const { projects, members, tasks, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, otfApplications, risks } = state;
     const [localPlan, setLocalPlan] = useState(plan);
     const [loadingSection, setLoadingSection] = useState<ResearchPlanSection | null>(null);
 
@@ -85,6 +85,7 @@ const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, s
 
         const projectTasks = tasks.filter(t => t.projectId === project.id);
         const projectMembers = project.collaboratorDetails.map(c => members.find(m => m.id === c.memberId)).filter(Boolean);
+        const projectRisks = risks.filter(r => r.projectId === project.id);
         
         // Gather all supplementary context
         const supplementaryDocsContext: any = {};
@@ -117,7 +118,15 @@ const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, s
             prompt = `You must integrate the principles of the following selected approaches into your response:\n${additionalContext}\n\n${prompt}`;
         }
         
-        const coreProjectContext = { project, tasks: projectTasks, team: projectMembers };
+        const coreProjectContext = {
+            project,
+            tasks: projectTasks,
+            team: projectMembers,
+            riskManagement: {
+                introductoryText: project.riskIntroText,
+                identifiedRisks: projectRisks.map(r => ({ heading: r.heading, description: r.riskDescription, level: r.riskLevel, mitigation: r.mitigationPlan }))
+            }
+        };
         
         const generatedSectionsContext = RESEARCH_PLAN_SECTIONS
             .filter(sec => (currentPlanState as any)[sec.key] && sec.key !== sectionKey)
@@ -133,7 +142,7 @@ const EditReportTab: React.FC<EditReportTabProps> = ({ plan, onFinish, onBack, s
         }
         
         return finalPrompt;
-    }, [project, state.settings.ai.researchPlanSectionSettings, tasks, members, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, otfApplications, notify]);
+    }, [project, state.settings.ai.researchPlanSectionSettings, tasks, members, ecostarReports, interestCompatibilityReports, sdgAlignmentReports, recreationFrameworkReports, otfApplications, risks, notify]);
 
     const handleGenerateSection = async (sectionKey: ResearchPlanSection, currentPlanForPrompt: ResearchPlan): Promise<string | null> => {
         setLoadingSection(sectionKey);

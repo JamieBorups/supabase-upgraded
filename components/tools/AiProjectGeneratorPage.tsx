@@ -1,14 +1,14 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { produce } from 'immer';
-import { useAppContext } from '../../context/AppContext';
-import { Page, FormData as ProjectData, AiPersonaName, ResearchPlan, EcoStarReport, InterestCompatibilityReport, Task } from '../../types';
-import { TextareaWithCounter } from '../ui/TextareaWithCounter';
-import { getAiResponse } from '../../services/aiService';
-import { initialFormData, GENERATOR_FIELDS } from '../../constants';
-import * as api from '../../services/api';
-import FormField from '../ui/FormField';
-import ProjectFilter from '../ui/ProjectFilter';
+import { useAppContext } from '../../context/AppContext.tsx';
+import { Page, FormData as ProjectData, AiPersonaName } from '../../types.ts';
+import { TextareaWithCounter } from '../ui/TextareaWithCounter.tsx';
+import { getAiResponse } from '../../services/aiService.ts';
+import { initialFormData, GENERATOR_FIELDS } from '../../constants.ts';
+import * as api from '../../services/api.ts';
+import FormField from '../ui/FormField.tsx';
+import ProjectFilter from '../ui/ProjectFilter.tsx';
 
 const SuggestionPanel: React.FC<{
     suggestions: any[];
@@ -31,7 +31,7 @@ const SuggestionPanel: React.FC<{
 
 const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate }) => {
     const { state, dispatch, notify } = useAppContext();
-    const { projects, researchPlans, ecostarReports, interestCompatibilityReports, tasks, settings } = state;
+    const { projects, researchPlans, ecostarReports, interestCompatibilityReports, tasks } = state;
     
     const [selectedProjectId, setSelectedProjectId] = useState<string | 'new' | null>(null);
     const [projectData, setProjectData] = useState<ProjectData | null>(null);
@@ -101,14 +101,9 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
         setProjectData(produce(draft => { (draft as any)[field] = value; }));
     }, [projectData]);
     
-    const handleAiCall = useCallback(async (field: keyof ProjectData, instruction: string, currentContent?: string) => {
-        if (!projectData) return;
-        setIsLoading(true);
-        setLoadingField(field);
-        setAiSuggestions(null);
-
+    const performAiCall = useCallback(async (instruction: string, currentProjectState: ProjectData, currentContent?: string): Promise<any> => {
         let finalPrompt = `${instruction}\n\n${contextForAi}\n\n`;
-        finalPrompt += `### CURRENT PROJECT DRAFT ###\n${JSON.stringify({ project: projectData }, null, 2)}`;
+        finalPrompt += `### CURRENT PROJECT DRAFT ###\n${JSON.stringify({ project: currentProjectState }, null, 2)}`;
         if (currentContent) {
             finalPrompt += `\n\n### TEXT TO ENHANCE ###\n${currentContent}`;
         }
@@ -116,41 +111,96 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
         try {
             const result = await getAiResponse(selectedPersona, finalPrompt, state.settings.ai, [], { forceJson: true });
             const parsed = JSON.parse(result.text);
-
-            if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
-                setAiSuggestions({ field, data: parsed.suggestions });
-            } else {
-                 notify(`AI couldn't generate suggestions in the right format.`, 'error');
-            }
+            return parsed;
         } catch (error: any) {
              notify(`AI Error: ${error.message}`, 'error');
-        } finally {
-            setIsLoading(false);
-            setLoadingField(null);
+             return null;
         }
-    }, [projectData, contextForAi, state.settings.ai, notify, selectedPersona]);
+    }, [contextForAi, selectedPersona, state.settings.ai, notify]);
 
-    const handleSuggest = (field: keyof ProjectData) => {
+    const handleSuggest = useCallback(async (field: keyof ProjectData) => {
+        if (!projectData) return;
+        setLoadingField(field);
+        setIsLoading(true);
+        setAiSuggestions(null);
+
         const fieldConfig = GENERATOR_FIELDS.find(f => f.key === field);
-        if(!fieldConfig) return;
+        if (!fieldConfig) { setIsLoading(false); setLoadingField(null); return; }
         
         const instruction = `Based on the provided project context, generate 3 distinct options for the '${fieldConfig.label}' section. Each option should be a well-written paragraph of approximately ${fieldConfig.wordLimit} words. Respond ONLY with a valid JSON object like: { "suggestions": ["Option 1 text...", "Option 2 text...", "Option 3 text..."] }.`;
-        handleAiCall(field, instruction);
-    };
+        
+        const result = await performAiCall(instruction, projectData);
+        
+        if (result && result.suggestions && Array.isArray(result.suggestions)) {
+            setAiSuggestions({ field, data: result.suggestions });
+        } else {
+             notify(`AI couldn't generate suggestions in the right format.`, 'error');
+        }
+        setIsLoading(false);
+        setLoadingField(null);
+    }, [projectData, performAiCall, notify]);
 
-    const handleEnhance = (field: keyof ProjectData) => {
-        const fieldConfig = GENERATOR_FIELDS.find(f => f.key === field);
-        if(!fieldConfig) return;
-
-        const currentText = projectData?.[field] as string;
+    const handleEnhance = useCallback(async (field: keyof ProjectData) => {
+        if (!projectData) return;
+        const currentText = projectData[field] as string;
         if (!currentText?.trim()) {
             notify('There is no content to enhance.', 'warning');
             return;
         }
+        setLoadingField(field);
+        setIsLoading(true);
+        setAiSuggestions(null);
         
+        const fieldConfig = GENERATOR_FIELDS.find(f => f.key === field);
+        if (!fieldConfig) { setIsLoading(false); setLoadingField(null); return; }
+
         const instruction = `Enhance the provided text for the "${fieldConfig.label}" section. Deeply align it with the strategic context. DO NOT summarize or shorten the text. Instead, expand upon it, incorporating key details, goals, and language from the context to make it more persuasive and comprehensive. Aim to be as close to the word count of ${fieldConfig.wordLimit} words as possible. Respond ONLY with a valid JSON object like: { "suggestions": ["Full enhanced text as a single string."] }.`;
-        handleAiCall(field, instruction, currentText);
-    };
+        
+        const result = await performAiCall(instruction, projectData, currentText);
+
+        if (result && result.suggestions && Array.isArray(result.suggestions)) {
+            setAiSuggestions({ field, data: result.suggestions });
+        } else {
+             notify(`AI couldn't generate suggestions in the right format.`, 'error');
+        }
+        setIsLoading(false);
+        setLoadingField(null);
+    }, [projectData, performAiCall, notify]);
+
+    const handleGenerateFullDraft = useCallback(async () => {
+        if (!projectData) return;
+        setIsLoading(true);
+        setLoadingField('full_draft');
+        setAiSuggestions(null);
+
+        let currentDraft = projectData;
+
+        for (const field of GENERATOR_FIELDS) {
+            setLoadingField(field.key);
+            notify(`Generating: ${field.label}...`, 'info');
+
+            const instruction = `Based on the provided project context, generate the single best, most compelling option for the '${field.label}' section. The response should be a well-written paragraph (or title) of approximately ${field.wordLimit} words. Respond ONLY with a valid JSON object like: { "suggestions": ["The single best generated text..."] }.`;
+            
+            const result = await performAiCall(instruction, currentDraft);
+
+            if (result && result.suggestions && typeof result.suggestions[0] === 'string') {
+                const newContent = result.suggestions[0];
+                currentDraft = produce(currentDraft, draft => {
+                    (draft as any)[field.key] = newContent;
+                });
+                setProjectData(currentDraft); // Update UI progressively
+            } else {
+                notify(`Failed to generate content for "${field.label}". Stopping draft generation.`, 'error');
+                setIsLoading(false);
+                setLoadingField(null);
+                return;
+            }
+        }
+
+        notify('Full project draft completed!', 'success');
+        setIsLoading(false);
+        setLoadingField(null);
+    }, [projectData, performAiCall, notify]);
 
     const handleIntegrate = useCallback((field: string, value: any) => {
         if (!projectData) return;
@@ -190,7 +240,7 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
                             id={field.key}
                             rows={field.key === 'projectDescription' ? 8 : (field.key === 'background' ? 5 : 3)}
                             wordLimit={field.wordLimit}
-                            value={projectData![field.key] as string}
+                            value={(projectData![field.key] as string) || ''}
                             onChange={(e) => handleFieldChange(field.key, e.target.value)}
                         />
                     </FormField>
@@ -208,7 +258,10 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
                 </div>
             ))}
              <div className="mt-8 pt-5 border-t flex justify-end">
-                <button onClick={handleSaveProject} disabled={isLoading} className="px-6 py-2 text-sm font-medium text-white bg-teal-600 rounded-md shadow-sm hover:bg-teal-700 disabled:bg-slate-400">Save Project</button>
+                <button onClick={handleSaveProject} disabled={isLoading} className="btn btn-primary">
+                    <i className="fa-solid fa-save mr-2"></i>
+                    Save Project
+                </button>
             </div>
         </div>
     );
@@ -217,7 +270,7 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
         <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg">
             <h3 className="text-xl font-medium text-slate-800">Start by creating a new project or loading an existing one.</h3>
             <div className="mt-6 flex justify-center items-center gap-4">
-                <button onClick={() => handleProjectLoad('new')} className="px-6 py-3 text-lg font-semibold text-white bg-teal-600 border border-transparent rounded-md shadow-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-transform hover:scale-105">
+                <button onClick={() => handleProjectLoad('new')} className="btn btn-primary px-6 py-3 text-lg font-semibold shadow-lg transition-transform hover:scale-105">
                     <i className="fa-solid fa-plus mr-2"></i>Create New Project
                 </button>
                 <div className="flex items-center gap-2">
@@ -237,7 +290,7 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
         <div className="bg-white p-4 sm:p-6 rounded-lg border border-slate-200 shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 pb-3 border-b border-slate-200 gap-4">
                 <h2 className="text-xl font-bold text-slate-800">AI Project Generator</h2>
-                <button onClick={() => onNavigate('projects')} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-100 flex-shrink-0">
+                <button onClick={() => onNavigate('projects')} className="btn btn-secondary flex-shrink-0">
                     Back to Projects
                 </button>
             </div>
@@ -246,6 +299,25 @@ const AiProjectGeneratorPage: React.FC<{ onNavigate: (page: Page) => void }> = (
                  <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center mb-6 p-4 bg-slate-50 rounded-lg">
                         <h3 className="font-bold text-lg text-slate-800">{projectData.projectTitle || 'New Project'}</h3>
+                        <div className="flex justify-end items-center gap-2">
+                             <button
+                                type="button"
+                                onClick={handleGenerateFullDraft}
+                                disabled={isLoading}
+                                className="btn btn-special"
+                            >
+                                <i className={`fa-solid ${loadingField === 'full_draft' ? 'fa-spinner fa-spin' : 'fa-rocket'} mr-2`}></i>
+                                {isLoading && loadingField === 'full_draft' ? 'Generating...' : 'Generate Full Draft'}
+                            </button>
+                             <button
+                                onClick={handleSaveProject}
+                                disabled={isLoading}
+                                className="btn btn-primary"
+                            >
+                                <i className="fa-solid fa-save mr-2"></i>
+                                Save Project
+                            </button>
+                        </div>
                     </div>
                     {renderGenerator()}
                  </>

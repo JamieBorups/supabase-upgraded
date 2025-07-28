@@ -5,9 +5,9 @@ import InfoBox from './InfoBox';
 const MembersGuide: React.FC = () => {
   return (
     <div>
-      <h2>Members & Experience</h2>
+      <h2>Members</h2>
       <p>
-        The <code>Members</code> section in the main menu is now a dropdown that contains two key areas for managing and supporting the people in your collective: <strong>Member Profiles</strong> and the <strong>Experience Hub</strong>.
+        The <code>Members</code> section is your central database for everyone in your arts collective. It's where you store profiles and biographical information.
       </p>
       
       <h3>Member Profiles</h3>
@@ -57,14 +57,6 @@ const MembersGuide: React.FC = () => {
         <InfoBox type="tip">
           <p><strong>Keep Bios Updated:</strong> The <code>Short Bio</code> and <code>Full Artist Bio</code> fields are used by the AI when generating content for other parts of the app, like the Interest Compatibility Assessment. Keeping these bios rich with detail will lead to better AI insights!</p>
        </InfoBox>
-
-      <h3>Experience Hub</h3>
-      <p>
-        The <strong>Experience Hub</strong> is a new, powerful tool designed to help members translate their project contributions into tangible, professional assets for their resumes, LinkedIn profiles, and portfolios. It uses AI to analyze project data and generate high-quality, professionally-worded job descriptions and accomplishment statements.
-      </p>
-      <p>
-        For a full breakdown of this feature, please see the dedicated <strong>Experience Hub</strong> section in this user guide.
-      </p>
     </div>
   );
 };

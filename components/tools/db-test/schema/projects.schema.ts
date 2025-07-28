@@ -1,4 +1,6 @@
-import { ModuleDefinition } from './types.ts';
+
+
+import type { ModuleDefinition } from './types.schema.ts';
 
 export const projectsSchema: ModuleDefinition = {
     module: "Projects & Members",
@@ -29,6 +31,7 @@ export const projectsSchema: ModuleDefinition = {
                 { name: 'community_impact', type: 'text' }, { name: 'organizational_rationale', type: 'text' }, { name: 'artistic_development', type: 'text' },
                 { name: 'additional_info', type: 'text' }, { name: 'who_will_work', type: 'text' }, { name: 'how_selection_determined', type: 'text' },
                 { name: 'image_url', type: 'text' },
+                { name: 'risk_intro_text', type: 'text' },
                 { name: 'estimated_sales', type: 'numeric' }, { name: 'estimated_sales_date', type: 'date' },
                 { name: 'actual_sales', type: 'numeric' }, { name: 'actual_sales_date', type: 'date' }
             ],
@@ -42,6 +45,31 @@ export const projectsSchema: ModuleDefinition = {
                 { name: 'project_id', type: 'uuid', constraints: 'not null', foreignKey: { table: 'projects', column: 'id', onDelete: 'CASCADE' } },
                 { name: 'member_id', type: 'uuid', constraints: 'not null', foreignKey: { table: 'members', column: 'id', onDelete: 'CASCADE' } },
                 { name: 'role', type: 'text' }
+            ],
+            rls: { enable: true, policies: [{ name: 'Public read-write access', command: 'ALL', using: 'true', check: 'true' }] }
+        },
+        {
+            tableName: 'related_projects',
+            description: 'A library of related projects (internal or external) for citation in research plans.',
+            columns: [
+                { name: 'id', type: 'uuid', constraints: 'primary key default gen_random_uuid()' },
+                { name: 'created_at', type: 'timestamp with time zone', constraints: 'not null default now()' },
+                { name: 'updated_at', type: 'timestamp with time zone', constraints: 'not null default now()' },
+                { name: 'title', type: 'text' },
+                { name: 'organizations', type: 'text' },
+                { name: 'report_url', type: 'text' },
+                { name: 'description', type: 'text' },
+                { name: 'notes', type: 'text' }
+            ],
+            rls: { enable: true, policies: [{ name: 'Public read-write access', command: 'ALL', using: 'true', check: 'true' }] }
+        },
+        {
+            tableName: 'related_project_associations',
+            description: 'Join table linking related projects to internal projects.',
+            columns: [
+                { name: 'id', type: 'uuid', constraints: 'primary key default gen_random_uuid()' },
+                { name: 'related_project_id', type: 'uuid', constraints: 'not null', foreignKey: { table: 'related_projects', column: 'id', onDelete: 'CASCADE' } },
+                { name: 'project_id', type: 'uuid', constraints: 'not null', foreignKey: { table: 'projects', column: 'id', onDelete: 'CASCADE' } }
             ],
             rls: { enable: true, policies: [{ name: 'Public read-write access', command: 'ALL', using: 'true', check: 'true' }] }
         }

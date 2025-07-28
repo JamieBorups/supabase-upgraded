@@ -3,7 +3,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { produce } from 'immer';
 import { Content } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
-import { Page, FormData as Project, EcoStarReport, ReportSectionContent, EcoStarField } from '../../types';
+import { Page, FormData as Project, EcoStarReport, ReportSectionContent, EcoStarField, EcoStarPerspective, ComprehensiveEcoStarReport } from '../../types';
 import { Input } from '../ui/Input';
 import { getAiResponse } from '../../services/aiService';
 import { generateEcoStarSection } from '../../services/ecoStarService';
@@ -12,6 +12,7 @@ import NotesModal from '../ui/NotesModal';
 import * as api from '../../services/api';
 import { ECOSTAR_PERSONA_INSTRUCTIONS } from '../../constants/ai/ecostar.persona';
 import ProjectFilter from '../ui/ProjectFilter';
+import { RadioGroup } from '../ui/RadioGroup';
 
 const formatAiTextToHtml = (text: string = ''): string => {
     if (!text) return '';
@@ -96,6 +97,69 @@ const SimpleMarkdown: React.FC<{ text: string }> = ({ text }) => {
     return <>{elements}</>;
 };
 
+const ReportDisplay: React.FC<{ report: Partial<EcoStarReport> }> = ({ report }) => (
+    <div className="space-y-4">
+        {ECOSTAR_FIELDS.map(field => {
+            const key = `${field.key.charAt(0).toLowerCase() + field.key.slice(1)}Report` as keyof EcoStarReport;
+            const content = (report as any)[key] as ReportSectionContent | null;
+            if (!content) return null;
+            return (
+                <div key={field.key} className="p-4 bg-slate-50 border-l-4 border-teal-500">
+                    <h3 className="text-xl font-bold text-slate-800">{field.label}</h3>
+                    <div className="mt-4">
+                        <h4 className="text-md font-semibold text-slate-700">Summary</h4>
+                        <div className="prose prose-sm max-w-none text-slate-600 mt-1" dangerouslySetInnerHTML={{ __html: formatAiTextToHtml(content.summary) }}></div>
+                    </div>
+                    <div className="mt-4">
+                        <h4 className="text-md font-semibold text-slate-700">Key Considerations</h4>
+                        <ul className="list-disc list-inside mt-1 space-y-1 text-slate-600">
+                            {Array.isArray(content.keyConsiderations) && content.keyConsiderations.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                    </div>
+                    <div className="mt-4">
+                        <h4 className="text-md font-semibold text-slate-700">Follow-up Questions & Sample Answers</h4>
+                        <div className="space-y-3 mt-1">
+                            {Array.isArray(content.followUpQuestions) && content.followUpQuestions.map((item, i) => (
+                                <div key={i} className="p-2 bg-slate-100/70 rounded-md border border-slate-200">
+                                    <p className="font-semibold text-slate-800">{item.question}</p>
+                                    <p className="text-sm text-slate-600 pl-4 border-l-2 border-slate-300 ml-2 mt-1 italic">
+                                        <span className="font-bold not-italic text-slate-500">A:</span> {item.sampleAnswer}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )
+        })}
+    </div>
+);
+
+const ComprehensiveReportDisplay: React.FC<{ report: ComprehensiveEcoStarReport }> = ({ report }) => {
+    const perspectives: {key: EcoStarPerspective, label: string}[] = [
+        { key: 'nonprofit', label: 'Non-Profit Organization Perspective' },
+        { key: 'individual', label: 'Individual Artist Perspective' },
+        { key: 'collective', label: 'Ad-hoc Collective Perspective' },
+        { key: 'municipal', label: 'Municipal Board Perspective' },
+    ];
+
+    return (
+        <div className="space-y-8">
+            {perspectives.map(p => {
+                const perspectiveReport = report[p.key];
+                if (!perspectiveReport) return null;
+                return (
+                    <div key={p.key}>
+                        <h2 className="text-2xl font-bold text-slate-800 border-b-2 border-slate-300 pb-2 mb-4">{p.label}</h2>
+                        <ReportDisplay report={perspectiveReport} />
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+
 const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ onNavigate }) => {
     const { state, dispatch, notify } = useAppContext();
     const { projects, members, researchPlans } = state;
@@ -107,10 +171,11 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     const [isLoading, setIsLoading] = useState(false);
     const [userInput, setUserInput] = useState('');
     const [currentTopic, setCurrentTopic] = useState<EcoStarField | null>(null);
-    const [reportSections, setReportSections] = useState<Record<string, ReportSectionContent | string>>({});
+    const [generatedReport, setGeneratedReport] = useState<Partial<EcoStarReport> | ComprehensiveEcoStarReport | null>(null);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState(false);
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [selectedPerspective, setSelectedPerspective] = useState<EcoStarPerspective | 'comprehensive'>('nonprofit');
 
     const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -126,7 +191,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     
     const handleProjectChange = (projectId: string) => {
         setSelectedProjectId(projectId);
-        setReportSections({});
+        setGeneratedReport(null);
         setCurrentTopic(null);
         if (projectId) {
             setChatHistories({
@@ -178,7 +243,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     const handleGenerateSection = useCallback(async (topic: EcoStarField) => {
         if(isLoading || isGeneratingReport || !selectedProject) return;
         setIsLoading(true);
-        setReportSections(prev => ({ ...prev, [topic.key]: 'Generating...' }));
+        setGeneratedReport(prev => ({ ...prev, [topic.key]: 'Generating...' }));
         
         const historyForTopic = chatHistories[topic.key] || [];
         const chatHistoryText = historyForTopic.map(m => `${m.sender}: ${m.text}`).join('\n');
@@ -188,9 +253,13 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
         try {
-            const parsedResult = await generateEcoStarSection(topic, selectedProject, members, state.settings.ai, chatHistoryText, latestResearchPlan);
+            const parsedResult = await generateEcoStarSection(
+                topic, selectedProject, members, state.settings.ai, chatHistoryText, latestResearchPlan,
+                selectedPerspective === 'comprehensive' ? 'nonprofit' : selectedPerspective
+            );
             
-            setReportSections(prev => ({...prev, [topic.key]: parsedResult}));
+            const key = `${topic.key.charAt(0).toLowerCase() + topic.key.slice(1)}Report` as keyof EcoStarReport;
+            setGeneratedReport(prev => ({...prev, [key]: parsedResult}));
             
             const nextTopic = getNextTopic(topic.key);
             const systemMessage = nextTopic 
@@ -206,12 +275,12 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
             setChatHistories(prev => ({ ...prev, [topic.key]: [...historyForTopic, {id: `sys_gen_${topic.key}`, sender: 'system', text: systemMessage, actions}]}));
 
         } catch (error: any) {
-            setReportSections(prev => ({ ...prev, [topic.key]: `Error: The AI returned data in an unexpected format.` }));
+            setGeneratedReport(prev => ({ ...prev, [topic.key]: `Error: The AI returned data in an unexpected format.` }));
             notify(`Error generating ${topic.label}: ${error.message}`, 'error');
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, isGeneratingReport, selectedProject, members, state.settings.ai, chatHistories, getNextTopic, notify, researchPlans]);
+    }, [isLoading, isGeneratingReport, selectedProject, members, state.settings.ai, chatHistories, getNextTopic, notify, researchPlans, selectedPerspective]);
     
     const handleAiRequest = useCallback(async (topic: EcoStarField, prompt: string, userMessageText: string) => {
         setIsLoading(true);
@@ -331,7 +400,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     const handleGenerateFullReport = async () => {
         if (!selectedProject || isLoading || isGeneratingReport) return;
         setIsGeneratingReport(true);
-        setReportSections({});
+        setGeneratedReport({});
         setCurrentTopic(null);
         setChatHistories(prev => ({...prev, _global: [{ id: `sys_report_${Date.now()}`, sender: 'system', text: 'Generating full ECO-STAR report. This may take a moment...' }]}));
     
@@ -339,33 +408,45 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
             .filter(rp => rp.projectId === selectedProject.id)
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
-        for (const field of ECOSTAR_FIELDS) {
-            setChatHistories(prev => {
-                const newHistory = { ...prev };
-                newHistory._global = [...(newHistory._global || []), {id: `sys_gen_${field.key}`, sender: 'system', text: `Generating section: ${field.label}...`}];
-                return newHistory;
-            });
-            setReportSections(prev => ({...prev, [field.key]: 'Generating...'}));
-            try {
-                const parsedResult = await generateEcoStarSection(field, selectedProject, members, state.settings.ai, '', latestResearchPlan);
-                setReportSections(prev => ({...prev, [field.key]: parsedResult}));
-            } catch (error: any) {
-                 setReportSections(prev => ({ ...prev, [field.key]: `Error: The AI returned data in an unexpected format.` }));
-                 notify(`Failed on section: ${field.label}. ${error.message}`, 'error');
-                 break;
+        try {
+            if (selectedPerspective === 'comprehensive') {
+                const fullReport: ComprehensiveEcoStarReport = {};
+                const perspectivesToGenerate: EcoStarPerspective[] = ['nonprofit', 'individual', 'collective', 'municipal'];
+                
+                for (const perspective of perspectivesToGenerate) {
+                    setChatHistories(prev => ({...prev, _global: [...(prev._global || []), {id: `sys_gen_${perspective}`, sender: 'system', text: `Generating perspective: ${perspective}...`}]}));
+                    const perspectiveReport: Partial<EcoStarReport> = {};
+                    for (const field of ECOSTAR_FIELDS) {
+                        const sectionContent = await generateEcoStarSection(field, selectedProject, members, state.settings.ai, '', latestResearchPlan, perspective);
+                        const key = `${field.key.charAt(0).toLowerCase() + field.key.slice(1)}Report` as keyof EcoStarReport;
+                        (perspectiveReport as any)[key] = sectionContent;
+                    }
+                    fullReport[perspective] = perspectiveReport;
+                    setGeneratedReport(prev => ({...prev, ...fullReport}));
+                }
+            } else {
+                const singleReport: Partial<EcoStarReport> = {};
+                for (const field of ECOSTAR_FIELDS) {
+                    setChatHistories(prev => ({...prev, _global: [...(prev._global || []), {id: `sys_gen_${field.key}`, sender: 'system', text: `Generating section: ${field.label}...`}]}));
+                    const sectionContent = await generateEcoStarSection(field, selectedProject, members, state.settings.ai, '', latestResearchPlan, selectedPerspective);
+                    const key = `${field.key.charAt(0).toLowerCase() + field.key.slice(1)}Report` as keyof EcoStarReport;
+                    (singleReport as any)[key] = sectionContent;
+                    setGeneratedReport(prev => ({...prev, ...singleReport}));
+                }
+                setGeneratedReport(prev => ({...prev, perspective: selectedPerspective}));
             }
+            
+            setChatHistories(prev => ({...prev, _global: [...(prev._global || []), {id: `sys_done_${Date.now()}`, sender: 'system', text: 'Full report generated below.'}]}));
+            notify('Full report generated successfully!', 'success');
+        } catch(error: any) {
+            notify(`Full report generation failed: ${error.message}`, 'error');
+        } finally {
+            setIsGeneratingReport(false);
         }
-    
-        setChatHistories(prev => {
-            const newHistory = { ...prev };
-            newHistory._global = [...(newHistory._global || []), {id: `sys_done_${Date.now()}`, sender: 'system', text: 'Full report generated below.'}];
-            return newHistory;
-        });
-        setIsGeneratingReport(false);
     };
 
     const handleClearReport = () => {
-        setReportSections({});
+        setGeneratedReport(null);
         setIsClearModalOpen(false);
         notify('Report cleared.', 'info');
     };
@@ -379,52 +460,71 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
     };
 
     const handleSaveReport = async (notes: string) => {
-        if (!selectedProjectId || !selectedProject) return;
+        if (!selectedProjectId || !generatedReport || !selectedProject) return;
 
-        let reportHtml = `<h1>ECO-STAR Report for: ${selectedProject.projectTitle}</h1>`;
-        
-        const reportToSave: Partial<EcoStarReport> = {
-            projectId: selectedProjectId,
-            notes,
-        };
-
-        ECOSTAR_FIELDS.forEach(field => {
-            const content = reportSections[field.key];
-            const key = `${field.key.charAt(0).toLowerCase() + field.key.slice(1)}Report` as keyof EcoStarReport;
-
-            if (content && typeof content === 'object' && 'summary' in content) {
-                const typedContent = content as ReportSectionContent;
-                (reportToSave as any)[key] = typedContent;
-                
-                reportHtml += `<h2>${field.label}</h2>`;
-                reportHtml += `<h3>Summary</h3>${formatAiTextToHtml(typedContent.summary)}`;
-                if (Array.isArray(typedContent.keyConsiderations) && typedContent.keyConsiderations.length > 0) {
-                    reportHtml += `<h3>Key Considerations</h3><ul>${typedContent.keyConsiderations.map(item => `<li>${item}</li>`).join('')}</ul>`;
-                }
-                if (Array.isArray(typedContent.followUpQuestions) && typedContent.followUpQuestions.length > 0) {
-                    reportHtml += `<h3>Follow-up Questions</h3>`;
-                    typedContent.followUpQuestions.forEach(qa => {
-                        reportHtml += `<h4>${qa.question}</h4><p><em>${qa.sampleAnswer}</em></p>`;
-                    });
-                }
-            } else {
-                (reportToSave as any)[key] = null;
-            }
-        });
-        
-        reportToSave.fullReportText = reportHtml;
+        const isComprehensive = generatedReport && !('perspective' in generatedReport);
 
         try {
-            const savedReport = await api.addEcoStarReport(reportToSave as Omit<EcoStarReport, 'id' | 'createdAt'>);
-            dispatch({ type: 'ADD_ECOSTAR_REPORT', payload: savedReport });
-            notify('ECO-STAR report saved successfully!', 'success');
+            if (isComprehensive) {
+                const comprehensiveData = generatedReport as ComprehensiveEcoStarReport;
+                const perspectivesToSave = Object.keys(comprehensiveData) as EcoStarPerspective[];
+
+                for (const perspective of perspectivesToSave) {
+                    const singleReport = comprehensiveData[perspective];
+                    if (!singleReport) continue;
+                    
+                    const reportToSave: Omit<EcoStarReport, 'id' | 'createdAt'> = {
+                        projectId: selectedProjectId,
+                        notes: `${notes} (Perspective: ${perspective})`,
+                        perspective,
+                        environmentReport: singleReport.environmentReport || null,
+                        customerReport: singleReport.customerReport || null,
+                        opportunityReport: singleReport.opportunityReport || null,
+                        solutionReport: singleReport.solutionReport || null,
+                        teamReport: singleReport.teamReport || null,
+                        advantageReport: singleReport.advantageReport || null,
+                        resultsReport: singleReport.resultsReport || null,
+                        fullReportText: 'Individual perspective from comprehensive report',
+                    };
+                    const savedReport = await api.addEcoStarReport(reportToSave);
+                    dispatch({ type: 'ADD_ECOSTAR_REPORT', payload: savedReport });
+                }
+                notify('Comprehensive report saved as separate documents for each perspective!', 'success');
+            } else {
+                 const singleReportData = generatedReport as Partial<EcoStarReport>;
+                 const reportToSave: Omit<EcoStarReport, 'id' | 'createdAt'> = {
+                    projectId: selectedProjectId,
+                    notes,
+                    perspective: singleReportData.perspective,
+                    environmentReport: singleReportData.environmentReport || null,
+                    customerReport: singleReportData.customerReport || null,
+                    opportunityReport: singleReportData.opportunityReport || null,
+                    solutionReport: singleReportData.solutionReport || null,
+                    teamReport: singleReportData.teamReport || null,
+                    advantageReport: singleReportData.advantageReport || null,
+                    resultsReport: singleReportData.resultsReport || null,
+                    fullReportText: 'Single perspective report'
+                };
+                 const savedReport = await api.addEcoStarReport(reportToSave);
+                 dispatch({ type: 'ADD_ECOSTAR_REPORT', payload: savedReport });
+                 notify('ECO-STAR report saved successfully!', 'success');
+            }
         } catch(error: any) {
             notify(`Error saving report: ${error.message}`, 'error');
         } finally {
             setIsSaveModalOpen(false);
+            setGeneratedReport(null);
         }
     };
 
+    const perspectiveOptions = [
+        { value: 'nonprofit', label: 'Non-Profit Organization' },
+        { value: 'individual', label: 'Individual Artist' },
+        { value: 'collective', label: 'Ad-hoc Collective' },
+        { value: 'municipal', label: 'Municipal Board' },
+        { value: 'comprehensive', label: 'Full Spectrum Analysis (All Four)' },
+    ];
+    
     return (
         <div className="bg-white shadow-lg rounded-xl p-6 sm:p-8">
              {isClearModalOpen && (
@@ -460,7 +560,13 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                     </div>
                     {selectedProjectId && (
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">2. Choose an Option</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">2. Choose Perspective</label>
+                            <RadioGroup name="perspective" selectedValue={selectedPerspective} onChange={(v) => setSelectedPerspective(v as any)} options={perspectiveOptions} />
+                        </div>
+                    )}
+                    {selectedProjectId && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">3. Choose an Option</label>
                              <div className="space-y-2">
                                 <button
                                     onClick={handleGenerateFullReport}
@@ -475,7 +581,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                                     <div className="relative flex justify-center"><span className="bg-white px-2 text-sm text-slate-500">Or work section by section</span></div>
                                 </div>
                                 {ECOSTAR_FIELDS.map(field => {
-                                    const isComplete = reportSections[field.key] && typeof reportSections[field.key] === 'object';
+                                    const isComplete = generatedReport && (generatedReport as any)[`${field.key.charAt(0).toLowerCase() + field.key.slice(1)}Report`];
                                     return (
                                     <div key={field.key} className="p-3 border rounded-lg bg-slate-50 border-slate-300">
                                         <h3 className="font-semibold text-slate-800 flex items-center">
@@ -484,8 +590,8 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                                         </h3>
                                         <p className="text-xs text-slate-600 mb-3 ml-6">{field.description}</p>
                                         <div className="flex gap-2 ml-6">
-                                            <button onClick={() => handleChatTopic(field)} disabled={isLoading || isGeneratingReport} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-md hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"><i className="fa-solid fa-comments mr-2"></i>Chat</button>
-                                            <button onClick={() => handleGenerateSection(field)} disabled={isLoading || isGeneratingReport} className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed"><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate</button>
+                                            <button onClick={() => handleChatTopic(field)} disabled={isLoading || isGeneratingReport || selectedPerspective === 'comprehensive'} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 rounded-md hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"><i className="fa-solid fa-comments mr-2"></i>Chat</button>
+                                            <button onClick={() => handleGenerateSection(field)} disabled={isLoading || isGeneratingReport || selectedPerspective === 'comprehensive'} className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed"><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate</button>
                                         </div>
                                     </div>
                                 )})}
@@ -540,7 +646,7 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                 </div>
             </div>
             
-            {Object.keys(reportSections).length > 0 && (
+            {generatedReport && Object.keys(generatedReport).length > 0 && (
                 <div className="mt-8">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold text-slate-800">Generated ECO-STAR Report</h2>
@@ -550,49 +656,12 @@ const EcoStarWorkshopPage: React.FC<{ onNavigate: (page: Page) => void; }> = ({ 
                              <button onClick={() => setIsClearModalOpen(true)} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"><i className="fa-solid fa-trash-alt mr-2"></i>Clear Report</button>
                         </div>
                     </div>
-                    <div id="ecostar-report-content" className="space-y-4 p-6 border rounded-lg bg-white">
-                        {ECOSTAR_FIELDS.map(field => {
-                            const content = reportSections[field.key];
-                            if (!content) return null;
-                            if (typeof content === 'string') {
-                                return (
-                                     <div key={field.key} className="p-4 bg-slate-50 border-l-4 border-teal-500">
-                                         <h3 className="text-xl font-bold text-slate-800">{field.label}</h3>
-                                         <div className="flex items-center gap-2 text-slate-500 p-2"><i className="fa-solid fa-spinner fa-spin"></i><span>{content}</span></div>
-                                     </div>
-                                );
-                            }
-                            
-                            const typedContent = content as ReportSectionContent;
-                            return (
-                                <div key={field.key} className="p-4 bg-slate-50 border-l-4 border-teal-500">
-                                    <h3 className="text-xl font-bold text-slate-800">{field.label}</h3>
-                                    <div className="mt-4">
-                                        <h4 className="text-md font-semibold text-slate-700">Summary</h4>
-                                        <div className="prose prose-sm max-w-none text-slate-600 mt-1" dangerouslySetInnerHTML={{ __html: formatAiTextToHtml(typedContent.summary) }}></div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h4 className="text-md font-semibold text-slate-700">Key Considerations</h4>
-                                        <ul className="list-disc list-inside mt-1 space-y-1 text-slate-600">
-                                            {Array.isArray(typedContent.keyConsiderations) && typedContent.keyConsiderations.map((item, i) => <li key={i}>{item}</li>)}
-                                        </ul>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h4 className="text-md font-semibold text-slate-700">Follow-up Questions & Sample Answers</h4>
-                                        <div className="space-y-3 mt-1">
-                                            {Array.isArray(typedContent.followUpQuestions) && typedContent.followUpQuestions.map((item, i) => (
-                                                <div key={i} className="p-2 bg-slate-100/70 rounded-md border border-slate-200">
-                                                    <p className="font-semibold text-slate-800">{item.question}</p>
-                                                    <p className="text-sm text-slate-600 pl-4 border-l-2 border-slate-300 ml-2 mt-1 italic">
-                                                        <span className="font-bold not-italic text-slate-500">A:</span> {item.sampleAnswer}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })}
+                    <div id="ecostar-report-content" className="p-6 border rounded-lg bg-white">
+                         {generatedReport && !('perspective' in generatedReport) && ('nonprofit' in generatedReport || 'individual' in generatedReport) ? (
+                            <ComprehensiveReportDisplay report={generatedReport as ComprehensiveEcoStarReport} />
+                        ) : (
+                            <ReportDisplay report={generatedReport as Partial<EcoStarReport>} />
+                        )}
                     </div>
                 </div>
             )}

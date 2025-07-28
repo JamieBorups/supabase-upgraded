@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useAppContext } from '../../context/AppContext';
@@ -77,7 +78,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode; defaultOpen?
 
 const SdgAlignmentPage: React.FC = () => {
     const { state, dispatch, notify } = useAppContext();
-    const { projects, members } = state;
+    const { projects, members, researchPlans, ecostarReports, interestCompatibilityReports, recreationFrameworkReports, tasks, events } = state;
 
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
@@ -95,7 +96,35 @@ const SdgAlignmentPage: React.FC = () => {
             const member = members.find(m => m.id === c.memberId);
             return member ? `${member.firstName} ${member.lastName} (${c.role})` : `Unknown Member (${c.role})`;
         }).join(', ');
-        const context = { projectTitle: selectedProject.projectTitle, projectDescription: selectedProject.projectDescription, background: selectedProject.background, schedule: selectedProject.schedule, collaborators: collaboratorDetails, culturalIntegrity: selectedProject.culturalIntegrity, budget: selectedProject.budget };
+
+        const getMostRecent = <T extends { createdAt: string; projectId: string; }>(items: T[]): T | undefined => {
+            return items
+                .filter(item => item.projectId === selectedProjectId)
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+        };
+
+        const researchPlan = getMostRecent(researchPlans);
+        const ecoStarReport = getMostRecent(ecostarReports);
+        const interestReport = getMostRecent(interestCompatibilityReports);
+        const recreationReport = getMostRecent(recreationFrameworkReports);
+        const projectTasks = tasks.filter(t => t.projectId === selectedProjectId).map(t => `${t.title} (${t.status})`);
+        const projectEvents = events.filter(e => e.projectId === selectedProjectId).map(e => `${e.title} (${e.startDate})`);
+
+        const context = {
+            projectTitle: selectedProject.projectTitle,
+            projectDescription: selectedProject.projectDescription,
+            background: selectedProject.background,
+            schedule: selectedProject.schedule,
+            collaborators: collaboratorDetails,
+            culturalIntegrity: selectedProject.culturalIntegrity,
+            budget: selectedProject.budget,
+            researchPlanSummary: researchPlan ? { overview: researchPlan.titleAndOverview, questions: researchPlan.researchQuestions } : 'Not available.',
+            ecoStarSummary: ecoStarReport ? { environment: ecoStarReport.environmentReport?.summary, customer: ecoStarReport.customerReport?.summary, opportunity: ecoStarReport.opportunityReport?.summary } : 'Not available.',
+            interestCompatibilitySummary: interestReport ? { summary: interestReport.executiveSummary, synergies: interestReport.highCompatibilityAreas?.map(a => a.area).join(', ') } : 'Not available.',
+            recreationFrameworkSummary: recreationReport ? { summary: recreationReport.executiveSummary } : 'Not available.',
+            tasks: projectTasks.length > 0 ? projectTasks : 'No tasks defined.',
+            events: projectEvents.length > 0 ? projectEvents : 'No events defined.',
+        };
         const finalPrompt = `${REPORT_PROMPT}\n\n### PROJECT CONTEXT ###\n${JSON.stringify(context, null, 2)}`;
         
         try {

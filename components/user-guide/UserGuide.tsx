@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import WelcomePage from './WelcomePage';
 import ProjectsGuide from './ProjectsGuide';
@@ -21,17 +20,13 @@ import EmpoweringTheArtsGuide from './EmpoweringTheArtsGuide';
 import SetupGuide from './SetupGuide';
 import ResearchPlanGeneratorGuide from './ResearchPlanGeneratorGuide.tsx';
 import ResearchApproachesGuide from './ResearchApproachesGuide.tsx';
-import ExperienceHubGuide from './ExperienceHubGuide.tsx';
-import July182025Updates from './July182025Updates.tsx';
-
 
 import './guide.css';
 
 type GuideTopic = 
   | 'welcome' | 'setup' | 'acknowledgements' | 'empowering' | 'projects' | 'members' | 'tasks' | 'events' | 'sales' | 'media' 
   | 'reports' | 'communityImpact' | 'supplementalReports' | 'tools' | 'settings'
-  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches' | 'experienceHub'
-  | 'july18_2025_updates';
+  | 'ecoStar' | 'sdg' | 'recreation' | 'interest' | 'researchPlanGenerator' | 'researchPlanApproaches';
 
 interface MenuItem {
     id: GuideTopic;
@@ -56,25 +51,11 @@ const menuStructure: MenuSection[] = [
         ]
     },
     {
-        title: 'Recent Updates',
-        items: [
-            { id: 'july18_2025_updates', label: 'July 18th, 2025', icon: 'fa-solid fa-bell' },
-        ]
-    },
-    {
         title: 'Core Modules',
         items: [
             { id: 'projects', label: 'Projects & Proposals', icon: 'fa-solid fa-briefcase' },
             { id: 'tasks', label: 'Tasks & Activities', icon: 'fa-solid fa-list-check' },
-            { 
-                id: 'members', 
-                label: 'Members & Experience', 
-                icon: 'fa-solid fa-users',
-                children: [
-                    { id: 'members', label: 'Member Profiles', icon: 'fa-solid fa-id-card' },
-                    { id: 'experienceHub', label: 'Experience Hub', icon: 'fa-solid fa-award' },
-                ]
-            },
+            { id: 'members', label: 'Members', icon: 'fa-solid fa-users' },
             { id: 'events', label: 'Events & Venues', icon: 'fa-solid fa-calendar-days' },
             { id: 'sales', label: 'Marketplace', icon: 'fa-solid fa-cash-register' },
             { id: 'media', label: 'Media & Contacts', icon: 'fa-solid fa-bullhorn' },
@@ -141,8 +122,6 @@ const UserGuide: React.FC = () => {
             case 'interest': return <InterestCompatibilityGuide />;
             case 'researchPlanGenerator': return <ResearchPlanGeneratorGuide />;
             case 'researchPlanApproaches': return <ResearchApproachesGuide />;
-            case 'experienceHub': return <ExperienceHubGuide />;
-            case 'july18_2025_updates': return <July182025Updates />;
             default: return <WelcomePage />;
         }
     };

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import InfoBox from './InfoBox';
 
@@ -11,16 +10,6 @@ const July182025Updates: React.FC = () => {
       </p>
 
       <h3>Key Feature Spotlight</h3>
-
-      <h4>The Experience Hub: A Volunteer Management & Development Tool</h4>
-      <p>
-        We've launched the <strong>Experience Hub</strong>, a dedicated module for translating project contributions into tangible, professional assets. This tool addresses a critical need for volunteers and artists to articulate the value of their work for resumes, portfolios, and future grant applications.
-      </p>
-      <ul>
-        <li><strong>AI-Powered Descriptions:</strong> Generate high-quality, professionally-worded job descriptions based on a project's real data.</li>
-        <li><strong>Resume-Ready Content:</strong> The AI can create accomplishment statements using the STAR method, perfect for CVs and LinkedIn profiles.</li>
-        <li><strong>Skill Emphasis:</strong> Tailor generated content to highlight transferable skills, helping members showcase their experience for opportunities both within and outside the arts sector.</li>
-      </ul>
 
       <h4>New AI-Powered Strategic Workshops</h4>
       <p>
@@ -46,7 +35,7 @@ const July182025Updates: React.FC = () => {
       </ul>
 
       <InfoBox type="tip">
-        <p><strong>Explore the New Features!</strong> We encourage you to try the Experience Hub for one of your completed projects or run a new project through the ECO-STAR workshop. The insights you gain can be invaluable for your next funding application.</p>
+        <p><strong>Explore the New Features!</strong> We encourage you to run a new project through the ECO-STAR workshop. The insights you gain can be invaluable for your next funding application.</p>
       </InfoBox>
     </div>
   );
