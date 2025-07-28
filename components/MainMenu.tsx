@@ -70,35 +70,17 @@ const DropdownLink: React.FC<{
     );
 }
 
-const useOutsideAlerter = (ref: React.RefObject<any>, close: () => void, ignoreRef?: React.RefObject<any>) => {
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            // If the click is on the ignoreRef element (e.g., the toggle button), do nothing.
-            if (ignoreRef?.current && ignoreRef.current.contains(event.target as Node)) {
-                return;
-            }
-
-            // If the click is outside the main ref element, close it.
-            if (ref.current && !ref.current.contains(event.target as Node)) {
-                close();
-            }
-        }
-        
-        // Use 'click' event to avoid race condition on close, and rely on ignoreRef to handle the toggle button.
-        document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
-    }, [ref, close, ignoreRef]);
-}
-
 // --- Type Definitions for a clearer and more robust navigation structure ---
 type NavDropdownLink = {
     page: Page;
     icon: string;
     label: string;
+    adminOnly?: boolean;
 };
 
 type NavDivider = {
     type: 'divider';
+    adminOnly?: boolean;
 };
 
 type DropdownItem = NavDropdownLink | NavDivider;
@@ -108,11 +90,13 @@ type NavDropdown = {
     label: string;
     pages: Page[];
     items: DropdownItem[];
+    adminOnly?: boolean;
 };
 
 type NavLinkItem = {
     page: Page;
     label: string;
+    adminOnly?: boolean;
 };
 
 type NavStructureItem = NavDropdown | NavLinkItem;
@@ -123,6 +107,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const menuRef = useRef<HTMLDivElement>(null);
+    const userMenuRef = useRef<HTMLDivElement>(null); // Ref for user dropdown
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const mobileButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -130,15 +115,35 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
     const { settings, currentUser, members } = state;
     const collectiveName = settings.general.collectiveName || 'The Arts Incubator';
 
+    // Combined outside click handler for all menus
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node;
+
+            // Close desktop dropdowns if click is outside both menu areas
+            if (openDropdown && menuRef.current && !menuRef.current.contains(target) && userMenuRef.current && !userMenuRef.current.contains(target)) {
+                setOpenDropdown(null);
+            }
+
+            // Close mobile menu if click is outside mobile menu and its toggle button
+            if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(target) && mobileButtonRef.current && !mobileButtonRef.current.contains(target)) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [openDropdown, isMobileMenuOpen]);
+
+
     const currentUserName = useMemo(() => {
         if (!currentUser) return 'Not Logged In';
         if (currentUser.username === 'admin') return 'Administrator';
         const member = members.find(m => m.id === currentUser.memberId);
         return member ? `${member.firstName} ${member.lastName}` : currentUser.username;
     }, [currentUser, members]);
-    
-    useOutsideAlerter(menuRef, () => setOpenDropdown(null));
-    useOutsideAlerter(mobileMenuRef, () => setIsMobileMenuOpen(false), mobileButtonRef);
     
     const handleLogout = () => {
         dispatch({ type: 'LOGOUT' });
@@ -150,49 +155,88 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
         setIsMobileMenuOpen(false);
     };
 
-    const NAV_STRUCTURE: NavStructureItem[] = [
-        { name: 'home', label: 'Home', pages: ['home', 'userGuide', 'about', 'settings'], items: [
-            { page: 'home', icon: 'fa-solid fa-table-columns', label: 'Dashboard' },
-            { page: 'about', icon: 'fa-solid fa-info-circle', label: 'About this Platform' },
-            { page: 'userGuide', icon: 'fa-solid fa-book-open', label: 'User Guide' },
-            { type: 'divider' },
-            { page: 'settings', icon: 'fa-solid fa-sliders', label: 'Settings' },
-        ]},
-        { name: 'projects', label: 'Projects', pages: ['projects', 'tasks', 'reports', 'otf'], items: [
-            { page: 'projects', icon: 'fa-solid fa-briefcase', label: 'Project List' },
-            { page: 'tasks', icon: 'fa-solid fa-list-check', label: 'Tasks & Timesheets' },
-            { type: 'divider' },
-            { page: 'reports', icon: 'fa-solid fa-file-invoice', label: 'Reporting & Archives' },
-            { page: 'otf', icon: 'fa-solid fa-stamp', label: 'OTF Grant Generator' },
-        ]},
-        { name: 'members', label: 'Members', pages: ['members', 'experienceHub'], items: [
-            { page: 'members', icon: 'fa-solid fa-users', label: 'Member Profiles' },
-            { page: 'experienceHub', icon: 'fa-solid fa-award', label: 'Experience Hub' },
-        ]},
-        { page: 'events', label: 'Events' },
-        { page: 'sales', label: 'Marketplace' },
-        { name: 'media', label: 'Media', pages: ['media', 'contacts', 'highlights'], items: [
-            { page: 'media', icon: 'fa-solid fa-newspaper', label: 'News Releases' },
-            { page: 'contacts', icon: 'fa-solid fa-address-book', label: 'Contacts' },
-            { page: 'highlights', icon: 'fa-solid fa-star', label: 'Highlights' },
-        ]},
-        { name: 'tools', label: 'Tools', pages: ['researchPlanGenerator', 'aiProjectGenerator', 'ecoStarWorkshop', 'sdgAlignment', 'frameworkForRecreation', 'taskAssessor', 'projectAssessor', 'interestCompatibility', 'importExport', 'schemaReport', 'dbTest'], items: [
-            { page: 'researchPlanGenerator', icon: 'fa-solid fa-book', label: 'Research Plan Generator' },
-            { page: 'aiProjectGenerator', icon: 'fa-solid fa-robot', label: 'AI Project Generator' },
-            { page: 'ecoStarWorkshop', icon: 'fa-solid fa-seedling', label: 'ECO-STAR AI Workshop' },
-            { page: 'sdgAlignment', icon: 'fa-solid fa-earth-americas', label: 'SDG Alignment Report' },
-            { page: 'frameworkForRecreation', icon: 'fa-solid fa-people-roof', label: 'Framework for Recreation' },
-            { type: 'divider' },
-            { page: 'taskAssessor', icon: 'fa-solid fa-wand-magic-sparkles', label: 'AI Task Generator' },
-            { page: 'projectAssessor', icon: 'fa-solid fa-diagram-project', label: 'Project AI Assistant' },
-            { page: 'interestCompatibility', icon: 'fa-solid fa-users-gear', label: 'Interest Compatibility' },
-            { type: 'divider' },
-            { page: 'importExport', icon: 'fa-solid fa-right-left', label: 'Import / Export Data' },
-            { type: 'divider' },
-            { page: 'schemaReport', icon: 'fa-solid fa-sitemap', label: 'Data Schema Report' },
-            { page: 'dbTest', icon: 'fa-solid fa-database', label: 'Database Replication' },
-        ]},
-    ];
+    const isAdmin = currentUser?.role === 'admin';
+
+    const NAV_STRUCTURE: NavStructureItem[] = useMemo(() => {
+        const structure: NavStructureItem[] = [
+            { name: 'home', label: 'Home', pages: ['home', 'userGuide', 'about', 'settings'], items: [
+                { page: 'home', icon: 'fa-solid fa-table-columns', label: 'Dashboard' },
+                { page: 'about', icon: 'fa-solid fa-info-circle', label: 'About this Platform' },
+                { page: 'userGuide', icon: 'fa-solid fa-book-open', label: 'User Guide' },
+                { type: 'divider', adminOnly: true },
+                { page: 'settings', icon: 'fa-solid fa-sliders', label: 'Settings', adminOnly: true },
+            ]},
+            { name: 'projects', label: 'Projects', pages: ['projects', 'relatedProjects', 'riskManagement', 'tasks', 'reports', 'otf', 'proposals', 'nohfc', 'infrastructure'], items: [
+                { page: 'projects', icon: 'fa-solid fa-briefcase', label: 'Project List' },
+                { page: 'infrastructure', icon: 'fa-solid fa-building-columns', label: 'Infrastructure & Facilities' },
+                { page: 'relatedProjects', icon: 'fa-solid fa-sitemap', label: 'Related Projects' },
+                { page: 'riskManagement', icon: 'fa-solid fa-shield-halved', label: 'Risk Management' },
+                { page: 'tasks', icon: 'fa-solid fa-list-check', label: 'Tasks & Timesheets' },
+                { type: 'divider' },
+                { page: 'reports', icon: 'fa-solid fa-file-invoice', label: 'Reporting & Archives' },
+                { page: 'proposals', icon: 'fa-solid fa-box-archive', label: 'Proposals (Legacy)' },
+                { page: 'otf', icon: 'fa-solid fa-stamp', label: 'OTF Grant Generator' },
+                { page: 'nohfc', icon: 'fa-solid fa-mountain-sun', label: 'NOHFC Generator' },
+            ]},
+            { page: 'members', label: 'Members' },
+            { page: 'events', label: 'Events' },
+            { page: 'sales', label: 'Marketplace' },
+            { name: 'media', label: 'Media', pages: ['media', 'contacts', 'highlights'], items: [
+                { page: 'media', icon: 'fa-solid fa-newspaper', label: 'News Releases' },
+                { page: 'contacts', icon: 'fa-solid fa-address-book', label: 'Contacts' },
+                { page: 'highlights', icon: 'fa-solid fa-star', label: 'Highlights' },
+            ]},
+            { name: 'tools', label: 'Tools', pages: ['researchPlanGenerator', 'aiProjectGenerator', 'ecoStarWorkshop', 'sdgAlignment', 'frameworkForRecreation', 'taskAssessor', 'projectAssessor', 'interestCompatibility', 'importExport', 'schemaReport', 'dbTest', 'aiWorkshop'], items: [
+                { page: 'researchPlanGenerator', icon: 'fa-solid fa-book', label: 'Research Plan Generator' },
+                { page: 'aiProjectGenerator', icon: 'fa-solid fa-robot', label: 'AI Project Generator' },
+                { page: 'ecoStarWorkshop', icon: 'fa-solid fa-seedling', label: 'ECO-STAR AI Workshop' },
+                { page: 'sdgAlignment', icon: 'fa-solid fa-earth-americas', label: 'SDG Alignment Report' },
+                { page: 'frameworkForRecreation', icon: 'fa-solid fa-people-roof', label: 'Framework for Recreation' },
+                { type: 'divider' },
+                { page: 'taskAssessor', icon: 'fa-solid fa-wand-magic-sparkles', label: 'AI Task Generator' },
+                { page: 'projectAssessor', icon: 'fa-solid fa-diagram-project', label: 'Project AI Assistant' },
+                { page: 'interestCompatibility', icon: 'fa-solid fa-users-gear', label: 'Interest Compatibility' },
+                { page: 'aiWorkshop', icon: 'fa-solid fa-comment-dots', label: 'General AI Workshop'},
+                { type: 'divider', adminOnly: true },
+                { page: 'importExport', icon: 'fa-solid fa-right-left', label: 'Import / Export Data', adminOnly: true },
+                { type: 'divider', adminOnly: true },
+                { page: 'schemaReport', icon: 'fa-solid fa-sitemap', label: 'Data Schema Report', adminOnly: true },
+                { page: 'dbTest', icon: 'fa-solid fa-database', label: 'Database Replication', adminOnly: true },
+            ]},
+        ];
+
+        if (isAdmin) {
+            return structure;
+        }
+
+        return structure
+            .filter(item => !item.adminOnly)
+            .map(item => {
+                if ('items' in item) {
+                    const filteredItems = item.items.filter(subItem => !subItem.adminOnly);
+                    
+                    // Clean up consecutive dividers after filtering
+                    const cleanedItems = filteredItems.reduce((acc, current, index, array) => {
+                        const prev = array[index - 1];
+                        if ('type' in current && current.type === 'divider' && (!prev || ('type' in prev && prev.type === 'divider'))) {
+                            return acc; // Skip leading or consecutive dividers
+                        }
+                        acc.push(current);
+                        return acc;
+                    }, [] as DropdownItem[]);
+                    
+                    // Remove trailing divider
+                    const lastItem = cleanedItems.length > 0 ? cleanedItems[cleanedItems.length - 1] : null;
+                    if(lastItem && 'type' in lastItem && lastItem.type === 'divider') {
+                        cleanedItems.pop();
+                    }
+                    
+                    return { ...item, items: cleanedItems };
+                }
+                return item;
+            });
+
+    }, [isAdmin]);
 
     return (
         <header className="shadow-lg sticky top-0 z-40" style={{ backgroundColor: 'var(--color-header-bg)', color: 'var(--color-header-text)' }}>
@@ -239,19 +283,19 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
                     </div>
                     <div className="hidden md:block">
                         <div className="ml-4 flex items-center md:ml-6 gap-4">
-                            <div className="relative">
+                            <div className="relative" ref={userMenuRef}>
                                 <button onClick={() => setOpenDropdown(openDropdown === 'user' ? null : 'user')} className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: openDropdown === 'user' ? 'rgba(255,255,255,0.1)' : 'transparent' }}>
-                                    <i className="fa-solid fa-user-circle text-2xl text-slate-400"></i>
+                                    <i className="fa-solid fa-circle-user text-2xl text-slate-300"></i>
                                     <span className="text-sm font-medium">{currentUserName}</span>
-                                     <i className="fa-solid fa-chevron-down fa-xs ml-1 text-slate-400"></i>
+                                     <i className="fa-solid fa-chevron-down fa-xs ml-1 text-slate-300"></i>
                                 </button>
                                 {openDropdown === 'user' && (
                                      <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                                         <div className="py-1">
-                                             <a href="#" onClick={(e)=>{e.preventDefault(); handleLogout(); closeAll();}} className="group flex items-center w-full px-4 py-2 text-sm text-left text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+                                         <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                             <button type="button" onClick={() => { handleLogout(); closeAll(); }} className="group flex items-center w-full px-4 py-2 text-sm text-left text-slate-700 hover:bg-slate-100 hover:text-slate-900" role="menuitem">
                                                 <i className="fa-solid fa-right-from-bracket mr-3 h-5 w-5 text-slate-400 group-hover:text-red-500"></i>
                                                 Logout
-                                             </a>
+                                             </button>
                                          </div>
                                      </div>
                                 )}
@@ -297,9 +341,9 @@ const MainMenu: React.FC<MainMenuProps> = ({ activePage, onNavigate }) => {
                                     </div>
                                 </div>
                                 <div className="mt-3 px-2 space-y-1">
-                                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); closeAll(); }} className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:text-white hover:bg-red-500">
+                                    <button type="button" onClick={() => { handleLogout(); closeAll(); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:text-white hover:bg-red-500">
                                         Logout
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                     </div>

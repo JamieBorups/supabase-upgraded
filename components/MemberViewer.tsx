@@ -1,34 +1,7 @@
 
-
 import React, { useMemo, useState } from 'react';
 import { Member, Task, TaskStatus, Activity, WorkType, FormData as Project, MemberViewTabId } from '../types';
 import { useAppContext } from '../context/AppContext';
-
-interface MemberViewerProps {
-    member: Member;
-    onBack: () => void;
-}
-
-// --- Helper Components & Types ---
-
-type ActivityWithValue = Activity & {
-    value: number;
-    workType: WorkType;
-};
-
-type TaskWithDetails = Task & {
-    activities: ActivityWithValue[];
-    loggedHours: number;
-};
-
-type ProjectWithDetails = {
-    project: Project;
-    role: string;
-    tasks: TaskWithDetails[];
-    completedTasks: number;
-    totalPaidValue: number;
-    totalInKindValue: number;
-};
 
 const ViewField: React.FC<{ label: string; value?: React.ReactNode; children?: React.ReactNode; className?: string }> = ({ label, value, children, className }) => (
     <div className={className}>
@@ -80,54 +53,7 @@ const isTaskOverdue = (task: Task) => !task.isComplete && task.dueDate && new Da
 
 // --- Main Component ---
 
-const MemberExperienceTab: React.FC<{ member: Member }> = ({ member }) => {
-    const { state } = useAppContext();
-    const memberJds = useMemo(() => 
-        state.jobDescriptions.filter(jd => jd.memberId === member.id)
-        .sort((a,b) => b.updatedAt.localeCompare(a.updatedAt)), 
-        [state.jobDescriptions, member.id]
-    );
-    const projectMap = useMemo(() => new Map(state.projects.map(p => [p.id, p.projectTitle])), [state.projects]);
-
-    return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold border-b-2 pb-2" style={{ color: 'var(--color-text-heading)', borderColor: 'var(--color-primary)'}}>Generated Experience</h2>
-                <p className="text-sm text-slate-500">View and manage descriptions in the main <strong className="font-semibold">Experience Hub</strong>.</p>
-            </div>
-            {memberJds.length > 0 ? (
-                <div className="space-y-4">
-                    {memberJds.map(jd => (
-                        <details key={jd.id} className="p-4 border rounded-lg bg-slate-50">
-                            <summary className="font-semibold text-lg text-slate-800 cursor-pointer list-none flex justify-between items-center">
-                                <div>
-                                    {jd.title}
-                                    <span className="text-sm font-normal text-slate-500 ml-2"> for {projectMap.get(jd.projectId || '') || 'Unknown Project'}</span>
-                                </div>
-                                <i className="fa-solid fa-chevron-down transform transition-transform details-arrow"></i>
-                            </summary>
-                            <div className="mt-4 pt-4 border-t border-slate-200 prose prose-sm max-w-none">
-                                <p><strong>Summary:</strong> {jd.summary}</p>
-                                <h4 className="font-semibold mt-2">Resume Points:</h4>
-                                <ul className="list-disc list-inside">
-                                    {jd.resumePoints.map((p, i) => <li key={i}>{p}</li>)}
-                                </ul>
-                            </div>
-                        </details>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-16 text-slate-500 italic">
-                    <p>No experience descriptions have been generated for this member.</p>
-                    <p className="text-xs mt-1">Go to the Experience Hub to create one.</p>
-                </div>
-            )}
-        </div>
-    );
-};
-
-
-const MemberViewer: React.FC<MemberViewerProps> = ({ member, onBack }) => {
+const MemberViewer: React.FC<{ member: Member; onBack: () => void; }> = ({ member, onBack }) => {
     const { state: { projects, tasks, activities } } = useAppContext();
     const [activeTab, setActiveTab] = useState<MemberViewTabId>('profile');
     const [openProjects, setOpenProjects] = useState<Set<string>>(new Set());
@@ -184,7 +110,7 @@ const MemberViewer: React.FC<MemberViewerProps> = ({ member, onBack }) => {
         });
     };
 
-    const projectsWithDetails = useMemo((): ProjectWithDetails[] => {
+    const projectsWithDetails = useMemo(() => {
         return projects
             .filter(p => p.collaboratorDetails.some(c => c.memberId === member.id))
             .map(p => {
@@ -195,10 +121,10 @@ const MemberViewer: React.FC<MemberViewerProps> = ({ member, onBack }) => {
                 let totalPaidValue = 0;
                 let totalInKindValue = 0;
 
-                const tasksWithDetails: TaskWithDetails[] = memberTasksForProject.map(task => {
+                const tasksWithDetails = memberTasksForProject.map(task => {
                     const approvedActivities = activities.filter(a => a.taskId === task.id && a.memberId === member.id && a.status === 'Approved');
                     
-                    const activitiesWithValue: ActivityWithValue[] = approvedActivities.map(activity => {
+                    const activitiesWithValue = approvedActivities.map(activity => {
                         const value = (activity.hours || 0) * (task.hourlyRate || 0);
                         if(task.workType === 'Paid') {
                             totalPaidValue += value;
@@ -231,7 +157,6 @@ const MemberViewer: React.FC<MemberViewerProps> = ({ member, onBack }) => {
     const TABS: { id: MemberViewTabId, label: string, icon: string }[] = [
         { id: 'profile', label: 'Profile Information', icon: 'fa-solid fa-user' },
         { id: 'activity', label: 'Activity Report', icon: 'fa-solid fa-chart-line' },
-        { id: 'experience', label: 'Experience Hub', icon: 'fa-solid fa-award' },
     ];
 
     const renderTabContent = () => {
@@ -240,7 +165,7 @@ const MemberViewer: React.FC<MemberViewerProps> = ({ member, onBack }) => {
                 const activeProjects = projectsWithDetails.filter(p => ['Pending', 'Active', 'On Hold'].includes(p.project.status));
                 const completedProjects = projectsWithDetails.filter(p => ['Completed', 'Terminated'].includes(p.project.status));
 
-                const renderProjectList = (projectList: ProjectWithDetails[]) => (
+                const renderProjectList = (projectList: typeof projectsWithDetails) => (
                     <div className="mt-2 space-y-3">
                         {projectList.map(details => {
                             const isExpanded = openProjects.has(details.project.id);
@@ -409,8 +334,6 @@ const MemberViewer: React.FC<MemberViewerProps> = ({ member, onBack }) => {
                     </ViewField>
                 </div>
                 );
-            case 'experience':
-                return <MemberExperienceTab member={member} />;
             default:
                 return null;
         }
