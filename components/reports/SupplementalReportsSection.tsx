@@ -1,14 +1,14 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, FormData as Project, ResearchPlan, OtfApplication } from '../../types';
+import { EcoStarReport, InterestCompatibilityReport, SdgAlignmentReport, RecreationFrameworkReport, FormData as Project, ResearchPlan, OtfApplication, NohfcApplication } from '../../types';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import * as api from '../../services/api';
-import { generateEcoStarPdf, generateInterestCompatibilityPdf, generateSdgPdf, generateRecreationFrameworkPdf, generateResearchPlanPdf, generateOtfPdf } from '../../utils/pdfGenerator';
+import { generateEcoStarPdf, generateInterestCompatibilityPdf, generateSdgPdf, generateRecreationFrameworkPdf, generateResearchPlanPdf, generateOtfPdf, generateNohfcPdf } from '../../utils/pdfGenerator';
 import OtfApplicationViewer from '../otf/OtfApplicationViewer';
 
 // --- Types & Interfaces ---
-type ReportType = 'research' | 'otf' | 'ecostar' | 'interest' | 'sdg' | 'recreation';
+type ReportType = 'research' | 'otf' | 'nohfc' | 'ecostar' | 'interest' | 'sdg' | 'recreation';
 
 interface ReportItem {
     id: string;
@@ -73,6 +73,7 @@ const SupplementalReportsSection: React.FC<SupplementalReportsSectionProps> = ({
         return [
             { type: 'research' as ReportType, title: "Research Plans", reports: state.researchPlans.filter(r => r.projectId === projectId).map(r => mapReport(r, 'research', 'Research Plan')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), onEdit: true },
             { type: 'otf' as ReportType, title: "OTF Applications", reports: state.otfApplications.filter(a => a.projectId === projectId).map(a => mapReport(a, 'otf', 'OTF Application')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), onEdit: true },
+            { type: 'nohfc' as ReportType, title: "NOHFC Applications", reports: state.nohfcApplications.filter(a => a.projectId === projectId).map(a => mapReport(a, 'nohfc', 'NOHFC Application')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), onEdit: true },
             { type: 'ecostar' as ReportType, title: "ECO-STAR Reports", reports: state.ecostarReports.filter(r => r.projectId === projectId).map(r => mapReport(r, 'ecostar', 'ECO-STAR Report')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) },
             { type: 'interest' as ReportType, title: "Interest Compatibility Reports", reports: state.interestCompatibilityReports.filter(r => r.projectId === projectId).map(r => mapReport(r, 'interest', 'Interest Compatibility Report')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) },
             { type: 'sdg' as ReportType, title: "SDG Alignment Reports", reports: state.sdgAlignmentReports.filter(r => r.projectId === projectId).map(r => mapReport(r, 'sdg', 'SDG Alignment Report')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) },
@@ -83,6 +84,7 @@ const SupplementalReportsSection: React.FC<SupplementalReportsSectionProps> = ({
     const handleEditReport = useCallback((report: any, type: ReportType) => {
         if (type === 'research') dispatch({ type: 'SET_RESEARCH_PLAN_TO_EDIT', payload: report });
         else if (type === 'otf') dispatch({ type: 'SET_OTF_APPLICATION_TO_EDIT', payload: report });
+        else if (type === 'nohfc') dispatch({ type: 'SET_NOHFC_APPLICATION_TO_EDIT', payload: report });
     }, [dispatch]);
 
     const handleDeleteClick = (report: any, type: ReportType) => {
@@ -92,8 +94,8 @@ const SupplementalReportsSection: React.FC<SupplementalReportsSectionProps> = ({
     const confirmDelete = async () => {
         if (!reportToDelete) return;
         const { report, type } = reportToDelete;
-        const deleteActions: Record<ReportType, (id: string) => Promise<any>> = { ecostar: api.deleteEcoStarReport, interest: api.deleteInterestCompatibilityReport, sdg: api.deleteSdgAlignmentReport, recreation: api.deleteRecreationFrameworkReport, research: api.deleteResearchPlan, otf: api.deleteOtfApplication };
-        const dispatchTypeMap: Record<ReportType, string> = { ecostar: 'DELETE_ECOSTAR_REPORT', interest: 'DELETE_INTEREST_COMPATIBILITY_REPORT', sdg: 'DELETE_SDG_REPORT', recreation: 'DELETE_RECREATION_REPORT', research: 'DELETE_RESEARCH_PLAN', otf: 'DELETE_OTF_APPLICATION' };
+        const deleteActions: Record<ReportType, (id: string) => Promise<any>> = { ecostar: api.deleteEcoStarReport, interest: api.deleteInterestCompatibilityReport, sdg: api.deleteSdgAlignmentReport, recreation: api.deleteRecreationFrameworkReport, research: api.deleteResearchPlan, otf: api.deleteOtfApplication, nohfc: api.deleteNohfcApplication };
+        const dispatchTypeMap: Record<ReportType, string> = { ecostar: 'DELETE_ECOSTAR_REPORT', interest: 'DELETE_INTEREST_COMPATIBILITY_REPORT', sdg: 'DELETE_SDG_REPORT', recreation: 'DELETE_RECREATION_REPORT', research: 'DELETE_RESEARCH_PLAN', otf: 'DELETE_OTF_APPLICATION', nohfc: 'DELETE_NOHFC_APPLICATION' };
 
         try {
             await deleteActions[type](report.id);
@@ -117,6 +119,7 @@ const SupplementalReportsSection: React.FC<SupplementalReportsSectionProps> = ({
                 case 'recreation': await generateRecreationFrameworkPdf(report, selectedProject.projectTitle); break;
                 case 'research': await generateResearchPlanPdf(report, selectedProject.projectTitle); break;
                 case 'otf': await generateOtfPdf(report, selectedProject.projectTitle); break;
+                case 'nohfc': await generateNohfcPdf(report, selectedProject.projectTitle); break;
             }
         } catch (e: any) {
             notify(`Could not generate PDF: ${e.message}`, "error");

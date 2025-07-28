@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState } from 'react';
 import { produce } from 'immer';
 import { useAppContext } from '../../../context/AppContext';
@@ -36,6 +33,7 @@ const AiSettings: React.FC = () => {
         { id: 'recreation', label: 'Recreation Framework' },
         { id: 'projectGenerator', label: 'Project Generator' },
         { id: 'otf', label: 'OTF Generator' },
+        { id: 'nohfc', label: 'NOHFC Generator' },
         { id: 'projects', label: 'Projects' },
         { id: 'tasks', label: 'Workplan Generator' },
         { id: 'taskGenerator', label: 'Task Generator' },
